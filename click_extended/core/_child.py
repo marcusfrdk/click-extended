@@ -8,11 +8,11 @@ from typing import Any, Callable, Optional, TypeVar
 from click_extended.core._context import Context
 from click_extended.core._main import Main
 from click_extended.core._parent import Parent
-from click_extended.errors import (
+from click_extended.errors.decorator_implementation_error import (
     DecoratorImplementationError,
-    NoParentError,
-    TaggedEnvironmentError,
 )
+from click_extended.errors.no_parent_node_error import NoParentNodeError
+from click_extended.errors.tagged_environment_error import TaggedEnvironmentError
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -86,7 +86,7 @@ class Child(ABC):
             return parent_or_fn
 
         if isinstance(parent_or_fn, Main):
-            raise NoParentError(
+            raise NoParentNodeError(
                 "Child decorators cannot be applied directly to a main node (command or group). "
                 "They must be applied under a parent decorator (option, argument, env, tag)."
             )
@@ -95,7 +95,7 @@ class Child(ABC):
             self.pending_func = parent_or_fn
             return self
 
-        raise NoParentError(
+        raise NoParentNodeError(
             "Child decorators must be applied under a parent decorator "
             "(option, argument, env, tag)."
         )

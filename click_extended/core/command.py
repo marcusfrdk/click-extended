@@ -7,7 +7,7 @@ import click
 from click_extended.core._child import Child
 from click_extended.core._main import Main
 from click_extended.core._parent import Parent
-from click_extended.errors import NoParentError
+from click_extended.errors.no_parent_node_error import NoParentNodeError
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -75,7 +75,7 @@ def command(
             return cmd
 
         if isinstance(func, Child):
-            raise NoParentError(
+            raise NoParentNodeError(
                 f"Child decorator '{func.__class__.__name__}' must be applied to a parent decorator "
                 "(option, argument, env, or tag). Cannot apply child directly to a command."
             )
