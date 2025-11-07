@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any, TypeVar
 
 from click_extended.core._context import Context
+from click_extended.errors import ExecutionError
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -41,9 +42,14 @@ class Main(ABC):  # noqa: B024
         )
 
         for parent in self.parents:
-            if parent.name and parent.name in kwargs:
-                parent.value = kwargs[parent.name]
+            if parent.name:
+                param_name = parent.name.lstrip("-").replace("-", "_")
+                if param_name in kwargs:
+                    parent.value = kwargs[param_name]
             parent.execute(self.context)
+
+        if self.context.failures:
+            raise ExecutionError(self.context.failures)
 
         result = self.func(*args, **kwargs)
 

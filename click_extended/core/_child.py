@@ -79,8 +79,13 @@ class Child(ABC):  # noqa: B024
         from click_extended.core._parent import Parent
 
         if isinstance(parent_or_fn, Parent):
-            parent_or_fn.add_child(self)
-            return parent_or_fn
+            self.pending_func = (
+                parent_or_fn.pending_func
+                if hasattr(parent_or_fn, "pending_func")
+                else parent_or_fn
+            )
+            self.wrapped_parent = parent_or_fn
+            return self
 
         if isinstance(parent_or_fn, Main):
             raise NoParentNodeError(

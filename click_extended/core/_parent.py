@@ -49,9 +49,12 @@ class Parent(ABC):  # noqa: B024
 
         if isinstance(target, Child):
             self.add_child(target)
-            if hasattr(target, "pending_func"):
+            if hasattr(target, "wrapped_parent") and target.wrapped_parent:
+                self.wrapped_parent = target.wrapped_parent
+                if hasattr(target.wrapped_parent, "pending_func"):
+                    self.pending_func = target.wrapped_parent.pending_func
+            elif hasattr(target, "pending_func"):
                 self.pending_func = target.pending_func
-                return self
             return self
 
         if isinstance(target, Parent):

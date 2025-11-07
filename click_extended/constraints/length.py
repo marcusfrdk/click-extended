@@ -1,5 +1,7 @@
 """Decorator for validating the length of a string."""
 
+# pylint: disable=redefined-builtin
+
 from collections.abc import Callable
 from typing import Any
 
@@ -15,14 +17,19 @@ class Length(Child):
         self.min = min
         self.max = max
 
-    def after_single(self, value: Any, ctx: Context) -> Any:  # noqa: ARG002
-        print("Running length", value)
+    def after_single(self, value: Any, ctx: Context) -> Any:
+        """Validate the length of a string value."""
         if not isinstance(value, str):
-            raise TypeError("Value must be a string.")
+            ctx.add_failure(value, "Value must be a string")
+            return value
+
         if not self.min <= len(value) <= self.max:
-            raise ValueError(
-                f"Value must be between {self.min} and {self.max} characters long."
+            ctx.add_failure(
+                value,
+                f"Must be between {self.min} and {self.max} characters long",
             )
+            return value
+
         return value
 
 
