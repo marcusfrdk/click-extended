@@ -1,4 +1,5 @@
 {
+  "editor.rulers": [88],
   "markdownlint.config": {
     "MD041": false // First line heading
   }

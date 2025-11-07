@@ -1,6 +1,7 @@
 """Class representing an option in the context."""
 
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 import click
 
@@ -25,7 +26,9 @@ class Option(Parent):
 
     def apply_click_decorator(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Apply Click's option decorator to a function."""
-        return click.option(self.name, **self.click_kwargs)(func)
+        if self.name is None:
+            raise ValueError("Option name cannot be None")
+        return click.option(self.name, **self.click_kwargs)(func)  # type: ignore[arg-type]
 
 
 def option(
@@ -34,7 +37,12 @@ def option(
     tags: list[str] | None = None,
     **kwargs: Any,
 ) -> Callable[[Any], Any]:
-    """Option decorator with flexible invocation patterns."""
+    """Option decorator - must be called with parentheses."""
+    if callable(name):
+        raise TypeError(
+            "option() must be called with parentheses: use @option('--name') "
+            "instead of @option"
+        )
 
     def wrapper(main_or_parent: Any) -> Any:
         """Wrap with the Option decorator."""

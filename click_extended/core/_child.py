@@ -1,23 +1,23 @@
 """Abstract class representing a child node."""
 
 # pylint: disable=unused-argument
+# pylint: disable=import-outside-toplevel
 
 from abc import ABC
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from click_extended.core._context import Context
-from click_extended.core._main import Main
-from click_extended.core._parent import Parent
-from click_extended.errors.decorator_implementation_error import (
+from click_extended.errors import (
     DecoratorImplementationError,
+    NoParentNodeError,
+    TaggedEnvironmentError,
 )
-from click_extended.errors.no_parent_node_error import NoParentNodeError
-from click_extended.errors.tagged_environment_error import TaggedEnvironmentError
 
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-class Child(ABC):
+class Child(ABC):  # noqa: B024
     """Abstract class representing a child node.
 
     Children process values through a context-aware pipeline with optional
@@ -39,37 +39,32 @@ class Child(ABC):
                 f"{cls.__name__}: before_single is implemented but after_single is not"
             )
 
-        if has_after_single and not has_before_single:
-            raise DecoratorImplementationError(
-                f"{cls.__name__}: after_single is implemented but before_single is not"
-            )
-
         if has_before_multiple and not has_after_multiple:
             raise DecoratorImplementationError(
-                f"{cls.__name__}: before_multiple is implemented but after_multiple is not"
+                f"{cls.__name__}: before_multiple is implemented but "
+                "after_multiple is not"
             )
 
-        if has_after_multiple and not has_before_multiple:
-            raise DecoratorImplementationError(
-                f"{cls.__name__}: after_multiple is implemented but before_multiple is not"
-            )
-
-    def before_single(self, value: Any, ctx: Context) -> None:
+    def before_single(self, value: Any, ctx: Context) -> None:  # noqa: B027
         """Hook called before the decorated function executes."""
 
-    def after_single(self, value: Any, ctx: Context) -> Any:
+    def after_single(self, value: Any, ctx: Context) -> Any:  # noqa: ARG002
         """Hook called after the decorated function executes."""
         return value
 
-    def before_multiple(self, values: dict[str, Any], ctx: Context) -> None:
-        """Hook called before the decorated function executes in a tagged environment."""
+    def before_multiple(
+        self, values: dict[str, Any], ctx: Context  # noqa: ARG002
+    ) -> None:
+        """Hook called before function executes in a tagged environment."""
         raise TaggedEnvironmentError(
             f"{self.__class__.__name__} cannot be used in a tagged environment. "
             "Implement before_multiple and after_multiple to support tags."
         )
 
-    def after_multiple(self, values: dict[str, Any], ctx: Context) -> dict[str, Any]:
-        """Hook called after the decorated function executes in a tagged environment."""
+    def after_multiple(
+        self, values: dict[str, Any], ctx: Context  # noqa: ARG002
+    ) -> dict[str, Any]:
+        """Hook called after function executes in a tagged environment."""
         raise TaggedEnvironmentError(
             f"{self.__class__.__name__} cannot be used in a tagged environment. "
             "Implement before_multiple and after_multiple to support tags."
@@ -80,6 +75,8 @@ class Child(ABC):
 
         This method handles the decorator chain registration.
         """
+        from click_extended.core._main import Main
+        from click_extended.core._parent import Parent
 
         if isinstance(parent_or_fn, Parent):
             parent_or_fn.add_child(self)
@@ -87,8 +84,9 @@ class Child(ABC):
 
         if isinstance(parent_or_fn, Main):
             raise NoParentNodeError(
-                "Child decorators cannot be applied directly to a main node (command or group). "
-                "They must be applied under a parent decorator (option, argument, env, tag)."
+                "Child decorators cannot be applied directly to a main node "
+                "(command or group). They must be applied under a parent "
+                "decorator (option, argument, env, tag)."
             )
 
         if callable(parent_or_fn):
@@ -102,7 +100,7 @@ class Child(ABC):
 
     @staticmethod
     def decorator(
-        fn: Optional[F] = None,
+        fn: F | None = None,
         *,
         cls: type,
         **default_kwargs: Any,
@@ -112,7 +110,7 @@ class Child(ABC):
         def wrapper(func: F) -> F:
             """Wrap the function with the decorator class."""
             instance = cls(**default_kwargs)
-            return instance(func)
+            return instance(func)  # type: ignore[no-any-return, return-value]
 
         if fn is None:
             return wrapper

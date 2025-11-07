@@ -1,26 +1,27 @@
 """Representation of a main node."""
 
 from abc import ABC
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from click_extended.core._context import Context
 
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-class Main(ABC):
+class Main(ABC):  # noqa: B024
     """
     Representation of a main node (Command/Group).
 
-    Main nodes create the context and orchestrate execution of the decorator chain.
-    They do not execute logic themselves.
+    Main nodes create the context and orchestrate execution of the
+    decorator chain. They do not execute logic themselves.
     """
 
     def __init__(self) -> None:
         """Initialize a new Main instance."""
         self.context = Context()
         self.parents: list[Any] = []
-        self.func: Callable[..., Any] | None = None
+        self.func: Callable[..., Any] = lambda: None
 
     def add_parent(self, parent: Any) -> None:
         """Register a parent node with this main node."""
@@ -40,6 +41,8 @@ class Main(ABC):
         )
 
         for parent in self.parents:
+            if parent.name and parent.name in kwargs:
+                parent.value = kwargs[parent.name]
             parent.execute(self.context)
 
         result = self.func(*args, **kwargs)

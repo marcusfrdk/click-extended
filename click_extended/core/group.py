@@ -1,6 +1,7 @@
 """Class representing a group of commands in the command line."""
 
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from click_extended.core._main import Main
 
@@ -18,7 +19,9 @@ class Group(Main):
         self.context.main["name"] = name
 
 
-def group(fn: Optional[F] = None, *, name: str | None = None) -> Callable[[F], F] | F:
+def group(
+    fn: F | None = None, *, name: str | None = None
+) -> Callable[[F], Group] | Group:
     """Group decorator with flexible invocation patterns."""
 
     def wrapper(func: F) -> Group:

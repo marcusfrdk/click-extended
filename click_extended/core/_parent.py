@@ -9,11 +9,12 @@ from click_extended.core._main import Main
 from click_extended.errors import NoMainNodeError
 
 
-class Parent(ABC):
-    """Abstract class representing a parent node (Option/Argument/Env/Tag).
+class Parent(ABC):  # noqa: B024
+    """
+    Abstract class representing a parent node (Option/Argument/Env/Tag).
 
-    Parent nodes register with Main, collect children, and orchestrate child execution.
-    They do not execute logic themselves.
+    Parent nodes register with Main, collect children, and orchestrate
+    child execution. They do not execute logic themselves.
     """
 
     def __init__(self, name: str | None = None, tags: list[str] | None = None) -> None:
@@ -23,15 +24,19 @@ class Parent(ABC):
         self.children: list[Any] = []
         self.value: Any = None
         self.pending_func: Any = None
+        self.wrapped_parent: Parent | None = None  # Track parent-to-parent chains
 
     def add_child(self, child: Any) -> None:
         """Register a child node with this parent."""
         self.children.append(child)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """Handle decorator chaining or raise error if called as function without Main.
+        """
+        Handle decorator chaining or raise error if called as
+        function without Main.
 
-        Validates that parent is being applied to a Main node, Child, or function.
+        Validates that parent is being applied to a Main
+        node, Child, or function.
         """
 
         if len(args) == 0 or len(args) > 1 or kwargs:
@@ -47,6 +52,12 @@ class Parent(ABC):
             if hasattr(target, "pending_func"):
                 self.pending_func = target.pending_func
                 return self
+            return self
+
+        if isinstance(target, Parent):
+            self.wrapped_parent = target
+            if hasattr(target, "pending_func"):
+                self.pending_func = target.pending_func
             return self
 
         if isinstance(target, Main):

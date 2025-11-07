@@ -1,6 +1,7 @@
 """Class to inject environment variables into the context."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from click_extended.core._main import Main
 from click_extended.core._parent import Parent
@@ -24,7 +25,12 @@ def env(
     tags: list[str] | None = None,
     **kwargs: Any,
 ) -> Callable[[Any], Any]:
-    """Environment variable decorator with flexible invocation patterns."""
+    """Environment variable decorator - must be called with parentheses."""
+    if callable(name):
+        raise TypeError(
+            "env() must be called with parentheses: use @env('VAR_NAME') "
+            "instead of @env"
+        )
 
     def wrapper(main_or_parent: Any) -> Any:
         """Wrap with the Env decorator."""

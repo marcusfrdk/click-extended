@@ -1,6 +1,7 @@
 """Representation of a tag in the command line."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from click_extended.core._main import Main
 from click_extended.core._parent import Parent
@@ -18,7 +19,12 @@ class Tag(Parent):
 
 
 def tag(name: str) -> Callable[[Any], Any]:
-    """Tag decorator with flexible invocation patterns."""
+    """Tag decorator - must be called with parentheses."""
+    if callable(name):
+        raise TypeError(
+            "tag() must be called with parentheses: use @tag('tag_name') "
+            "instead of @tag"
+        )
 
     def wrapper(main_or_parent: Any) -> Any:
         """Wrap with the Tag decorator."""

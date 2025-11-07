@@ -1,13 +1,14 @@
 """Class representing a command in the command line."""
 
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 import click
 
 from click_extended.core._child import Child
 from click_extended.core._main import Main
 from click_extended.core._parent import Parent
-from click_extended.errors.no_parent_node_error import NoParentNodeError
+from click_extended.errors import NoParentNodeError
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -35,18 +36,21 @@ class Command(Main):
 
         wrapper_func.__name__ = self.func.__name__
 
-        cmd = wrapper_func
+        cmd: Callable[..., Any] = wrapper_func
 
         for parent in reversed(self.parents):
             if hasattr(parent, "apply_click_decorator"):
                 cmd = parent.apply_click_decorator(cmd)
 
-        cmd = click.command(name=self.name, **self.click_kwargs)(cmd)
+        cmd = click.command(name=self.name, **self.click_kwargs)(cmd)  # type: ignore[assignment, no-untyped-call]
 
         return cmd
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """Execute via Click command if no args provided, otherwise execute chain."""
+        """
+        Execute via Click command if no args provided,
+        otherwise execute chain.
+        """
         if len(args) == 0 and len(kwargs) == 0:
             if self._click_command is None:
                 self._click_command = self.build_click_command()
@@ -56,11 +60,11 @@ class Command(Main):
 
 
 def command(
-    fn: Optional[F] = None,
+    fn: F | None = None,
     *,
     name: str | None = None,
     **kwargs: Any,
-) -> Callable[[F], F] | F:
+) -> Callable[[F], Command] | Command:
     """Command decorator with flexible invocation patterns."""
 
     def wrapper(func: F) -> Command:
@@ -71,13 +75,23 @@ def command(
             func_name = actual_func.__name__ if actual_func else name
             cmd = Command(name=name or func_name, **kwargs)
             cmd.func = actual_func
-            cmd.add_parent(func)
+
+            # Collect all parents in the chain
+            current = func
+            while isinstance(current, Parent):
+                cmd.add_parent(current)
+                if hasattr(current, "wrapped_parent") and current.wrapped_parent:
+                    current = current.wrapped_parent
+                else:
+                    break
+
             return cmd
 
         if isinstance(func, Child):
             raise NoParentNodeError(
-                f"Child decorator '{func.__class__.__name__}' must be applied to a parent decorator "
-                "(option, argument, env, or tag). Cannot apply child directly to a command."
+                f"Child decorator '{func.__class__.__name__}' must be applied "
+                "to a parent decorator (option, argument, env, or tag). "
+                "Cannot apply child directly to a command."
             )
 
         cmd = Command(name=name or func.__name__, **kwargs)

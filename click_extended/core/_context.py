@@ -18,7 +18,10 @@ class Context:
         self.tags: dict[str, list[str]] = {}
 
     def __str__(self) -> str:
-        return f"Context(main={self.main}, parents={len(self.parents)}, values={len(self.values)})"
+        return (
+            f"Context(main={self.main}, parents={len(self.parents)}, "
+            f"values={len(self.values)})"
+        )
 
     def __repr__(self) -> str:
         return f"<Context main={self.main} parents={self.parents}>"
