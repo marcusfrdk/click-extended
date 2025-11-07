@@ -1,4 +1,4 @@
-![Banner](./assets/click-extended-banner.png)
+![Banner](./assets/click-extended-authors-banner.png)
 
 # Authors
 

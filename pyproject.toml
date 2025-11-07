@@ -1,0 +1,131 @@
+[project]
+name = "click_extended"
+version = "1.0.0"
+description = "An extension to Click with additional features like automatic async support, aliasing and more."
+authors = [
+    { name = "Marcus Fredriksson", email = "marcus@marcusfredriksson.com" },
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Shells",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+readme = "README.md"
+dependencies = ["click>=8.3.0", "python-dotenv>=1.2.1"]
+keywords = [
+    "click",
+    "cli",
+    "command-line",
+    "alias",
+    "aliasing",
+    "command",
+    "group",
+    "decorator",
+    "terminal",
+    "console"
+]
+
+[project.optional-dependencies]
+build = ["build", "twine"]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "pytest-asyncio>=1.2.0",
+    "mypy>=1.18.2",
+    "ruff>=0.14.4",
+    "pre-commit>=4.3.0",
+    "tox>=4.32.0"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["click_extended"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --verbosity=1 --cov=click_extended --cov-report=term-missing --cov-report=html"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+source = ["click_extended"]
+omit = ["*/tests/*", "*/__pycache__/*", "*/.venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.ruff]
+line-length = 80
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "UP",    # pyupgrade
+    "ARG",   # flake8-unused-arguments
+    "SIM",   # flake8-simplify
+    "TCH",   # flake8-type-checking
+    "PTH",   # flake8-use-pathlib
+    "RUF",   # ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["ARG", "S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+warn_no_return = true
+check_untyped_defs = true
+strict_equality = true
+
+[project.urls]
+Homepage = "https://github.com/marcusfrdk/click-extended"
+Repository = "https://github.com/marcusfrdk/click-extended"
+Issues = "https://github.com/marcusfrdk/click-extended/issues"
