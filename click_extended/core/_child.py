@@ -3,10 +3,16 @@
 # pylint: disable=unused-argument
 
 from abc import ABC
-from functools import wraps
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar
 
 from click_extended.core._context import Context
+from click_extended.core._main import Main
+from click_extended.core._parent import Parent
+from click_extended.errors import (
+    DecoratorImplementationError,
+    NoParentError,
+    TaggedEnvironmentError,
+)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -18,25 +24,81 @@ class Child(ABC):
     before/after hooks for transformations and side effects.
     """
 
-    def before(self, value: Any, ctx: Context) -> None:
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Validate that before/after methods are properly paired."""
+        super().__init_subclass__(**kwargs)
+
+        has_before_single = cls.before_single is not Child.before_single
+        has_after_single = cls.after_single is not Child.after_single
+
+        has_before_multiple = cls.before_multiple is not Child.before_multiple
+        has_after_multiple = cls.after_multiple is not Child.after_multiple
+
+        if has_before_single and not has_after_single:
+            raise DecoratorImplementationError(
+                f"{cls.__name__}: before_single is implemented but after_single is not"
+            )
+
+        if has_after_single and not has_before_single:
+            raise DecoratorImplementationError(
+                f"{cls.__name__}: after_single is implemented but before_single is not"
+            )
+
+        if has_before_multiple and not has_after_multiple:
+            raise DecoratorImplementationError(
+                f"{cls.__name__}: before_multiple is implemented but after_multiple is not"
+            )
+
+        if has_after_multiple and not has_before_multiple:
+            raise DecoratorImplementationError(
+                f"{cls.__name__}: after_multiple is implemented but before_multiple is not"
+            )
+
+    def before_single(self, value: Any, ctx: Context) -> None:
         """Hook called before the decorated function executes."""
 
-    def after(self, value: Any, ctx: Context) -> Any:
+    def after_single(self, value: Any, ctx: Context) -> Any:
         """Hook called after the decorated function executes."""
         return value
 
-    def __call__(self, fn: F) -> F:
-        """Apply the decorator to a function."""
+    def before_multiple(self, values: dict[str, Any], ctx: Context) -> None:
+        """Hook called before the decorated function executes in a tagged environment."""
+        raise TaggedEnvironmentError(
+            f"{self.__class__.__name__} cannot be used in a tagged environment. "
+            "Implement before_multiple and after_multiple to support tags."
+        )
 
-        @wraps(fn)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            """Wrap the function with before/after hooks."""
-            ctx = Context()  # Currently just a placeholder
-            self.before(args, ctx)
-            result = fn(*args, **kwargs)
-            return self.after(result, ctx)
+    def after_multiple(self, values: dict[str, Any], ctx: Context) -> dict[str, Any]:
+        """Hook called after the decorated function executes in a tagged environment."""
+        raise TaggedEnvironmentError(
+            f"{self.__class__.__name__} cannot be used in a tagged environment. "
+            "Implement before_multiple and after_multiple to support tags."
+        )
 
-        return cast(F, wrapper)
+    def __call__(self, parent_or_fn: Any) -> Any:
+        """Register this child with a parent or store function for later.
+
+        This method handles the decorator chain registration.
+        """
+
+        if isinstance(parent_or_fn, Parent):
+            parent_or_fn.add_child(self)
+            return parent_or_fn
+
+        if isinstance(parent_or_fn, Main):
+            raise NoParentError(
+                "Child decorators cannot be applied directly to a main node (command or group). "
+                "They must be applied under a parent decorator (option, argument, env, tag)."
+            )
+
+        if callable(parent_or_fn):
+            self.pending_func = parent_or_fn
+            return self
+
+        raise NoParentError(
+            "Child decorators must be applied under a parent decorator "
+            "(option, argument, env, tag)."
+        )
 
     @staticmethod
     def decorator(

@@ -11,12 +11,12 @@ F = TypeVar("F", bound=Callable[..., Any])
 class Debug(Child):
     """Decorator used for debugging functions, decorators and contexts."""
 
-    def before(self, value: Any, ctx: Context) -> None:
+    def before_single(self, value: Any, ctx: Context) -> None:
         print("Before:")
         print(f"Value: {value}")
         print(f"Context: {ctx}")
 
-    def after(self, value: Any, ctx: Context) -> Any:
+    def after_single(self, value: Any, ctx: Context) -> Any:
         print("After:")
         print(f"Value: {value}")
         print(f"Context: {ctx}")
