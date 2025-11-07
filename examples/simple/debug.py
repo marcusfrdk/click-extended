@@ -4,7 +4,7 @@ from click_extended.debug import debug
 
 
 @debug
-def my_function(*args, **kwargs):
+def my_function():
     """Example function."""
 
 
