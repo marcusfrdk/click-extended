@@ -1,4 +1,4 @@
-.PHONY: help version venv clean install test coverage lint lint-check format format-check type build publish-test publish
+.PHONY: help version venv clean install test test-short coverage lint lint-check format format-check type build publish-test publish
 
 .DEFAULT_GOAL := help
 
@@ -26,6 +26,7 @@ help:
 	@echo ""
 	@echo "  Testing:"
 	@echo "    make test                Run tests with verbose output"
+	@echo "    make test-short          Run tests with concise output"
 	@echo "    make coverage            Run tests with coverage report and open in browser"
 	@echo ""
 	@echo "  Code Quality:"
@@ -79,6 +80,9 @@ install:
 # Testing
 test:
 	@$(VENV_DIR)/bin/pytest -v
+
+test-short:
+	@$(VENV_DIR)/bin/pytest
 
 coverage:
 	@$(VENV_DIR)/bin/pytest --cov=$(SRC_DIR) --cov-report=term-missing
