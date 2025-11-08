@@ -81,8 +81,7 @@ test:
 	@$(VENV_DIR)/bin/pytest -v
 
 coverage:
-	@$(VENV_DIR)/bin/pytest --cov=$(SRC_DIR) --cov-report=term-missing --cov-report=html
-	@$(PYTHON) -m webbrowser htmlcov/index.html || open htmlcov/index.html || xdg-open htmlcov/index.html
+	@$(VENV_DIR)/bin/pytest --cov=$(SRC_DIR) --cov-report=term-missing
 
 # Linting
 lint:

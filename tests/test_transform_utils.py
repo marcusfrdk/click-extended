@@ -2,7 +2,10 @@
 
 import pytest
 
-from click_extended.utils.transform import to_screaming_snake_case, to_snake_case
+from click_extended.utils.transform import (
+    to_screaming_snake_case,
+    to_snake_case,
+)
 
 
 class TestToSnakeCase:
