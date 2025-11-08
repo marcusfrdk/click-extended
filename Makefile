@@ -1,4 +1,4 @@
-.PHONY: help version venv clean install setup test coverage tox tox-lint tox-type lint lint-check format format-check type pre-commit pre-commit-install pre-commit-update check build publish-test publish
+.PHONY: help version venv clean install test coverage lint lint-check format format-check type build publish-test publish
 
 .DEFAULT_GOAL := help
 
@@ -27,24 +27,13 @@ help:
 	@echo "  Testing:"
 	@echo "    make test                Run tests with verbose output"
 	@echo "    make coverage            Run tests with coverage report and open in browser"
-	@echo "    make tox                 Run tests across all Python versions"
-	@echo "    make tox-lint            Run linting with tox"
-	@echo "    make tox-type            Run type checking with tox"
 	@echo ""
 	@echo "  Code Quality:"
-	@echo "    make lint                Auto-fix issues with ruff"
-	@echo "    make lint-check          Check code with ruff (no auto-fix)"
-	@echo "    make format              Format code with ruff"
-	@echo "    make format-check        Check code formatting without changes"
+	@echo "    make lint                Run pylint on source code"
+	@echo "    make lint-check          Check code with pylint (same as lint)"
+	@echo "    make format              Format code with black and sort imports with isort"
+	@echo "    make format-check        Check formatting and import sorting without changes"
 	@echo "    make type                Run type checking with mypy"
-	@echo ""
-	@echo "  Pre-commit:"
-	@echo "    make pre-commit          Run all pre-commit hooks"
-	@echo "    make pre-commit-install  Install pre-commit hooks"
-	@echo "    make pre-commit-update   Update pre-commit hooks"
-	@echo ""
-	@echo "  Combined Checks:"
-	@echo "    make check               Run all checks (lint, format, type, test)"
 	@echo ""
 	@echo "  Deployment:"
 	@echo "    make build               Build distribution packages"
@@ -65,7 +54,6 @@ venv:
 		echo "Installing dependencies..."; \
 		$(PIP) install --upgrade pip; \
 		$(PIP) install -e ".[dev,build]"; \
-		echo "Installation complete."; \
 		echo "Activate the virtual environment with 'source $(VENV_DIR)/bin/activate'"; \
 	fi
 
@@ -74,7 +62,7 @@ clean:
 	rm -rf *.egg-info
 	rm -rf dist build
 	rm -rf htmlcov .coverage
-	rm -rf .pytest_cache .mypy_cache .ruff_cache
+	rm -rf .pytest_cache .mypy_cache
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
@@ -90,64 +78,38 @@ install:
 
 # Testing
 test:
-	@echo "Running tests with coverage..."
 	@$(VENV_DIR)/bin/pytest -v
 
 coverage:
 	@$(VENV_DIR)/bin/pytest --cov=$(SRC_DIR) --cov-report=term-missing --cov-report=html
 	@$(PYTHON) -m webbrowser htmlcov/index.html || open htmlcov/index.html || xdg-open htmlcov/index.html
 
-tox:
-	@$(VENV_DIR)/bin/tox
-
-tox-lint:
-	@$(VENV_DIR)/bin/tox -e lint
-
-tox-type:
-	@$(VENV_DIR)/bin/tox -e type
-
 # Linting
 lint:
-	@$(VENV_DIR)/bin/ruff check --fix .
+	@$(VENV_DIR)/bin/pylint $(SRC_DIR)
 
 lint-check:
-	@$(VENV_DIR)/bin/ruff check .
+	@$(VENV_DIR)/bin/pylint $(SRC_DIR)
 
 # Formatting
 format:
-	@$(VENV_DIR)/bin/ruff format .
+	@$(VENV_DIR)/bin/isort $(SRC_DIR)
+	@$(VENV_DIR)/bin/black $(SRC_DIR)
 
 format-check:
-	@$(VENV_DIR)/bin/ruff format --check .
+	@$(VENV_DIR)/bin/isort --check-only $(SRC_DIR)
+	@$(VENV_DIR)/bin/black --check $(SRC_DIR)
 
 # Type checking
 type:
 	@$(VENV_DIR)/bin/mypy $(SRC_DIR)
-
-# Pre-commit
-pre-commit:
-	@echo "Running pre-commit hooks..."
-	@$(VENV_DIR)/bin/pre-commit run --all-files
-
-pre-commit-install:
-	@echo "Installing pre-commit hooks..."
-	@$(VENV_DIR)/bin/pre-commit install
-
-pre-commit-update:
-	@echo "Updating pre-commit hooks..."
-	@$(VENV_DIR)/bin/pre-commit autoupdate
-
-# Pipelines
-check: lint format type test
 
 # Deployment
 build:
 	@$(PYTHON) -m build
 
 publish-test:
-	@echo "Publishing to Test PyPI..."
 	@$(VENV_DIR)/bin/twine upload --repository testpypi dist/*
 
 publish:
-	@echo "Publishing to PyPI..."
 	@$(VENV_DIR)/bin/twine upload dist/*
