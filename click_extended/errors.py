@@ -1,9 +1,6 @@
 """Errors and exceptions used in Click Extended."""
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from click_extended.core._failure import Failure
+from click_extended.core._failure import Failure
 
 
 class ClickExtendedError(Exception):
