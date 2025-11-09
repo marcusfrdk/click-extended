@@ -7,9 +7,6 @@ import click
 
 from click_extended.core._child_node import ChildNode
 from click_extended.core._parent_node import ParentNode
-from click_extended.errors.invalid_command_type_error import (
-    InvalidCommandTypeError,
-)
 from click_extended.errors.name_collision_error import NameCollisionError
 from click_extended.errors.no_parent_error import NoParentError
 from click_extended.utils.transform import Transform
@@ -99,15 +96,7 @@ class ContextNode(ABC):
         return getattr(self.cls, name)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        sig = inspect.signature(self.fn)
-        expects_ctx = "ctx" in sig.parameters
-
-        if expects_ctx and "ctx" not in kwargs:
-            kwargs["ctx"] = self
-
-        if self.is_async:
-            return asyncio.run(self.fn(*args, **kwargs))
-        return self.fn(*args, **kwargs)
+        return self.cls(*args, **kwargs)
 
     def add_parent(self, parent: ParentNode) -> None:
         name = Transform(parent.name).to_snake_case()
