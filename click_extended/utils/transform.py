@@ -93,8 +93,3 @@ class Transform:
     def to_path_case(self) -> str:
         """Convert the value to path/case."""
         return self._normalize_value(self.value, "/")
-
-
-if __name__ == "__main__":
-    t = Transform("Hello, world!")
-    print(t.to_dot_case())
