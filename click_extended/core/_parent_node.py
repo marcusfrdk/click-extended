@@ -15,6 +15,8 @@ class ParentNode(ABC):
         """
         self.name = name
         self.children: list[ChildNode] = []
+        self.short: str | None = None
+        self.long: str | None = None
 
     def add_child(self, child: ChildNode) -> None:
         self.children.append(child)
