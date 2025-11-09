@@ -12,6 +12,35 @@ from click_extended.errors.invalid_command_type_error import (
 )
 
 
+class ClickGroupWithAliasSupport(click.Group):
+    """Custom Click Group that formats commands with aliases."""
+
+    def format_commands(
+        self, ctx: click.Context, formatter: click.HelpFormatter
+    ) -> None:
+        """Format command list for help text, showing aliases."""
+        extended_group = getattr(self, "_extended_group", None)
+        if extended_group is None:
+            return super().format_commands(ctx, formatter)
+
+        commands_to_display = {}
+
+        for name, cmd in extended_group.commands.items():
+            display_name = name
+            if cmd.aliases:
+                display_name = f"{name} ({', '.join(cmd.aliases)})"
+            commands_to_display[display_name] = cmd
+
+        rows = [
+            (name, cmd.cls.get_short_help_str())
+            for name, cmd in commands_to_display.items()
+        ]
+
+        if rows:
+            with formatter.section("Commands"):
+                formatter.write_dl(rows)
+
+
 class Group(ContextNode):
 
     def __init__(
@@ -22,8 +51,9 @@ class Group(ContextNode):
         if "help_option_names" not in attrs["context_settings"]:
             attrs["context_settings"]["help_option_names"] = ["-h", "--help"]
 
-        super().__init__(fn, name, click.Group, **attrs)
+        super().__init__(fn, name, ClickGroupWithAliasSupport, **attrs)
         self.commands: dict[str, "Command | Group"] = {}
+        self.cls._extended_group = self
 
     def add_parent(self, parent: ParentNode) -> None:
         super().add_parent(parent)
@@ -44,20 +74,58 @@ class Group(ContextNode):
         self.commands[cmd.name] = cmd
         self.cls.add_command(cmd.cls, name)
 
+        for alias in cmd.aliases:
+            self.cls.add_command(cmd.cls, alias)
+
 
 @overload
 def group(fn: Callable, /) -> Group: ...
 
 
 @overload
-def group(fn: str, /, **attrs: Any) -> Callable[[Callable], Group]: ...
+def group(
+    fn: str,
+    /,
+    *,
+    name: str | None = None,
+    aliases: str | list[str] | None = None,
+    help: str | None = None,
+    **attrs: Any,
+) -> Callable[[Callable], Group]: ...
 
 
 @overload
-def group(fn: None = None, /, **attrs: Any) -> Callable[[Callable], Group]: ...
+def group(
+    fn: None = None,
+    /,
+    *,
+    name: str | None = None,
+    aliases: str | list[str] | None = None,
+    help: str | None = None,
+    **attrs: Any,
+) -> Callable[[Callable], Group]: ...
 
 
 def group(
-    fn: Callable | str | None = None, /, **attrs: Any
+    fn: Callable | str | None = None,
+    /,
+    *,
+    name: str | None = None,
+    aliases: str | list[str] | None = None,
+    help: str | None = None,
+    **attrs: Any,
 ) -> Group | Callable[[Callable], Group]:
+    if isinstance(fn, str):
+        actual_name = fn
+        fn = None
+    else:
+        actual_name = name
+
+    if actual_name is not None:
+        attrs["name"] = actual_name
+    if aliases is not None:
+        attrs["aliases"] = aliases
+    if help is not None:
+        attrs["help"] = help
+
     return Group.as_decorator(fn, **attrs)

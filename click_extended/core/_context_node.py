@@ -23,11 +23,30 @@ class ContextNode(ABC):
         click_cls: type = click.Command,
         **attrs: Any,
     ) -> None:
+        # Metadata
         self.fn = fn
         self.name = name or fn.__name__
         self.is_async = asyncio.iscoroutinefunction(fn)
+
+        # Parents
         self.parents: dict[str, ParentNode] = {}
         self.active_parent: ParentNode | None = None
+
+        # Aliases
+        self.aliases: list[str] = []
+        if (aliases := attrs.pop("aliases", None)) is not None:
+            if isinstance(aliases, str):
+                self.aliases = [aliases]
+            elif isinstance(aliases, (list, tuple)):
+                self.aliases = [
+                    a for a in aliases if isinstance(a, str) and a.strip()
+                ]
+
+        # Help
+        if "help" not in attrs and fn.__doc__:
+            attrs["help"] = fn.__doc__
+
+        # Click
         self.cls = click_cls(
             name=self.name, callback=self._make_callback(), **attrs
         )
