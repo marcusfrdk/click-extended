@@ -89,12 +89,12 @@ class ChildNode(Node, ABC):
                 A decorator function or the decorated function
                 depending on usage.
         """
-        name = Transform(cls.__name__).to_snake_case()
-        instance = cls(name=name)
-        tree.register_child(instance)
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             """The actual decorator that wraps the function."""
+            name = Transform(cls.__name__).to_snake_case()
+            instance = cls(name=name)
+            tree.register_child(instance)
 
             @wraps(func)
             def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
