@@ -1,15 +1,21 @@
 """The node used as a child node.."""
 
-from abc import abstractmethod
-from typing import TYPE_CHECKING, Any
+from abc import ABC, abstractmethod
+from functools import wraps
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, overload
 
 from click_extended.core._node import Node
+from click_extended.core._tree import tree
+from click_extended.utils.transform import Transform
 
 if TYPE_CHECKING:
     from click_extended.core._parent_node import ParentNode
 
+P = ParamSpec("P")
+T = TypeVar("T")
 
-class ChildNode(Node):
+
+class ChildNode(Node, ABC):
     """The node used as a child node."""
 
     parent: "ParentNode"
@@ -43,14 +49,81 @@ class ChildNode(Node):
     def __getitem__(self, name: str) -> Node:
         raise KeyError(f"A ChildNode instance has no children.")
 
+    @classmethod
+    @overload
+    def as_decorator(cls, func: Callable[P, T], /) -> Callable[P, Any]:
+        """Overload for @decorator syntax (without parentheses)."""
+        ...
+
+    @classmethod
+    @overload
+    def as_decorator(
+        cls, *args: Any, **kwargs: Any
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        """Overload for @decorator() or @decorator(*args, **kwargs) syntax."""
+        ...
+
+    @classmethod
+    def as_decorator(
+        cls, *args: Any, **kwargs: Any
+    ) -> (
+        Callable[..., Any] | Callable[[Callable[..., Any]], Callable[..., Any]]
+    ):
+        """
+        Return a decorator representation of the child node.
+
+        This creates a decorator that supports being called either as
+        `@decorator`, `@decorator()`, and `@decorator(*args, **kwargs)`.
+
+        The provided args and kwargs are stored and later passed to the
+        process method when called by the `ParentNode`.
+
+        Args:
+            *args (Any):
+                Positional arguments to pass to the process method.
+            **kwargs (Any):
+                Keyword arguments to pass to the process method.
+
+        Returns:
+            Callable:
+                A decorator function or the decorated function
+                depending on usage.
+        """
+        name = Transform(cls.__name__).to_snake_case()
+        instance = cls(name=name)
+        tree.register_child(instance)
+
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+            """The actual decorator that wraps the function."""
+
+            @wraps(func)
+            def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
+                """Wrapper that applies the process method."""
+                result = func(*call_args, **call_kwargs)
+                return instance.process(result, *args, **kwargs)
+
+            return wrapper
+
+        if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+            return decorator(args[0])
+
+        return decorator
+
     @abstractmethod
-    def process(self, value: Any) -> Any:
+    def process(self, value: Any, *args: Any, **kwargs: Any) -> Any:
         """
         Process the value of the chain and returns the processed value.
 
+        This method should only be called by the `ParentNode` class.
+
         Args:
             value (Any):
-                The input value.
+                The previous value from the chain or directly from the
+                `ParentNode`.
+            *args (Any):
+                Additional positional arguments passed from as_decorator.
+            **kwargs (Any):
+                Additional keyword arguments passed from as_decorator.
 
         Returns:
             Any:
