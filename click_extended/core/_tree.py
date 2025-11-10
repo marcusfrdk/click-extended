@@ -3,10 +3,12 @@
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Literal, cast
 
-from click_extended.errors.no_parent_error import NoParentError
-from click_extended.errors.no_root_error import NoRootError
-from click_extended.errors.parent_node_exists_error import ParentNodeExistsError
-from click_extended.errors.root_node_exists_error import RootNodeExistsError
+from click_extended.errors import (
+    NoParentError,
+    NoRootError,
+    ParentNodeExistsError,
+    RootNodeExistsError,
+)
 
 if TYPE_CHECKING:
     from click_extended.core._child_node import ChildNode
