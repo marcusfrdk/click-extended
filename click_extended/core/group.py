@@ -44,7 +44,7 @@ class ClickGroupWithAliasSupport(click.Group):
                 display_name = f"{name} ({', '.join(cmd.aliases)})"
             commands_to_display[display_name] = cmd
 
-        rows = [
+        rows: list[tuple[str, Any]] = [
             (name, cmd.cls.get_short_help_str())
             for name, cmd in commands_to_display.items()
         ]

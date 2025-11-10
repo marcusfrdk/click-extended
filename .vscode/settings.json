@@ -1,5 +1,6 @@
 {
-  "editor.rulers": [88],
+  "editor.rulers": [80],
+  "python.analysis.typeCheckingMode": "strict",
   "markdownlint.config": {
     "MD041": false // First line heading
   }
