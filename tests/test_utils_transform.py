@@ -1,7 +1,5 @@
 """Test the Transform class."""
 
-from dataclasses import dataclass
-
 import pytest
 
 from click_extended.utils.transform import Transform
@@ -222,15 +220,6 @@ cases: list[Case] = [
         path_case="Pascal/Case/Input",
     ),
 ]
-
-
-class TestInit:
-    """Test the __init__ method."""
-
-    def test_invalid_value_type(self):
-        """Test if the object raises TypeError on invalid input type."""
-        with pytest.raises(TypeError):
-            Transform(1)  # type: ignore
 
 
 class TestSnakeCase:

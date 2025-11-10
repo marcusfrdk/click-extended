@@ -19,15 +19,7 @@ class Transform:
         Args:
             value (str):
                 The string to transform.
-
-        Raises:
-            TypeError:
-                If the input value is not a string.
         """
-        if not isinstance(value, str):
-            value_type = type(value).__name__
-            raise TypeError(f"Value is not of type string, got {value_type}.")
-
         self.value = value
 
     def __str__(self) -> str:
