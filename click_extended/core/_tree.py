@@ -1,23 +1,48 @@
-"""Class for storing the nodes of the current context."""
+"""Singleton class for storing the nodes of the current context."""
 
-from click_extended.core._child_node import ChildNode
-from click_extended.core._parent_node import ParentNode
-from click_extended.core._root_node import RootNode
+from threading import Lock
+from typing import TYPE_CHECKING, Any
+
 from click_extended.errors.no_parent_error import NoParentError
 from click_extended.errors.no_root_error import NoRootError
 from click_extended.errors.parent_node_exists_error import ParentNodeExistsError
 from click_extended.errors.root_node_exists_error import RootNodeExistsError
 
+if TYPE_CHECKING:
+    from click_extended.core._child_node import ChildNode
+    from click_extended.core._parent_node import ParentNode
+    from click_extended.core._root_node import RootNode
+
 
 class Tree:
-    """Class for storing the nodes of the current context."""
+    """Singleton class for storing the nodes of the current context."""
 
-    def __init__(self):
-        """
-        Initialize a new `Tree` instance.
-        """
-        self.root: RootNode | None = None
-        self.recent: ParentNode | None = None
+    _instance: "Tree | None" = None
+    _lock = Lock()
+
+    root: "RootNode | None"
+    recent: "ParentNode | None"
+
+    def __new__(cls, *args: Any, **kwargs: Any):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance.root = None
+                    cls._instance.recent = None
+        return cls._instance
+
+    def __init__(self) -> None:
+        """Initialize a new `Tree` instance."""
+
+    def __copy__(self) -> "Tree":
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "Tree":
+        return self
+
+    def __reduce__(self) -> tuple[type["Tree"], tuple[()]]:
+        return (self.__class__, ())
 
     def register_root(self, node: RootNode) -> None:
         """
@@ -90,3 +115,6 @@ class Tree:
             print(f"  {parent.name}")
             for child in parent.children.values():
                 print(f"    {child.name}")
+
+
+tree = Tree()
