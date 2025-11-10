@@ -1,4 +1,4 @@
-.PHONY: help version venv clean install test test-short coverage lint lint-check format format-check type build publish-test publish
+.PHONY: help version venv reset clean install test test-short coverage lint lint-check format format-check type build publish-test publish
 
 .DEFAULT_GOAL := help
 
@@ -21,7 +21,8 @@ help:
 	@echo ""
 	@echo "  Environment:"
 	@echo "    make venv                Create virtual environment and install dependencies"
-	@echo "    make clean               Remove virtual environment and build artifacts"
+	@echo "    make reset               Reset the project to the original state"
+	@echo "    make clean               Clean the project and remove caches and other artifacts"
 	@echo "    make install             Install the package dependencies"
 	@echo ""
 	@echo "  Testing:"
@@ -58,7 +59,7 @@ venv:
 		echo "Activate the virtual environment with 'source $(VENV_DIR)/bin/activate'"; \
 	fi
 
-clean:
+reset:
 	rm -rf $(VENV_DIR) venv
 	rm -rf *.egg-info
 	rm -rf dist build
@@ -69,6 +70,11 @@ clean:
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
 		echo "To exit the deleted virtual environment, run 'deactivate'"; \
 	fi
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete
+	rm -r .pytest_cache .mypy_cache
 
 install:
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
