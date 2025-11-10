@@ -32,8 +32,8 @@ class RootNode(Node):
 
     @classmethod
     def as_decorator(
-        cls, name: str, /, *args: Any, **kwargs: Any
-    ) -> Callable[[Callable[P, T]], Callable[P, T]]:
+        cls, name_or_func: str | Callable[P, T] | None = None, /, **kwargs: Any
+    ) -> Callable[[Callable[P, T]], Callable[P, T]] | Callable[P, T]:
         """
         Return a decorator representation of the root node.
 
@@ -41,23 +41,30 @@ class RootNode(Node):
         and collects values from all parent nodes. When the decorated function
         is called, it injects parent node values as keyword arguments.
 
+        This decorator can be called either as `@decorator`, `@decorator()` or
+        `@decorator("name")`. If the name is not provided, it will default
+        to the name of the decorated function.
+
         Args:
-            name (str):
-                The name of the root node (e.g., command or group name).
-            *args (Any):
-                Additional positional arguments for the specific root type.
+            name (str | Callable[P, T], optional):
+                Either the name of the root node or the function being
+                decorated (when used as @decorator without parentheses).
+                If `None`, uses the decorated function's name.
             **kwargs (Any):
                 Additional keyword arguments for the specific root type.
 
         Returns:
             Callable:
                 A decorator function that registers the root node and
-                builds the tree.
+                builds the tree, or the decorated function itself.
         """
 
         def decorator(func: Callable[P, T]) -> Callable[P, T]:
             """The actual decorator that wraps the function."""
-            instance = cls(name=name)
+            name = (
+                name_or_func if isinstance(name_or_func, str) else func.__name__
+            )
+            instance = cls(name=name, **kwargs)
             tree.register_root(instance)
 
             @wraps(func)
@@ -76,6 +83,32 @@ class RootNode(Node):
 
                 return func(*call_args, **merged_kwargs)
 
-            return wrapper
+            return cls.wrap(wrapper, name, **kwargs)
+
+        if callable(name_or_func):
+            return decorator(name_or_func)
 
         return decorator
+
+    @classmethod
+    def wrap(
+        cls, wrapped_func: Callable[P, T], name: str, **kwargs: Any
+    ) -> Callable[P, T]:
+        """
+        Hook for subclasses to apply additional wrapping after value injection.
+
+        By default, returns the wrapped function unchanged. Subclasses can
+        override this to add custom behavior (e.g., click.command wrapping).
+
+        Args:
+            wrapped_func (Callable[P, T]):
+                The function already wrapped with value injection.
+            name (str):
+                The name of the root node.
+            **kwargs (Any):
+                Additional keyword arguments passed to `as_decorator`.
+
+        Returns:
+            The function, potentially with additional wrapping applied.
+        """
+        return wrapped_func
