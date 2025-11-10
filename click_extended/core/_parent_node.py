@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
 from click_extended.core._child_node import ChildNode
 from click_extended.core._node import Node
-from click_extended.core._tree import tree
+from click_extended.core._tree import queue_parent
 
 if TYPE_CHECKING:
     from click_extended.core._root_node import RootNode
@@ -54,7 +54,7 @@ class ParentNode(Node, ABC):
         def decorator(func: Callable[P, T]) -> Callable[P, T]:
             """The actual decorator that wraps the function."""
             instance = cls(name=name)
-            tree.register_parent(instance)
+            queue_parent(instance)
 
             @wraps(func)
             def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:

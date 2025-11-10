@@ -1,7 +1,6 @@
-"""Singleton class for storing the nodes of the current context."""
+"""Class for storing the nodes of the current context."""
 
-from threading import Lock
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from click_extended.errors import (
     NoParentError,
@@ -16,81 +15,74 @@ if TYPE_CHECKING:
     from click_extended.core._root_node import RootNode
 
 
+_pending_nodes: list[
+    tuple[
+        Literal["parent", "child"],
+        "ParentNode | ChildNode",
+    ]
+] = []
+
+
+def get_pending_nodes() -> (
+    list[tuple[Literal["parent", "child"], "ParentNode | ChildNode"]]
+):
+    """Get and clear the pending nodes queue."""
+    global _pending_nodes
+    nodes = _pending_nodes.copy()
+    _pending_nodes.clear()
+    return nodes
+
+
+def queue_parent(node: "ParentNode") -> None:
+    """Queue a parent node for the next root registration."""
+    _pending_nodes.append(("parent", node))
+
+
+def queue_child(node: "ChildNode") -> None:
+    """Queue a child node for the next root registration."""
+    _pending_nodes.append(("child", node))
+
+
 class Tree:
     """
-    Singleton class for storing the nodes of the current context.
+    Class for storing the nodes of the current context.
 
     This tree is designed to work with decorators, which are applied
     bottom-to-top. Registrations are queued and then built in reverse
     order to maintain the hierarchy.
     """
 
-    _instance: "Tree | None" = None
-    _lock = Lock()
-
-    root: "RootNode | None"
-    recent: "ParentNode | None"
-    queue: list[
-        tuple[
-            Literal["root", "parent", "child"],
-            "RootNode | ParentNode | ChildNode",
-        ]
-    ]
-
-    def __new__(cls, *args: Any, **kwargs: Any) -> "Tree":
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
-                    cls._instance.root = None
-                    cls._instance.recent = None
-                    cls._instance.queue = []
-        return cls._instance
-
     def __init__(self) -> None:
         """Initialize a new `Tree` instance."""
-
-    def __copy__(self) -> "Tree":
-        return self
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> "Tree":
-        return self
-
-    def __reduce__(self) -> tuple[type["Tree"], tuple[()]]:
-        return (self.__class__, ())
+        self.root: "RootNode | None" = None
+        self.recent: "ParentNode | None" = None
 
     def register_root(self, node: "RootNode") -> None:
         """
-        Queue the root node for registration and build the tree.
+        Register the root node and build the tree from pending nodes.
 
         In decorator systems, the root is called last, so we can
-        build the tree when it's registered.
+        build the tree when it's registered by processing all
+        pending nodes that were queued during decoration.
 
         Args:
             node (RootNode):
                 The node to register as the root node for the tree.
         """
-        self.queue.append(("root", node))
+        if self.root is not None:
+            raise RootNodeExistsError
+        self.root = node
 
-        for node_type, node_inst in reversed(self.queue):
-            if node_type == "root":
-                if self.root is not None:
-                    raise RootNodeExistsError
+        pending = list(reversed(get_pending_nodes()))
 
-                self.root = cast("RootNode", node_inst)
-            elif node_type == "parent":
-                if self.root is None:
-                    raise NoRootError
-
+        for node_type, node_inst in pending:
+            if node_type == "parent":
                 if self.root.get(node_inst.name) is not None:
                     raise ParentNodeExistsError(node_inst.name)
 
                 self.recent = cast("ParentNode", node_inst)
                 self.root[node_inst.name] = node_inst
             elif node_type == "child":
-                if self.root is None:
-                    raise NoRootError
-
                 if self.recent is None:
                     raise NoParentError(node_inst.name)
 
@@ -98,33 +90,42 @@ class Tree:
                 index = len(self.root[name])
                 self.root[name].children[index] = cast("ChildNode", node_inst)
 
-        self.queue.clear()
-
     def register_parent(self, node: "ParentNode") -> None:
         """
-        Queue a parent node for registration.
-
-        In decorator systems, parents are called before their root but
-        need to be built after the root exists.
+        Register a parent node directly to this tree.
 
         Args:
             node (ParentNode):
                 The parent node to register to the tree.
         """
-        self.queue.append(("parent", node))
+        if self.root is None:
+            raise NoRootError
+
+        if self.root.get(node.name) is not None:
+            raise ParentNodeExistsError(node.name)
+
+        self.recent = node
+        self.root[node.name] = node
 
     def register_child(self, node: "ChildNode") -> None:
         """
-        Queue a child node for registration.
+        Register a child node directly to this tree.
 
-        In decorator systems, children are called before their parent but
-        need to be built after the parent exists.
+        This method is for runtime registration, not decorator-time.
 
         Args:
             node (ChildNode):
                 The `ChildNode` to add to the `ParentNode` instance.
         """
-        self.queue.append(("child", node))
+        if self.root is None:
+            raise NoRootError
+
+        if self.recent is None:
+            raise NoParentError(node.name)
+
+        name = self.recent.name
+        index = len(self.root[name])
+        self.root[name].children[index] = node
 
     def visualize(self) -> None:
         """Visualize the tree."""
@@ -136,6 +137,3 @@ class Tree:
             print(f"  {parent.name}")
             for child in parent.children.values():
                 print(f"    {child.name}")
-
-
-tree = Tree()

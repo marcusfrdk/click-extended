@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, overload
 
 from click_extended.core._node import Node
-from click_extended.core._tree import tree
+from click_extended.core._tree import queue_child
 from click_extended.utils.transform import Transform
 
 if TYPE_CHECKING:
@@ -93,7 +93,7 @@ class ChildNode(Node, ABC):
             """The actual decorator that wraps the function."""
             name = Transform(cls.__name__).to_snake_case()
             instance = cls(name=name)
-            tree.register_child(instance)
+            queue_child(instance)
             return func
 
         if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):

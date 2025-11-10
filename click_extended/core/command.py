@@ -12,7 +12,11 @@ class Command(RootNode):
 
     @classmethod
     def wrap(
-        cls, wrapped_func: Callable[..., Any], name: str, **kwargs: Any
+        cls,
+        wrapped_func: Callable[..., Any],
+        name: str,
+        instance: RootNode,
+        **kwargs: Any,
     ) -> click.Command:
         """
         Apply `click.command` wrapping after value injection.
@@ -22,6 +26,8 @@ class Command(RootNode):
                 The function already wrapped with value injection.
             name (str):
                 The name of the command.
+            instance (RootNode):
+                The RootNode instance that owns this tree.
             **kwargs (Any):
                 Additional arguments to pass to click.Command.
 
@@ -29,7 +35,10 @@ class Command(RootNode):
             click.Command:
                 A `click.Command` instance.
         """
-        return click.command(name=name, **kwargs)(wrapped_func)
+        command_obj = click.command(name=name, **kwargs)(wrapped_func)
+        # Attach the visualize method to the command object
+        command_obj.visualize = instance.visualize  # type: ignore
+        return command_obj
 
 
 def command(

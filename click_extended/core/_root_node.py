@@ -1,10 +1,10 @@
 """The node used as a root node."""
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
 from click_extended.core._node import Node
-from click_extended.core._tree import tree
+from click_extended.core._tree import Tree
 from click_extended.errors import NoRootError
 
 if TYPE_CHECKING:
@@ -19,6 +19,7 @@ class RootNode(Node):
 
     parent: None
     children: dict[str | int, "ParentNode"]
+    tree: Tree
 
     def __init__(self, name: str) -> None:
         """
@@ -29,6 +30,7 @@ class RootNode(Node):
                 The name of the node.
         """
         super().__init__(name=name, level=1)
+        self.tree = Tree()
 
     @classmethod
     def as_decorator(
@@ -65,17 +67,20 @@ class RootNode(Node):
                 name_or_func if isinstance(name_or_func, str) else func.__name__
             )
             instance = cls(name=name, **kwargs)
-            tree.register_root(instance)
+            instance.tree.register_root(instance)
 
             @wraps(func)
             def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
                 """Wrapper that collects parent values and injects them."""
                 parent_values: dict[str, Any] = {}
 
-                if tree.root is None:
+                if instance.tree.root is None:
                     raise NoRootError
 
-                for parent_name, parent_node in tree.root.children.items():
+                for (
+                    parent_name,
+                    parent_node,
+                ) in instance.tree.root.children.items():
                     if isinstance(parent_name, str):
                         parent_values[parent_name] = parent_node.get_value()
 
@@ -83,7 +88,7 @@ class RootNode(Node):
 
                 return func(*call_args, **merged_kwargs)
 
-            return cls.wrap(wrapper, name, **kwargs)
+            return cls.wrap(wrapper, name, instance, **kwargs)
 
         if callable(name_or_func):
             return decorator(name_or_func)
@@ -92,7 +97,11 @@ class RootNode(Node):
 
     @classmethod
     def wrap(
-        cls, wrapped_func: Callable[P, T], name: str, **kwargs: Any
+        cls,
+        wrapped_func: Callable[P, T],
+        name: str,
+        instance: "RootNode",
+        **kwargs: Any,
     ) -> Callable[P, T]:
         """
         Hook for subclasses to apply additional wrapping after value injection.
@@ -105,11 +114,26 @@ class RootNode(Node):
                 The function already wrapped with value injection.
             name (str):
                 The name of the root node.
+            instance (RootNode):
+                The RootNode instance that owns this tree.
             **kwargs (Any):
                 Additional keyword arguments passed to `as_decorator`.
 
         Returns:
-            Callable:
-                The function, potentially with additional wrapping applied.
+            Callable[P, T]:
+                The function with visualize method attached.
         """
-        return wrapped_func
+        func_with_visualize = cast(Any, wrapped_func)
+        func_with_visualize.visualize = instance.visualize
+        return cast(Callable[P, T], func_with_visualize)
+
+    def visualize(self) -> None:
+        """Visualize the tree structure."""
+        if self.tree.root is None:
+            raise NoRootError
+
+        print(self.tree.root.name)
+        for parent in self.tree.root.children.values():
+            print(f"  {parent.name}")
+            for child in parent.children.values():
+                print(f"    {child.name}")
