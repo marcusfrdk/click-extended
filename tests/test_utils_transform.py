@@ -1,7 +1,5 @@
 """Test the Transform class."""
 
-import pytest
-
 from click_extended.utils.transform import Transform
 
 
