@@ -102,7 +102,9 @@ class ChildNode(Node, ABC):
         return decorator
 
     @abstractmethod
-    def process(self, value: Any, *args: Any, **kwargs: Any) -> Any:
+    def process(
+        self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+    ) -> Any:
         """
         Process the value of the chain and returns the processed value.
 
@@ -114,6 +116,9 @@ class ChildNode(Node, ABC):
                 `ParentNode`.
             *args (Any):
                 Additional positional arguments passed from as_decorator.
+            siblings (list[str]):
+                A list of unique class names of all sibling child nodes
+                in the parent. This is always provided by the ParentNode.
             **kwargs (Any):
                 Additional keyword arguments passed from as_decorator.
 

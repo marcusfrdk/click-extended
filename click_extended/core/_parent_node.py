@@ -91,8 +91,16 @@ class ParentNode(Node, ABC):
                 The processed value of the chain of children.
         """
         value = self.get_raw_value()
+        all_children = list(self.children.values())
 
-        for child in self.children.values():
-            value = child.process(value)
+        for child in all_children:
+            siblings = list(
+                {
+                    c.__class__.__name__
+                    for c in all_children
+                    if id(c) != id(child)
+                }
+            )
+            value = child.process(value, siblings=siblings)
 
         return value
