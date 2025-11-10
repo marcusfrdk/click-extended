@@ -109,6 +109,7 @@ class RootNode(Node):
                 Additional keyword arguments passed to `as_decorator`.
 
         Returns:
-            The function, potentially with additional wrapping applied.
+            Callable:
+                The function, potentially with additional wrapping applied.
         """
         return wrapped_func
