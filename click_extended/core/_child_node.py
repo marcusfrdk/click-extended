@@ -1,7 +1,6 @@
 """The node used as a child node.."""
 
 from abc import ABC, abstractmethod
-from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, overload
 
 from click_extended.core._node import Node
@@ -95,14 +94,7 @@ class ChildNode(Node, ABC):
             name = Transform(cls.__name__).to_snake_case()
             instance = cls(name=name)
             tree.register_child(instance)
-
-            @wraps(func)
-            def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
-                """Wrapper that applies the process method."""
-                result = func(*call_args, **call_kwargs)
-                return instance.process(result, *args, **kwargs)
-
-            return wrapper
+            return func
 
         if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
             return decorator(args[0])
