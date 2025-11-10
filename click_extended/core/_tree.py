@@ -72,31 +72,31 @@ class Tree:
         """
         self.queue.append(("root", node))
 
-        for node_type, node_ins in reversed(self.queue):
+        for node_type, node_inst in reversed(self.queue):
             if node_type == "root":
                 if self.root is not None:
                     raise RootNodeExistsError
 
-                self.root = cast("RootNode", node_ins)
+                self.root = cast("RootNode", node_inst)
             elif node_type == "parent":
                 if self.root is None:
                     raise NoRootError
 
-                if self.root.get(node_ins.name) is not None:
-                    raise ParentNodeExistsError(node_ins.name)
+                if self.root.get(node_inst.name) is not None:
+                    raise ParentNodeExistsError(node_inst.name)
 
-                self.recent = cast("ParentNode", node_ins)
-                self.root[node_ins.name] = node_ins
+                self.recent = cast("ParentNode", node_inst)
+                self.root[node_inst.name] = node_inst
             elif node_type == "child":
                 if self.root is None:
                     raise NoRootError
 
                 if self.recent is None:
-                    raise NoParentError
+                    raise NoParentError(node_inst.name)
 
                 name = self.recent.name
                 index = len(self.root[name])
-                self.root[name].children[index] = cast("ChildNode", node_ins)
+                self.root[name].children[index] = cast("ChildNode", node_inst)
 
         self.queue.clear()
 
@@ -129,8 +129,7 @@ class Tree:
     def visualize(self) -> None:
         """Visualize the tree."""
         if self.root is None:
-            print("No root defined.")
-            return
+            raise NoRootError
 
         print(self.root.name)
         for parent in self.root.children.values():

@@ -18,12 +18,19 @@ class ClickExtendedError(Exception):
 class NoParentError(ClickExtendedError):
     """Exception raised when no `ParentNode` has been defined."""
 
-    def __init__(self) -> None:
-        """Initialize a new `NoParentError` instance."""
+    def __init__(self, name: str) -> None:
+        """
+        Initialize a new `NoParentError` instance.
+
+        Args:
+            name (str):
+                The name of the child node.
+        """
+
         message = (
-            "Cannot register child node as no parent node has been defined. "
-            "Ensure a parent node is registered before registering any "
-            "child nodes."
+            f"Failed to register the child node '{name}' as no parent is "
+            "defined. Ensure a parent node is registered before registering a "
+            "child node."
         )
         super().__init__(message)
 
@@ -31,14 +38,9 @@ class NoParentError(ClickExtendedError):
 class NoRootError(ClickExtendedError):
     """Exception raised when there is no `RootNode` defined."""
 
-    def __init__(self) -> None:
+    def __init__(self, message: str | None = None) -> None:
         """Initialize a new `NoRootError` instance."""
-        message = (
-            "Cannot register node as no root node has been defined. "
-            "A root node must be registered before any parent or child "
-            "nodes can be added to the tree."
-        )
-        super().__init__(message)
+        super().__init__(message or "No root node is defined in the tree.")
 
 
 class ParentNodeExistsError(ClickExtendedError):
