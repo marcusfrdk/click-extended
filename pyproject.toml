@@ -22,7 +22,6 @@ classifiers = [
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 readme = "README.md"
-dependencies = ["click>=8.3.0", "python-dotenv>=1.2.1"]
 keywords = [
     "click",
     "cli",
@@ -34,6 +33,10 @@ keywords = [
     "decorator",
     "terminal",
     "console"
+]
+dependencies = [
+    "click>=8.3.0",
+    "python-dotenv>=1.2.1",
 ]
 
 [project.optional-dependencies]
@@ -57,7 +60,19 @@ build-backend = "setuptools.build_meta"
 packages = ["click_extended"]
 
 [tool.pylint.master]
-ignore = ["venv", ".venv", "__pycache__", ".git", "tests", "docs", "build", "dist", ".pytest_cache", ".mypy_cache", "*.egg-info"]
+ignore = [
+    "venv",
+    ".venv",
+    "__pycache__",
+    ".git",
+    "tests",
+    "docs",
+    "build",
+    "dist",
+    ".pytest_cache",
+    ".mypy_cache",
+    "*.egg-info",
+]
 ignore-paths = ["^tests/.*$", "^docs/.*$", "^\\..*$"]
 persistent = true
 

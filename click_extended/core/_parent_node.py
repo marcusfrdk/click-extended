@@ -1,7 +1,7 @@
 """A node used for managing child nodes."""
 
 import asyncio
-from abc import ABC, abstractmethod
+from abc import ABC
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
@@ -21,31 +21,46 @@ class ParentNode(Node, ABC):
 
     parent: "RootNode"
 
-    def __init__(self, name: str):
+    def __init__(
+        self,
+        name: str,
+        help: str | None = None,
+        required: bool = False,
+        default: Any = None,
+    ):
         """
         Initialize a new `ParentNode` instance.
 
         Args:
             name (str):
-                The name of the node.
+                The name of the node (parameter name for injection).
+            help (str, optional):
+                Help text for this parameter. If not provided,
+                may use function's docstring.
+            required (bool):
+                Whether this parameter is required. Defaults to False.
+            default (Any):
+                Default value if not provided. Defaults to None.
         """
         super().__init__(name=name)
         self.children = {}
+        self.help = help
+        self.required = required
+        self.default = default
 
     @classmethod
     def as_decorator(
-        cls, name: str, /, *args: Any, **kwargs: Any
+        cls, **config: Any
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
         """
         Return a decorator representation of the parent node.
 
-        Unlike `ChildNode`, `ParentNode` requires a name to be specified,
-        which identifies the argument/option/environment variable.
+        All configuration parameters are passed through to the
+        subclass's __init__ method.
 
         Args:
-            name (str):
-                The name of the parent node (e.g., "username",
-                "port", "API_KEY").
+            **config (Any):
+                Configuration parameters specific to the ParentNode subclass.
 
         Returns:
             Callable:
@@ -54,7 +69,7 @@ class ParentNode(Node, ABC):
 
         def decorator(func: Callable[P, T]) -> Callable[P, T]:
             """The actual decorator that wraps the function."""
-            instance = cls(name=name)
+            instance = cls(**config)
             queue_parent(instance)
 
             if asyncio.iscoroutinefunction(func):
@@ -80,7 +95,6 @@ class ParentNode(Node, ABC):
 
         return decorator
 
-    @abstractmethod
     def get_raw_value(self) -> Any:
         """
         Get the raw value from the source (click.Argument, click.Option,

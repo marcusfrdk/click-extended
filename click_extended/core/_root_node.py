@@ -150,6 +150,9 @@ class RootNode(Node):
             @wraps(func)
             def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
                 """Wrapper that collects parent values and injects them."""
+                from click_extended.core.argument import Argument
+                from click_extended.core.option import Option
+
                 parent_values: dict[str, Any] = {}
 
                 if instance.tree.root is None:
@@ -162,9 +165,40 @@ class RootNode(Node):
                 ) in instance.tree.root.children.items():
                     if isinstance(parent_name, str):
                         parent_node_typed = cast("ParentNode", parent_node)
-                        parent_values[parent_name] = (
-                            parent_node_typed.get_value()
-                        )
+
+                        if isinstance(parent_node_typed, (Option, Argument)):
+                            raw_value = call_kwargs.get(parent_name)
+                            if parent_node_typed.children:
+                                value = raw_value
+                                all_children = [
+                                    cast("ChildNode", child)
+                                    for child in parent_node_typed.children.values()
+                                ]
+                                for child in all_children:
+                                    from click_extended.core._child_node import (
+                                        ChildNode,
+                                    )
+
+                                    siblings = list(
+                                        {
+                                            c.__class__.__name__
+                                            for c in all_children
+                                            if id(c) != id(child)
+                                        }
+                                    )
+                                    value = child.process(
+                                        value,
+                                        *child.process_args,
+                                        siblings=siblings,
+                                        **child.process_kwargs,
+                                    )
+                                parent_values[parent_name] = value
+                            else:
+                                parent_values[parent_name] = raw_value
+                        else:
+                            parent_values[parent_name] = (
+                                parent_node_typed.get_value()
+                            )
 
                 merged_kwargs: dict[str, Any] = {**call_kwargs, **parent_values}
 
@@ -202,12 +236,43 @@ class RootNode(Node):
             RootNodeWrapper:
                 A wrapper containing the Click object with visualize() support.
         """
+        from click_extended.core.argument import Argument
+        from click_extended.core.option import Option
+
+        func = wrapped_func
+        if instance.tree.root and instance.tree.root.children:
+            parent_items = list(instance.tree.root.children.items())
+            for _parent_name, parent_node in reversed(parent_items):
+                if isinstance(parent_node, Option):
+                    params: list[str] = []
+                    if parent_node.short:
+                        params.append(parent_node.short)
+                    params.append(parent_node.long)
+
+                    func = click.option(
+                        *params,
+                        type=parent_node.type,
+                        default=parent_node.default,
+                        required=parent_node.required,
+                        is_flag=parent_node.is_flag,
+                        multiple=parent_node.multiple,
+                        help=parent_node.help,
+                        **parent_node.extra_kwargs,
+                    )(func)
+
+                elif isinstance(parent_node, Argument):
+                    func = click.argument(
+                        parent_node.name,
+                        type=parent_node.type,
+                        default=parent_node.default,
+                        nargs=parent_node.nargs,
+                        **parent_node.extra_kwargs,
+                    )(func)
+
         click_decorator = cls._get_click_decorator()
         click_cls = cls._get_click_cls()
 
-        underlying = click_decorator(name=name, cls=click_cls, **kwargs)(
-            wrapped_func
-        )
+        underlying = click_decorator(name=name, cls=click_cls, **kwargs)(func)
 
         return RootNodeWrapper(underlying=underlying, instance=instance)
 
