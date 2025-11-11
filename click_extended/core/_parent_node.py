@@ -1,5 +1,6 @@
 """A node used for managing child nodes."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
@@ -56,12 +57,26 @@ class ParentNode(Node, ABC):
             instance = cls(name=name)
             queue_parent(instance)
 
-            @wraps(func)
-            def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
-                """Wrapper that preserves the original function."""
-                return func(*call_args, **call_kwargs)
+            # Check if the function is async and handle accordingly
+            if asyncio.iscoroutinefunction(func):
 
-            return wrapper
+                @wraps(func)
+                async def async_wrapper(
+                    *call_args: P.args, **call_kwargs: P.kwargs
+                ) -> T:
+                    """Async wrapper that preserves the original function."""
+                    return await func(*call_args, **call_kwargs)
+
+                return async_wrapper  # type: ignore
+
+            else:
+
+                @wraps(func)
+                def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
+                    """Wrapper that preserves the original function."""
+                    return func(*call_args, **call_kwargs)
+
+                return wrapper
 
         return decorator
 

@@ -7,6 +7,51 @@ import click
 from click_extended.core._root_node import RootNode, RootNodeWrapper
 
 
+class AliasedCommand(click.Command):
+    """A Click command that supports aliasing."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize a new AliasedCommand instance.
+
+        Args:
+            *args (Any):
+                Positional arguments for the base click.Command class.
+            **kwargs (Any):
+                Keyword arguments for the base click.Command class.
+        """
+        self.aliases: str | list[str] | None = kwargs.pop("aliases", None)
+        super().__init__(*args, **kwargs)
+
+    def format_help(
+        self, ctx: click.Context, formatter: click.HelpFormatter
+    ) -> None:
+        """
+        Format the help text, including aliases if present.
+
+        Args:
+            ctx (click.Context):
+                The Click context.
+            formatter (click.HelpFormatter):
+                The formatter to write help text to.
+        """
+        original_name = self.name
+
+        if self.aliases:
+            aliases_list = (
+                [self.aliases]
+                if isinstance(self.aliases, str)
+                else self.aliases
+            )
+            valid_aliases = [a for a in aliases_list if a]
+            if valid_aliases:
+                self.name = f"{self.name} ({', '.join(valid_aliases)})"
+
+        super().format_help(ctx, formatter)
+
+        self.name = original_name
+
+
 class ClickExtendedCommand(RootNodeWrapper):
     """Extended Click Command wrapper with only `visualize()` exposed."""
 
@@ -39,6 +84,18 @@ class ClickExtendedCommand(RootNodeWrapper):
 class Command(RootNode):
     """Command implementation for the `click_extended` library."""
 
+    def __init__(self, name: str, **kwargs: Any) -> None:
+        """
+        Initialize a new Command instance.
+
+        Args:
+            name (str):
+                The name of the command.
+            **kwargs (Any):
+                Additional keyword arguments (ignored, used by wrap method).
+        """
+        super().__init__(name=name)
+
     @classmethod
     def wrap(
         cls,
@@ -64,7 +121,9 @@ class Command(RootNode):
             ClickExtendedCommand:
                 A `ClickExtendedCommand` instance.
         """
-        underlying_command = click.command(name=name, **kwargs)(wrapped_func)
+        underlying_command = click.command(
+            name=name, cls=AliasedCommand, **kwargs
+        )(wrapped_func)
 
         return ClickExtendedCommand(
             underlying_command=underlying_command,
@@ -73,15 +132,25 @@ class Command(RootNode):
 
 
 def command(
-    name: str | None = None, /, **kwargs: Any
+    name: str | None = None,
+    *,
+    aliases: str | list[str] | None = None,
+    help: str | None = None,
+    **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickExtendedCommand]:
     """
     Decorator to create a click command with value injection from parent nodes.
 
     Args:
-        name (str):
+        name (str, optional):
             The name of the command. If `None`, uses the
             decorated function's name.
+        aliases (str | list[str], optional):
+            Alternative name(s) for the command. Can be a single
+            string or a list of strings.
+        help (str, optional):
+            The help message for the command. If not provided,
+            uses the function's docstring.
         **kwargs (Any):
             Additional arguments to pass to `click.Command`.
 
@@ -89,4 +158,8 @@ def command(
         Callable:
             A decorator function that returns a `ClickExtendedCommand`.
     """
+    if aliases is not None:
+        kwargs["aliases"] = aliases
+    if help is not None:
+        kwargs["help"] = help
     return Command.as_decorator(name, **kwargs)

@@ -1,5 +1,6 @@
 """The node used as a root node."""
 
+import asyncio
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
@@ -82,6 +83,16 @@ class RootNode(Node):
             node_name = name if name is not None else func.__name__
             instance = cls(name=node_name, **kwargs)
             instance.tree.register_root(instance)
+            original_func = func
+
+            if asyncio.iscoroutinefunction(func):
+
+                @wraps(func)
+                def sync_func(*sync_args: Any, **sync_kwargs: Any) -> Any:
+                    """Synchronous wrapper for async function."""
+                    return asyncio.run(original_func(*sync_args, **sync_kwargs))
+
+                func = sync_func
 
             @wraps(func)
             def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
