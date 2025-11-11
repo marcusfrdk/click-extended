@@ -12,6 +12,27 @@ if TYPE_CHECKING:
 
 P = ParamSpec("P")
 T = TypeVar("T")
+WrapperType = TypeVar("WrapperType")
+
+
+class RootNodeWrapper:
+    """
+    Base wrapper class that provides visualize()
+    method for all RootNode types.
+    """
+
+    def __init__(self, instance: "RootNode") -> None:
+        """
+        Initialize the wrapper.
+
+        Args:
+            instance: The RootNode instance to wrap.
+        """
+        self._root_instance = instance
+
+    def visualize(self) -> None:
+        """Visualize the tree structure."""
+        self._root_instance.visualize()
 
 
 class RootNode(Node):
@@ -34,8 +55,8 @@ class RootNode(Node):
 
     @classmethod
     def as_decorator(
-        cls, name_or_func: str | Callable[P, T] | None = None, /, **kwargs: Any
-    ) -> Callable[[Callable[P, T]], Callable[P, T]] | Callable[P, T]:
+        cls, name: str | None = None, /, **kwargs: Any
+    ) -> Callable[[Callable[..., Any]], Any]:
         """
         Return a decorator representation of the root node.
 
@@ -43,34 +64,27 @@ class RootNode(Node):
         and collects values from all parent nodes. When the decorated function
         is called, it injects parent node values as keyword arguments.
 
-        This decorator can be called either as `@decorator`, `@decorator()` or
-        `@decorator("name")`. If the name is not provided, it will default
-        to the name of the decorated function.
-
         Args:
-            name (str | Callable[P, T], optional):
-                Either the name of the root node or the function being
-                decorated (when used as @decorator without parentheses).
-                If `None`, uses the decorated function's name.
+            name (str, optional):
+                The name of the root node. If None, uses the decorated
+                function's name.
             **kwargs (Any):
                 Additional keyword arguments for the specific root type.
 
         Returns:
             Callable:
-                A decorator function that registers the root node and
-                builds the tree, or the decorated function itself.
+                A decorator function that registers the root node
+                and builds the tree.
         """
 
-        def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        def decorator(func: Callable[..., Any]) -> Any:
             """The actual decorator that wraps the function."""
-            name = (
-                name_or_func if isinstance(name_or_func, str) else func.__name__
-            )
-            instance = cls(name=name, **kwargs)
+            node_name = name if name is not None else func.__name__
+            instance = cls(name=node_name, **kwargs)
             instance.tree.register_root(instance)
 
             @wraps(func)
-            def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
+            def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
                 """Wrapper that collects parent values and injects them."""
                 parent_values: dict[str, Any] = {}
 
@@ -88,21 +102,18 @@ class RootNode(Node):
 
                 return func(*call_args, **merged_kwargs)
 
-            return cls.wrap(wrapper, name, instance, **kwargs)
-
-        if callable(name_or_func):
-            return decorator(name_or_func)
+            return cls.wrap(wrapper, node_name, instance, **kwargs)
 
         return decorator
 
     @classmethod
     def wrap(
         cls,
-        wrapped_func: Callable[P, T],
+        wrapped_func: Callable[..., Any],
         name: str,
         instance: "RootNode",
         **kwargs: Any,
-    ) -> Callable[P, T]:
+    ) -> Any:
         """
         Hook for subclasses to apply additional wrapping after value injection.
 
@@ -110,7 +121,7 @@ class RootNode(Node):
         override this to add custom behavior (e.g., click.command wrapping).
 
         Args:
-            wrapped_func (Callable[P, T]):
+            wrapped_func (Callable):
                 The function already wrapped with value injection.
             name (str):
                 The name of the root node.
@@ -120,12 +131,12 @@ class RootNode(Node):
                 Additional keyword arguments passed to `as_decorator`.
 
         Returns:
-            Callable[P, T]:
-                The function with visualize method attached.
+            Any:
+                The wrapped result. Subclasses determine the actual type.
         """
         func_with_visualize = cast(Any, wrapped_func)
         func_with_visualize.visualize = instance.visualize
-        return cast(Callable[P, T], func_with_visualize)
+        return func_with_visualize
 
     def visualize(self) -> None:
         """Visualize the tree structure."""

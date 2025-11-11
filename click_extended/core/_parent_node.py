@@ -101,6 +101,12 @@ class ParentNode(Node, ABC):
                     if id(c) != id(child)
                 }
             )
-            value = child.process(value, siblings=siblings)
+
+            value = child.process(
+                value,
+                *child.process_args,
+                siblings=siblings,
+                **child.process_kwargs,
+            )
 
         return value

@@ -1,7 +1,7 @@
 """The node used as a child node.."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
 from click_extended.core._node import Node
 from click_extended.core._tree import queue_child
@@ -20,15 +20,26 @@ class ChildNode(Node, ABC):
     parent: "ParentNode"
     children: None
 
-    def __init__(self, name: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        process_args: tuple[Any, ...] | None = None,
+        process_kwargs: dict[str, Any] | None = None,
+    ) -> None:
         """
         Initialize a new `ChildNode` instance.
 
         Args:
             name (str):
                 The name of the node.
+            process_args (tuple):
+                Positional arguments to pass to the process method.
+            process_kwargs (dict[str, Any]):
+                Keyword arguments to pass to the process method.
         """
         super().__init__(name=name, level=3)
+        self.process_args = process_args or ()
+        self.process_kwargs = process_kwargs or {}
 
     def get(self, name: str) -> None:
         """
@@ -49,30 +60,11 @@ class ChildNode(Node, ABC):
         raise KeyError(f"A ChildNode instance has no children.")
 
     @classmethod
-    @overload
-    def as_decorator(cls, func: Callable[P, T], /) -> Callable[P, Any]:
-        """Overload for @decorator syntax (without parentheses)."""
-        ...
-
-    @classmethod
-    @overload
     def as_decorator(
         cls, *args: Any, **kwargs: Any
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        """Overload for @decorator() or @decorator(*args, **kwargs) syntax."""
-        ...
-
-    @classmethod
-    def as_decorator(
-        cls, *args: Any, **kwargs: Any
-    ) -> (
-        Callable[..., Any] | Callable[[Callable[..., Any]], Callable[..., Any]]
-    ):
         """
         Return a decorator representation of the child node.
-
-        This creates a decorator that supports being called either as
-        `@decorator`, `@decorator()`, and `@decorator(*args, **kwargs)`.
 
         The provided args and kwargs are stored and later passed to the
         process method when called by the `ParentNode`.
@@ -85,19 +77,15 @@ class ChildNode(Node, ABC):
 
         Returns:
             Callable:
-                A decorator function or the decorated function
-                depending on usage.
+                A decorator function that registers the child node.
         """
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             """The actual decorator that wraps the function."""
             name = Transform(cls.__name__).to_snake_case()
-            instance = cls(name=name)
+            instance = cls(name=name, process_args=args, process_kwargs=kwargs)
             queue_child(instance)
             return func
-
-        if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-            return decorator(args[0])
 
         return decorator
 
