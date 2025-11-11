@@ -2,7 +2,15 @@
 
 import asyncio
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Generic, ParamSpec, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Generic,
+    ParamSpec,
+    TypeVar,
+    cast,
+)
 
 import click
 
@@ -55,7 +63,6 @@ class RootNode(Node):
     """The node used as a root node."""
 
     parent: None
-    children: dict[str | int, "ParentNode"]
     tree: Tree
 
     def __init__(self, name: str, **kwargs: Any) -> None:
@@ -69,6 +76,7 @@ class RootNode(Node):
                 Additional keyword arguments (stored for later use in wrap).
         """
         super().__init__(name=name)
+        self.children = {}
         self.tree = Tree()
 
     @classmethod
@@ -147,12 +155,16 @@ class RootNode(Node):
                 if instance.tree.root is None:
                     raise NoRootError
 
+                assert instance.tree.root.children is not None
                 for (
                     parent_name,
                     parent_node,
                 ) in instance.tree.root.children.items():
                     if isinstance(parent_name, str):
-                        parent_values[parent_name] = parent_node.get_value()
+                        parent_node_typed = cast("ParentNode", parent_node)
+                        parent_values[parent_name] = (
+                            parent_node_typed.get_value()
+                        )
 
                 merged_kwargs: dict[str, Any] = {**call_kwargs, **parent_values}
 
@@ -205,7 +217,10 @@ class RootNode(Node):
             raise NoRootError
 
         print(self.tree.root.name)
+        assert self.tree.root.children is not None
         for parent in self.tree.root.children.values():
-            print(f"  {parent.name}")
-            for child in parent.children.values():
+            parent_typed = cast("ParentNode", parent)
+            print(f"  {parent_typed.name}")
+            assert parent_typed.children is not None
+            for child in parent_typed.children.values():
                 print(f"    {child.name}")

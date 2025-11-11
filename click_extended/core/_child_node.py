@@ -18,7 +18,6 @@ class ChildNode(Node, ABC):
     """The node used as a child node."""
 
     parent: "ParentNode"
-    children: None
 
     def __init__(
         self,
@@ -37,7 +36,8 @@ class ChildNode(Node, ABC):
             process_kwargs (dict[str, Any]):
                 Keyword arguments to pass to the process method.
         """
-        super().__init__(name=name)
+        super().__init__(name=name, children=None)
+        self.children = None
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
 

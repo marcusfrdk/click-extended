@@ -1,45 +1,4 @@
-"""Group implementation for the `click_extended` library.
-
-This module provides the `group` decorator with support for:
-- Group aliasing: Allow multiple names for the same group
-- Custom help text: Override docstrings with explicit help parameters
-- Automatic alias registration: Child commands/groups inherit alias support
-- Value injection: Inherit values from parent nodes in the tree
-- Async functions: Automatically wrap async functions for Click compatibility
-
-Examples:
-    Basic group with aliases:
-        @group(name="database", aliases=["db", "d"], help="Database commands")
-        def database():
-            pass
-
-    Group with single alias (shorthand):
-        @group(name="config", aliases="cfg")
-        def config_group():
-            '''Configuration management.'''
-            pass
-
-    Group without aliases (uses docstring as help):
-        @group()
-        def admin():
-            '''Admin commands.'''
-            pass
-
-    Adding commands with aliases:
-        @command(name="list", aliases=["ls"])
-        def list_items():
-            '''List all items.'''
-            pass
-
-        database.add(list_items)
-        # Both 'database list' and 'db ls' will work
-
-    Async group:
-        @group(name="async_group", aliases="ag")
-        async def async_grp():
-            '''Async group operations.'''
-            await asyncio.sleep(0.1)
-"""
+"""Group implementation for the `click_extended` library."""
 
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 

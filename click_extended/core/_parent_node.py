@@ -3,13 +3,13 @@
 import asyncio
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
-from click_extended.core._child_node import ChildNode
 from click_extended.core._node import Node
 from click_extended.core._tree import queue_parent
 
 if TYPE_CHECKING:
+    from click_extended.core._child_node import ChildNode
     from click_extended.core._root_node import RootNode
 
 P = ParamSpec("P")
@@ -20,7 +20,6 @@ class ParentNode(Node, ABC):
     """A node used for managing child nodes."""
 
     parent: "RootNode"
-    children: dict[str | int, "ChildNode"]
 
     def __init__(self, name: str):
         """
@@ -31,6 +30,7 @@ class ParentNode(Node, ABC):
                 The name of the node.
         """
         super().__init__(name=name)
+        self.children = {}
 
     @classmethod
     def as_decorator(
@@ -57,7 +57,6 @@ class ParentNode(Node, ABC):
             instance = cls(name=name)
             queue_parent(instance)
 
-            # Check if the function is async and handle accordingly
             if asyncio.iscoroutinefunction(func):
 
                 @wraps(func)
@@ -65,9 +64,10 @@ class ParentNode(Node, ABC):
                     *call_args: P.args, **call_kwargs: P.kwargs
                 ) -> T:
                     """Async wrapper that preserves the original function."""
-                    return await func(*call_args, **call_kwargs)
+                    result = await func(*call_args, **call_kwargs)
+                    return cast(T, result)
 
-                return async_wrapper  # type: ignore
+                return cast(Callable[P, T], async_wrapper)
 
             else:
 
@@ -106,7 +106,10 @@ class ParentNode(Node, ABC):
                 The processed value of the chain of children.
         """
         value = self.get_raw_value()
-        all_children = list(self.children.values())
+        assert self.children is not None
+        all_children = [
+            cast("ChildNode", child) for child in self.children.values()
+        ]
 
         for child in all_children:
             siblings = list(

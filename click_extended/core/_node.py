@@ -1,10 +1,18 @@
 """Base class for all node types."""
 
 from abc import ABC
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
+ChildrenDict: "TypeAlias" = "dict[str | int, Node] | None"
 
 
 class Node(ABC):
     """Base class for all node types."""
+
+    children: dict[str | int, "Node"] | None
 
     def __init__(
         self,
@@ -27,15 +35,23 @@ class Node(ABC):
             name (str):
                 The name of the child.
         """
+        if self.children is None:
+            return None
         return self.children.get(name, None)
 
     def __getitem__(self, name: str) -> "Node":
+        if self.children is None:
+            raise KeyError(f"Node has no children")
         return self.children[name]
 
     def __setitem__(self, name: str, node: "Node") -> None:
+        if self.children is None:
+            raise TypeError(f"Cannot set child on a node with no children")
         self.children[name] = node
 
     def __len__(self) -> int:
+        if self.children is None:
+            return 0
         return len(self.children)
 
     def __str__(self) -> str:

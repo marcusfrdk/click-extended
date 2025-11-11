@@ -87,8 +87,10 @@ class Tree:
                     raise NoParentError(node_inst.name)
 
                 name = self.recent.name
-                index = len(self.root[name])
-                self.root[name].children[index] = cast("ChildNode", node_inst)
+                parent_node = cast("ParentNode", self.root[name])
+                index = len(parent_node)
+                assert parent_node.children is not None
+                parent_node.children[index] = cast("ChildNode", node_inst)
 
     def register_parent(self, node: "ParentNode") -> None:
         """
@@ -124,16 +126,23 @@ class Tree:
             raise NoParentError(node.name)
 
         name = self.recent.name
-        index = len(self.root[name])
-        self.root[name].children[index] = node
+        parent_node = cast("ParentNode", self.root[name])
+        index = len(parent_node)
+        assert parent_node.children is not None
+        parent_node.children[index] = node
 
     def visualize(self) -> None:
         """Visualize the tree."""
+        from click_extended.core._parent_node import ParentNode
+
         if self.root is None:
             raise NoRootError
 
         print(self.root.name)
+        assert self.root.children is not None
         for parent in self.root.children.values():
-            print(f"  {parent.name}")
-            for child in parent.children.values():
+            parent_typed = cast(ParentNode, parent)
+            print(f"  {parent_typed.name}")
+            assert parent_typed.children is not None
+            for child in parent_typed.children.values():
                 print(f"    {child.name}")

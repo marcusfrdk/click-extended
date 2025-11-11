@@ -8,6 +8,8 @@ import click
 class AliasedMixin:
     """Mixin that provides aliasing support for Click commands and groups."""
 
+    name: str | None
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Initialize with alias support.
@@ -58,6 +60,8 @@ class AliasedMixin:
 class AliasedCommand(AliasedMixin, click.Command):
     """A Click command that supports aliasing."""
 
+    name: str | None
+
     def format_help(
         self, ctx: click.Context, formatter: click.HelpFormatter
     ) -> None:
@@ -69,6 +73,8 @@ class AliasedCommand(AliasedMixin, click.Command):
 
 class AliasedGroup(AliasedMixin, click.Group):
     """A Click group that supports aliasing."""
+
+    name: str | None
 
     def format_help(
         self, ctx: click.Context, formatter: click.HelpFormatter
