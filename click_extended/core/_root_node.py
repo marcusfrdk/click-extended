@@ -2,7 +2,9 @@
 
 import asyncio
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, Generic, ParamSpec, TypeVar
+
+import click
 
 from click_extended.core._node import Node
 from click_extended.core._tree import Tree
@@ -14,26 +16,39 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 T = TypeVar("T")
 WrapperType = TypeVar("WrapperType")
+ClickType = TypeVar("ClickType", bound=click.Command)
 
 
-class RootNodeWrapper:
+class RootNodeWrapper(Generic[ClickType]):
     """
-    Base wrapper class that provides visualize()
-    method for all RootNode types.
+    Generic wrapper class for Click commands/groups with visualize() support.
+
+    This wrapper delegates all attribute access to the underlying Click object
+    while also providing access to the tree visualization functionality.
     """
 
-    def __init__(self, instance: "RootNode") -> None:
+    def __init__(self, underlying: ClickType, instance: "RootNode") -> None:
         """
         Initialize the wrapper.
 
         Args:
+            underlying: The underlying Click Command or Group instance.
             instance: The RootNode instance to wrap.
         """
+        self._underlying = underlying
         self._root_instance = instance
 
     def visualize(self) -> None:
         """Visualize the tree structure."""
         self._root_instance.visualize()
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Allow the wrapper to be called like the underlying Click object."""
+        return self._underlying(*args, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate all other attribute access to the underlying object."""
+        return getattr(self._underlying, name)
 
 
 class RootNode(Node):
@@ -43,16 +58,46 @@ class RootNode(Node):
     children: dict[str | int, "ParentNode"]
     tree: Tree
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """
         Initialize a new `RootNode` instance.
 
         Args:
             name (str):
                 The name of the node.
+            **kwargs (Any):
+                Additional keyword arguments (stored for later use in wrap).
         """
         super().__init__(name=name)
         self.tree = Tree()
+
+    @classmethod
+    def _get_click_decorator(cls) -> Callable[..., Any]:
+        """
+        Return the Click decorator (command or group) to use.
+
+        Subclasses must override this to specify which Click decorator to use.
+
+        Returns:
+            Callable:
+                The Click decorator function (e.g., click.command, click.group).
+        """
+        raise NotImplementedError(
+            "Subclasses must implement _get_click_decorator()"
+        )
+
+    @classmethod
+    def _get_click_cls(cls) -> type[click.Command]:
+        """
+        Return the Click class to use for aliasing.
+
+        Subclasses must override this to specify which aliased Click class to use.
+
+        Returns:
+            type[click.Command]:
+                The Click class (e.g., AliasedCommand, AliasedGroup).
+        """
+        raise NotImplementedError("Subclasses must implement _get_click_cls()")
 
     @classmethod
     def as_decorator(
@@ -126,10 +171,10 @@ class RootNode(Node):
         **kwargs: Any,
     ) -> Any:
         """
-        Hook for subclasses to apply additional wrapping after value injection.
+        Apply Click wrapping after value injection.
 
-        By default, returns the wrapped function unchanged. Subclasses can
-        override this to add custom behavior (e.g., click.command wrapping).
+        This method applies the appropriate Click decorator (command or group)
+        and wraps it in a RootNodeWrapper for tree visualization support.
 
         Args:
             wrapped_func (Callable):
@@ -139,15 +184,20 @@ class RootNode(Node):
             instance (RootNode):
                 The RootNode instance that owns this tree.
             **kwargs (Any):
-                Additional keyword arguments passed to `as_decorator`.
+                Additional keyword arguments passed to the Click decorator.
 
         Returns:
-            Any:
-                The wrapped result. Subclasses determine the actual type.
+            RootNodeWrapper:
+                A wrapper containing the Click object with visualize() support.
         """
-        func_with_visualize = cast(Any, wrapped_func)
-        func_with_visualize.visualize = instance.visualize
-        return func_with_visualize
+        click_decorator = cls._get_click_decorator()
+        click_cls = cls._get_click_cls()
+
+        underlying = click_decorator(name=name, cls=click_cls, **kwargs)(
+            wrapped_func
+        )
+
+        return RootNodeWrapper(underlying=underlying, instance=instance)
 
     def visualize(self) -> None:
         """Visualize the tree structure."""
