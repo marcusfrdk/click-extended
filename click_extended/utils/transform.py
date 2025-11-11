@@ -5,7 +5,6 @@ import re
 NON_ALPHANUMERIC_PATTERN = re.compile(r"[^A-Za-z0-9]+")
 LOWER_TO_UPPER_PATTERN = re.compile(r"([a-z])([A-Z])")
 UPPER_TO_UPPER_LOWER_PATTERN = re.compile(r"([A-Z]+)([A-Z][a-z])")
-LETTER_TO_NUMBER_PATTERN = re.compile(r"([a-zA-Z])(\d)")
 NUMBER_TO_LETTER_PATTERN = re.compile(r"(\d)([a-zA-Z])")
 
 
@@ -32,7 +31,6 @@ class Transform:
         """Normalize a value with a separator."""
         value = LOWER_TO_UPPER_PATTERN.sub(r"\1" + sep + r"\2", value)
         value = UPPER_TO_UPPER_LOWER_PATTERN.sub(r"\1" + sep + r"\2", value)
-        value = LETTER_TO_NUMBER_PATTERN.sub(r"\1" + sep + r"\2", value)
         value = NUMBER_TO_LETTER_PATTERN.sub(r"\1" + sep + r"\2", value)
         value = NON_ALPHANUMERIC_PATTERN.sub(sep, value)
         value = re.sub(f"({re.escape(sep)})+", sep, value)
