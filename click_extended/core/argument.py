@@ -27,18 +27,18 @@ class Argument(ParentNode):
 
         Args:
             name (str):
-                The name of the argument (also used as parameter name).
+                The name of the argument.
             nargs (int):
-                Number of arguments to accept. Use -1 for unlimited.
-                Defaults to 1.
+                Number of arguments to accept. Use `-1` for unlimited.
+                Defaults to `1`.
             type (Any, optional):
-                The type to convert the value to (int, str, float, etc.).
+                The type to convert the value to (`int`, `str`, `float`, etc.).
             help (str, optional):
                 Help text for this argument.
             required (bool):
-                Whether this argument is required. Defaults to True.
+                Whether this argument is required. Defaults to `True`.
             default (Any):
-                Default value if not provided. Defaults to None.
+                Default value if not provided. Defaults to `None`.
             **kwargs (Any):
                 Additional Click argument parameters.
         """
@@ -65,21 +65,18 @@ def argument(
 
     Args:
         name (str):
-            The name of the argument (used as both argument name
-            and parameter name).
+            The name of the argument.
         nargs (int):
-            Number of arguments to accept. Use -1 for unlimited.
-            Defaults to 1.
+            Number of arguments to accept. Use `-1` for unlimited.
+            Defaults to `1`.
         type (Any, optional):
-            The type to convert the value to (int, str, float, etc.).
+            The type to convert the value to (`int`, `str`, `float`, etc.).
         help (str, optional):
             Help text for this argument.
         required (bool):
-            Whether this argument is required. Defaults to True.
-            Note: Click arguments are required by default; set
-            required=False and provide a default to make optional.
+            Whether this argument is required. Defaults to `True`.
         default (Any):
-            Default value if not provided. Defaults to None.
+            Default value if not provided. Defaults to `None`.
         **kwargs (Any):
             Additional Click argument parameters.
 
@@ -88,18 +85,25 @@ def argument(
             A decorator function that registers the argument parent node.
 
     Examples:
-        >>> @argument("filename")
-        ... def my_func(filename):
-        ...     print(f"File: {filename}")
 
-        >>> @argument("files", nargs=-1, help="Files to process")
-        ... def my_func(files):
-        ...     for file in files:
-        ...         print(f"Processing: {file}")
+        ```python
+        @argument("filename")
+        def my_func(filename):
+            print(f"File: {filename}")
+        ```
 
-        >>> @argument("port", type=int, default=8080)
-        ... def my_func(port):
-        ...     print(f"Port: {port}")
+        ```python
+        @argument("files", nargs=-1, help="Files to process")
+        def my_func(files):
+            for file in files:
+                print(f"Processing: {file}")
+        ```
+
+        ```python
+        @argument("port", type=int, default=8080)
+        def my_func(port):
+            print(f"Port: {port}")
+        ```
     """
     return Argument.as_decorator(
         name=name,
