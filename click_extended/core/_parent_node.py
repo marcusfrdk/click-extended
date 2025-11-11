@@ -29,7 +29,7 @@ class ParentNode(Node, ABC):
             name (str):
                 The name of the node.
         """
-        super().__init__(name=name, level=2)
+        super().__init__(name=name)
 
     @classmethod
     def as_decorator(

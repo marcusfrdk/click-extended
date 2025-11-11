@@ -50,7 +50,7 @@ class RootNode(Node):
             name (str):
                 The name of the node.
         """
-        super().__init__(name=name, level=1)
+        super().__init__(name=name)
         self.tree = Tree()
 
     @classmethod

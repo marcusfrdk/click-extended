@@ -1,7 +1,6 @@
 """Base class for all node types."""
 
 from abc import ABC
-from typing import Literal
 
 
 class Node(ABC):
@@ -10,7 +9,6 @@ class Node(ABC):
     def __init__(
         self,
         name: str,
-        level: Literal[1, 2, 3],
         parent: "Node | None" = None,
         children: dict[str | int, "Node"] | None = None,
     ):
@@ -18,7 +16,6 @@ class Node(ABC):
         Initialize a new `Node` instance.
         """
         self.name = name
-        self.level = level
         self.parent = parent
         self.children = children or {}
 

@@ -37,7 +37,7 @@ class ChildNode(Node, ABC):
             process_kwargs (dict[str, Any]):
                 Keyword arguments to pass to the process method.
         """
-        super().__init__(name=name, level=3)
+        super().__init__(name=name)
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
 
