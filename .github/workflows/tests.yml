@@ -42,7 +42,7 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint click_extended tests
+          pylint click_extended tests --fail-under=10.0
 
   typecheck:
     runs-on: ubuntu-latest

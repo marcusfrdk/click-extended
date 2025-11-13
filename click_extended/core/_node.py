@@ -1,12 +1,6 @@
 """Base class for all node types."""
 
 from abc import ABC
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
-
-ChildrenDict: "TypeAlias" = "dict[str | int, Node] | None"
 
 
 class Node(ABC):
