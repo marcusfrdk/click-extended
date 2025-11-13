@@ -41,12 +41,12 @@ class Node(ABC):
 
     def __getitem__(self, name: str) -> "Node":
         if self.children is None:
-            raise KeyError(f"Node has no children")
+            raise KeyError("Node has no children")
         return self.children[name]
 
     def __setitem__(self, name: str, node: "Node") -> None:
         if self.children is None:
-            raise TypeError(f"Cannot set child on a node with no children")
+            raise TypeError("Cannot set child on a node with no children")
         self.children[name] = node
 
     def __len__(self) -> int:

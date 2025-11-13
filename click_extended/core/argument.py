@@ -1,5 +1,9 @@
 """`ParentNode` that represents a Click argument."""
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=redefined-builtin
+
 from typing import Any, Callable, ParamSpec, TypeVar
 
 from click_extended.core._parent_node import ParentNode
@@ -40,11 +44,14 @@ class Argument(ParentNode):
             default (Any):
                 Default value if not provided. Defaults to `None`.
             **kwargs (Any):
-                Additional Click argument parameters.
+                Additional keyword arguments.
         """
         name = Transform(name).to_snake_case()
         super().__init__(
-            name=name, help=help, required=required, default=default
+            name=name,
+            help=help,
+            required=required,
+            default=default,
         )
         self.nargs = nargs
         self.type = type

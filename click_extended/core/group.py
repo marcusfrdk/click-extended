@@ -1,5 +1,8 @@
 """Group implementation for the `click_extended` library."""
 
+# pylint: disable=protected-access
+# pylint: disable=redefined-builtin
+
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import click

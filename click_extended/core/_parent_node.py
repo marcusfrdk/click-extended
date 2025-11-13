@@ -1,5 +1,7 @@
 """A node used for managing child nodes."""
 
+# pylint: disable=redefined-builtin
+
 import asyncio
 from abc import ABC
 from functools import wraps
@@ -7,9 +9,9 @@ from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
 from click_extended.core._node import Node
 from click_extended.core._tree import queue_parent
+from click_extended.utils.process import process_children
 
 if TYPE_CHECKING:
-    from click_extended.core._child_node import ChildNode
     from click_extended.core._root_node import RootNode
 
 P = ParamSpec("P")
@@ -84,14 +86,12 @@ class ParentNode(Node, ABC):
 
                 return cast(Callable[P, T], async_wrapper)
 
-            else:
+            @wraps(func)
+            def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
+                """Wrapper that preserves the original function."""
+                return func(*call_args, **call_kwargs)
 
-                @wraps(func)
-                def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
-                    """Wrapper that preserves the original function."""
-                    return func(*call_args, **call_kwargs)
-
-                return wrapper
+            return wrapper
 
         return decorator
 
@@ -121,24 +121,4 @@ class ParentNode(Node, ABC):
         """
         value = self.get_raw_value()
         assert self.children is not None
-        all_children = [
-            cast("ChildNode", child) for child in self.children.values()
-        ]
-
-        for child in all_children:
-            siblings = list(
-                {
-                    c.__class__.__name__
-                    for c in all_children
-                    if id(c) != id(child)
-                }
-            )
-
-            value = child.process(
-                value,
-                *child.process_args,
-                siblings=siblings,
-                **child.process_kwargs,
-            )
-
-        return value
+        return process_children(value, self.children)

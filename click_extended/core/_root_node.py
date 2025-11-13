@@ -1,5 +1,7 @@
 """The node used as a root node."""
 
+# pylint: disable=invalid-name
+
 import asyncio
 from functools import wraps
 from typing import (
@@ -16,13 +18,18 @@ import click
 
 from click_extended.core._node import Node
 from click_extended.core._tree import Tree
+from click_extended.core.argument import Argument
+from click_extended.core.option import Option
 from click_extended.errors import NoRootError
+from click_extended.utils.process import process_children
+from click_extended.utils.visualize import visualize_tree
 
 if TYPE_CHECKING:
     from click_extended.core._parent_node import ParentNode
 
 P = ParamSpec("P")
 T = TypeVar("T")
+
 WrapperType = TypeVar("WrapperType")
 ClickType = TypeVar("ClickType", bound=click.Command)
 
@@ -65,19 +72,23 @@ class RootNode(Node):
     parent: None
     tree: Tree
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         """
         Initialize a new `RootNode` instance.
 
         Args:
             name (str):
                 The name of the node.
+            *args (Any):
+                Additional positional arguments (stored but not passed to Node).
             **kwargs (Any):
-                Additional keyword arguments (stored for later use in wrap).
+                Additional keyword arguments (stored but not passed to Node).
         """
         super().__init__(name=name)
         self.children = {}
         self.tree = Tree()
+        self.extra_args = args
+        self.extra_kwargs = kwargs
 
     @classmethod
     def _get_click_decorator(cls) -> Callable[..., Any]:
@@ -99,7 +110,8 @@ class RootNode(Node):
         """
         Return the Click class to use for aliasing.
 
-        Subclasses must override this to specify which aliased Click class to use.
+        Subclasses must override this to specify which aliased
+        Click class to use.
 
         Returns:
             type[click.Command]:
@@ -150,9 +162,6 @@ class RootNode(Node):
             @wraps(func)
             def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
                 """Wrapper that collects parent values and injects them."""
-                from click_extended.core.argument import Argument
-                from click_extended.core.option import Option
-
                 parent_values: dict[str, Any] = {}
 
                 if instance.tree.root is None:
@@ -165,34 +174,14 @@ class RootNode(Node):
                 ) in instance.tree.root.children.items():
                     if isinstance(parent_name, str):
                         parent_node_typed = cast("ParentNode", parent_node)
+                        parent_node_children = parent_node_typed.children
 
                         if isinstance(parent_node_typed, (Option, Argument)):
                             raw_value = call_kwargs.get(parent_name)
-                            if parent_node_typed.children:
-                                value = raw_value
-                                all_children = [
-                                    cast("ChildNode", child)
-                                    for child in parent_node_typed.children.values()
-                                ]
-                                for child in all_children:
-                                    from click_extended.core._child_node import (
-                                        ChildNode,
-                                    )
-
-                                    siblings = list(
-                                        {
-                                            c.__class__.__name__
-                                            for c in all_children
-                                            if id(c) != id(child)
-                                        }
-                                    )
-                                    value = child.process(
-                                        value,
-                                        *child.process_args,
-                                        siblings=siblings,
-                                        **child.process_kwargs,
-                                    )
-                                parent_values[parent_name] = value
+                            if parent_node_children:
+                                parent_values[parent_name] = process_children(
+                                    raw_value, parent_node_children
+                                )
                             else:
                                 parent_values[parent_name] = raw_value
                         else:
@@ -236,9 +225,6 @@ class RootNode(Node):
             RootNodeWrapper:
                 A wrapper containing the Click object with visualize() support.
         """
-        from click_extended.core.argument import Argument
-        from click_extended.core.option import Option
-
         func = wrapped_func
         if instance.tree.root and instance.tree.root.children:
             parent_items = list(instance.tree.root.children.items())
@@ -278,14 +264,4 @@ class RootNode(Node):
 
     def visualize(self) -> None:
         """Visualize the tree structure."""
-        if self.tree.root is None:
-            raise NoRootError
-
-        print(self.tree.root.name)
-        assert self.tree.root.children is not None
-        for parent in self.tree.root.children.values():
-            parent_typed = cast("ParentNode", parent)
-            print(f"  {parent_typed.name}")
-            assert parent_typed.children is not None
-            for child in parent_typed.children.values():
-                print(f"    {child.name}")
+        visualize_tree(self.tree.root)

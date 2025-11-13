@@ -1,5 +1,7 @@
 """Command implementation for the `click_extended` library."""
 
+# pylint: disable=redefined-builtin
+
 from typing import Any, Callable
 
 import click

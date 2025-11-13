@@ -1,5 +1,9 @@
 """`ParentNode` that loads a value from an environment variable."""
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=redefined-builtin
+
 import os
 from typing import Any, Callable, ParamSpec, TypeVar
 
@@ -45,9 +49,13 @@ class Env(ParentNode):
                 Additional keyword arguments.
         """
         super().__init__(
-            name=name, help=help, required=required, default=default
+            name=name,
+            help=help,
+            required=required,
+            default=default,
         )
         self.env_name = env_name
+        self.extra_kwargs = kwargs
 
     def get_raw_value(self) -> Any:
         """
@@ -67,7 +75,8 @@ class Env(ParentNode):
         if value is None:
             if self.required:
                 raise ValueError(
-                    f"Required environment variable '{self.env_name}' is not set"
+                    f"Required environment variable '{self.env_name}' "
+                    "is not set."
                 )
             return self.default
         return value

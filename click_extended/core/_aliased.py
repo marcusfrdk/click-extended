@@ -1,5 +1,8 @@
 """Shared aliasing functionality for Click commands and groups."""
 
+# pylint: disable=too-few-public-methods
+# pylint: disable=no-value-for-parameter
+
 from typing import Any
 
 import click
@@ -67,7 +70,9 @@ class AliasedCommand(AliasedMixin, click.Command):
     ) -> None:
         """Format help with aliases."""
         self._format_help_with_aliases(
-            ctx, formatter, click.Command.format_help.__get__(self, type(self))
+            ctx,
+            formatter,
+            click.Command.format_help.__get__(self, type(self)),
         )
 
 
@@ -81,7 +86,9 @@ class AliasedGroup(AliasedMixin, click.Group):
     ) -> None:
         """Format help with aliases."""
         self._format_help_with_aliases(
-            ctx, formatter, click.Group.format_help.__get__(self, type(self))
+            ctx,
+            formatter,
+            click.Group.format_help.__get__(self, type(self)),
         )
 
     def add_command(self, cmd: click.Command, name: str | None = None) -> None:

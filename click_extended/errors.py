@@ -68,7 +68,7 @@ class RootNodeExistsError(ClickExtendedError):
     def __init__(self) -> None:
         """Initialize a new `RootNodeExistsError` instance."""
         message = (
-            "Cannot register root node as a root node has already been defined. "
-            "Only one root node is allowed per tree instance."
+            "Cannot register root node as a root node has already been "
+            "defined. Only one root node is allowed per tree instance."
         )
         super().__init__(message)

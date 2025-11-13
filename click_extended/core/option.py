@@ -1,5 +1,9 @@
 """`ParentNode` that represents a Click option."""
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=redefined-builtin
+
 import re
 from typing import Any, Callable, ParamSpec, TypeVar
 

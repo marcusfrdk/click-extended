@@ -57,7 +57,7 @@ class ChildNode(Node, ABC):
         return None
 
     def __getitem__(self, name: str) -> Node:
-        raise KeyError(f"A ChildNode instance has no children.")
+        raise KeyError("A ChildNode instance has no children.")
 
     @classmethod
     def as_decorator(

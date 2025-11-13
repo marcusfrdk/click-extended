@@ -1,5 +1,8 @@
 """Class for storing the nodes of the current context."""
 
+# pylint: disable=global-variable-not-assigned
+# pylint: disable=import-outside-toplevel
+
 from typing import TYPE_CHECKING, Literal, cast
 
 from click_extended.errors import (
@@ -8,6 +11,7 @@ from click_extended.errors import (
     ParentNodeExistsError,
     RootNodeExistsError,
 )
+from click_extended.utils.visualize import visualize_tree
 
 if TYPE_CHECKING:
     from click_extended.core._child_node import ChildNode
@@ -133,16 +137,4 @@ class Tree:
 
     def visualize(self) -> None:
         """Visualize the tree."""
-        from click_extended.core._parent_node import ParentNode
-
-        if self.root is None:
-            raise NoRootError
-
-        print(self.root.name)
-        assert self.root.children is not None
-        for parent in self.root.children.values():
-            parent_typed = cast(ParentNode, parent)
-            print(f"  {parent_typed.name}")
-            assert parent_typed.children is not None
-            for child in parent_typed.children.values():
-                print(f"    {child.name}")
+        visualize_tree(self.root)
