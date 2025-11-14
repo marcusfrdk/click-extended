@@ -305,6 +305,20 @@ class RootNode(Node):
         """
         func = wrapped_func
         if instance.tree.root and instance.tree.root.children:
+            seen_short_flags: dict[str, str] = {}
+            for parent_node in instance.tree.root.children.values():
+                if isinstance(parent_node, Option) and parent_node.short:
+                    if parent_node.short in seen_short_flags:
+                        prev_name = seen_short_flags[parent_node.short]
+                        raise DuplicateNameError(
+                            parent_node.short,
+                            "option",
+                            "option",
+                            f"'{prev_name}' ({parent_node.short})",
+                            f"'{parent_node.name}' ({parent_node.short})",
+                        )
+                    seen_short_flags[parent_node.short] = parent_node.name
+
             parent_items = list(instance.tree.root.children.items())
             for _parent_name, parent_node in reversed(parent_items):
                 if isinstance(parent_node, Option):

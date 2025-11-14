@@ -76,11 +76,8 @@ ignore = [
 ignore-paths = ["^tests/.*$", "^docs/.*$", "^\\..*$"]
 persistent = true
 
-[tool.pylint.similarities]
-min-similarity-lines = 10
-
 [tool.pylint.messages_control]
-disable = []
+disable = ["duplicate-code"]
 
 [tool.pylint.format]
 max-line-length = 80

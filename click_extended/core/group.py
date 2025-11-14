@@ -2,6 +2,7 @@
 
 # pylint: disable=protected-access
 # pylint: disable=redefined-builtin
+# pylint: disable=too-many-locals
 
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
@@ -9,6 +10,9 @@ import click
 
 from click_extended.core._aliased import AliasedGroup
 from click_extended.core._root_node import RootNode, RootNodeWrapper
+from click_extended.core.argument import Argument
+from click_extended.core.option import Option
+from click_extended.errors import DuplicateNameError
 
 T = TypeVar("T", bound="GroupWrapper")
 
@@ -84,12 +88,55 @@ class Group(RootNode):
             GroupWrapper:
                 A wrapper with group-specific functionality.
         """
+        func = wrapped_func
+        if instance.tree.root and instance.tree.root.children:
+            seen_short_flags: dict[str, str] = {}
+            for parent_node in instance.tree.root.children.values():
+                if isinstance(parent_node, Option) and parent_node.short:
+                    if parent_node.short in seen_short_flags:
+                        prev_name = seen_short_flags[parent_node.short]
+
+                        raise DuplicateNameError(
+                            parent_node.short,
+                            "option",
+                            "option",
+                            f"'{prev_name}' ({parent_node.short})",
+                            f"'{parent_node.name}' ({parent_node.short})",
+                        )
+                    seen_short_flags[parent_node.short] = parent_node.name
+
+            parent_items = list(instance.tree.root.children.items())
+            for _parent_name, parent_node in reversed(parent_items):
+                if isinstance(parent_node, Option):
+                    params: list[str] = []
+                    if parent_node.short:
+                        params.append(parent_node.short)
+                    params.append(parent_node.long)
+
+                    func = click.option(
+                        *params,
+                        type=parent_node.type,
+                        default=parent_node.default,
+                        required=parent_node.required,
+                        is_flag=parent_node.is_flag,
+                        multiple=parent_node.multiple,
+                        help=parent_node.help,
+                        **parent_node.extra_kwargs,
+                    )(func)
+
+                elif isinstance(parent_node, Argument):
+                    func = click.argument(
+                        parent_node.name,
+                        type=parent_node.type,
+                        default=parent_node.default,
+                        nargs=parent_node.nargs,
+                        **parent_node.extra_kwargs,
+                    )(func)
+
         click_decorator = cls._get_click_decorator()
         click_cls = cls._get_click_cls()
 
-        underlying = click_decorator(name=name, cls=click_cls, **kwargs)(
-            wrapped_func
-        )
+        underlying = click_decorator(name=name, cls=click_cls, **kwargs)(func)
 
         return GroupWrapper(underlying=underlying, instance=instance)
 
