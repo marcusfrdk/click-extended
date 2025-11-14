@@ -89,10 +89,13 @@ class Group(RootNode):
                 A wrapper with group-specific functionality.
         """
         func = wrapped_func
+        h_flag_taken = False
         if instance.tree.root and instance.tree.root.children:
             seen_short_flags: dict[str, str] = {}
             for parent_node in instance.tree.root.children.values():
                 if isinstance(parent_node, Option) and parent_node.short:
+                    if parent_node.short == "-h":
+                        h_flag_taken = True
                     if parent_node.short in seen_short_flags:
                         prev_name = seen_short_flags[parent_node.short]
 
@@ -132,6 +135,15 @@ class Group(RootNode):
                         nargs=parent_node.nargs,
                         **parent_node.extra_kwargs,
                     )(func)
+
+        if not h_flag_taken:
+            if "context_settings" not in kwargs:
+                kwargs["context_settings"] = {}
+            if "help_option_names" not in kwargs["context_settings"]:
+                kwargs["context_settings"]["help_option_names"] = [
+                    "-h",
+                    "--help",
+                ]
 
         click_decorator = cls._get_click_decorator()
         click_cls = cls._get_click_cls()

@@ -3,10 +3,12 @@
 from unittest.mock import MagicMock, patch
 
 import click
+from click.testing import CliRunner
 
 from click_extended.core._aliased import AliasedGroup
-from click_extended.core.command import Command
+from click_extended.core.command import Command, command
 from click_extended.core.group import Group, GroupWrapper, group
+from click_extended.core.option import option
 
 
 class TestGroupInitialization:
@@ -788,3 +790,123 @@ class TestGroupIntegration:
 
         assert "child" in parent_wrapper._underlying.commands  # type: ignore
         assert "grandchild" in child_wrapper._underlying.commands  # type: ignore
+
+
+class TestGroupHelpShortcut:
+    """Test -h help shortcut functionality for groups."""
+
+    def test_h_flag_shows_help_on_group(self) -> None:
+        """Test that -h shows help on groups."""
+
+        @group()
+        @option("--verbose", "-v", is_flag=True)
+        def cli(verbose: bool) -> None:
+            """CLI tool."""
+            if verbose:
+                print("Verbose mode")
+
+        @command()
+        def subcommand() -> None:
+            """A subcommand."""
+            print("Subcommand executed")
+
+        cli.add(subcommand)
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["-h"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Show this message and exit" in result.output
+        assert "-h, --help" in result.output
+        assert "subcommand" in result.output
+
+    def test_h_flag_overridden_on_group(self) -> None:
+        """Test that user's -h option overrides help on groups."""
+
+        @group()
+        @option("--host", "-h", default="localhost")
+        def cli(host: str) -> None:
+            """CLI with host option."""
+            print(f"Host: {host}")
+
+        @command()
+        def subcommand() -> None:
+            """A subcommand."""
+            print("Subcommand executed")
+
+        cli.add(subcommand)
+
+        runner = CliRunner()
+
+        result = runner.invoke(cli, ["-h", "example.com", "subcommand"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Host: example.com" in result.output
+
+        result_help = runner.invoke(cli, ["--help"])  # type: ignore
+        assert result_help.exit_code == 0
+        assert "Show this message and exit" in result_help.output
+        assert "-h, --host" in result_help.output
+
+    def test_h_flag_on_nested_groups(self) -> None:
+        """Test -h help works on nested groups."""
+
+        @group()
+        def main_cli() -> None:
+            """Main CLI."""
+            pass
+
+        @group()
+        def sub_group() -> None:
+            """Sub group."""
+            pass
+
+        @command()
+        def leaf_command() -> None:
+            """Leaf command."""
+            print("Executed")
+
+        sub_group.add(leaf_command)
+        main_cli.add(sub_group)  # type: ignore
+
+        runner = CliRunner()
+
+        result = runner.invoke(main_cli, ["-h"])  # type: ignore
+        assert result.exit_code == 0
+        assert "-h, --help" in result.output
+
+        result = runner.invoke(main_cli, ["sub_group", "-h"])  # type: ignore
+        assert result.exit_code == 0
+        assert "-h, --help" in result.output
+
+    def test_h_flag_different_per_command_in_group(self) -> None:
+        """Test that -h behavior is independent per command in a group."""
+
+        @group()
+        def main_cli() -> None:
+            """Main CLI."""
+            pass
+
+        @command()
+        @option("--name", "-n", default="World")
+        def cmd1(name: str) -> None:
+            """Command 1."""
+            print(f"Cmd1: {name}")
+
+        @command()
+        @option("--host", "-h", default="localhost")
+        def cmd2(host: str) -> None:
+            """Command 2."""
+            print(f"Cmd2: {host}")
+
+        main_cli.add(cmd1)
+        main_cli.add(cmd2)
+
+        runner = CliRunner()
+
+        result1 = runner.invoke(main_cli, ["cmd1", "-h"])  # type: ignore
+        assert result1.exit_code == 0
+        assert "Show this message and exit" in result1.output
+
+        result2 = runner.invoke(main_cli, ["cmd2", "-h", "example.com"])  # type: ignore
+        assert result2.exit_code == 0
+        assert "Cmd2: example.com" in result2.output

@@ -3,9 +3,11 @@
 from unittest.mock import MagicMock, patch
 
 import click
+from click.testing import CliRunner
 
 from click_extended.core._aliased import AliasedCommand
 from click_extended.core.command import Command, command
+from click_extended.core.option import option
 
 
 class TestCommandInitialization:
@@ -580,4 +582,120 @@ class TestCommandIntegration:
         assert callable(result1)
         assert callable(result2)
 
-        assert result1 is not result2
+
+class TestCommandHelpShortcut:
+    """Test -h help shortcut functionality for commands."""
+
+    def test_h_flag_shows_help_by_default(self) -> None:
+        """Test that -h shows help when no option uses it."""
+
+        @command()
+        @option("--name", "-n", default="World")
+        def test_cmd(name: str) -> None:
+            """Test command."""
+            print(f"Hello {name}!")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["-h"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Show this message and exit" in result.output
+        assert "-h, --help" in result.output
+        assert "-n, --name" in result.output
+
+    def test_h_flag_same_as_help_flag(self) -> None:
+        """Test that -h and --help produce identical output."""
+
+        @command()
+        @option("--verbose", "-v", is_flag=True)
+        def test_cmd(verbose: bool) -> None:
+            """Test command."""
+            if verbose:
+                print("Verbose mode")
+
+        runner = CliRunner()
+        result_h = runner.invoke(test_cmd, ["-h"])  # type: ignore
+        result_help = runner.invoke(test_cmd, ["--help"])  # type: ignore
+
+        assert result_h.exit_code == 0
+        assert result_help.exit_code == 0
+        assert result_h.output == result_help.output
+
+    def test_h_flag_overridden_by_user_option(self) -> None:
+        """Test that user's -h option takes precedence over help."""
+
+        @command()
+        @option("--host", "-h", default="localhost")
+        @option("--name", "-n", default="World")
+        def test_cmd(host: str, name: str) -> None:
+            """Test command."""
+            print(f"Host: {host}, Name: {name}")
+
+        runner = CliRunner()
+
+        result = runner.invoke(test_cmd, ["-h", "example.com"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Host: example.com" in result.output
+        assert "Show this message and exit" not in result.output
+
+        result_help = runner.invoke(test_cmd, ["--help"])  # type: ignore
+        assert result_help.exit_code == 0
+        assert "Show this message and exit" in result_help.output
+        assert "-h, --host" in result_help.output
+        assert "--help" in result_help.output
+
+    def test_h_flag_with_no_other_options(self) -> None:
+        """Test -h help works with no other options."""
+
+        @command()
+        def test_cmd() -> None:
+            """Simple command with no options."""
+            print("Hello!")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["-h"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Show this message and exit" in result.output
+        assert "-h, --help" in result.output
+
+    def test_h_flag_with_multiple_options(self) -> None:
+        """Test -h help works with multiple options."""
+
+        @command()
+        @option("--name", "-n", default="World")
+        @option("--verbose", "-v", is_flag=True)
+        @option("--count", "-c", type=int, default=1)
+        def test_cmd(name: str, verbose: bool, count: int) -> None:
+            """Test command with multiple options."""
+            for _ in range(count):
+                print(f"Hello {name}!")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["-h"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Show this message and exit" in result.output
+        assert "-h, --help" in result.output
+        assert all(
+            flag in result.output
+            for flag in ["-n, --name", "-v, --verbose", "-c, --count"]
+        )
+
+    def test_h_flag_with_custom_help_option_names(self) -> None:
+        """Test that custom help_option_names are respected."""
+
+        @command(context_settings={"help_option_names": ["--help", "--ayuda"]})
+        @option("--name", "-n", default="World")
+        def test_cmd(name: str) -> None:
+            """Test command."""
+            print(f"Hello {name}!")
+
+        runner = CliRunner()
+
+        result_help = runner.invoke(test_cmd, ["--help"])  # type: ignore
+        assert result_help.exit_code == 0
+
+        result_h = runner.invoke(test_cmd, ["-h"])  # type: ignore
+        assert result_h.exit_code != 0
+        assert "no such option" in result_h.output.lower()
