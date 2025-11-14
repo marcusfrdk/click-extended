@@ -2,10 +2,12 @@
 
 # pylint: disable=global-variable-not-assigned
 # pylint: disable=import-outside-toplevel
+# pylint: disable=broad-exception-caught
 
 from typing import TYPE_CHECKING, Literal, cast
 
 from click_extended.errors import (
+    InvalidChildOnTagError,
     NoParentError,
     NoRootError,
     ParentNodeExistsError,
@@ -17,18 +19,21 @@ if TYPE_CHECKING:
     from click_extended.core._child_node import ChildNode
     from click_extended.core._parent_node import ParentNode
     from click_extended.core._root_node import RootNode
+    from click_extended.core.tag import Tag
 
 
 _pending_nodes: list[
     tuple[
-        Literal["parent", "child"],
-        "ParentNode | ChildNode",
+        Literal["parent", "child", "tag"],
+        "ParentNode | ChildNode | Tag",
     ]
 ] = []
 
 
 def get_pending_nodes() -> (
-    list[tuple[Literal["parent", "child"], "ParentNode | ChildNode"]]
+    list[
+        tuple[Literal["parent", "child", "tag"], "ParentNode | ChildNode | Tag"]
+    ]
 ):
     """Get and clear the pending nodes queue."""
     global _pending_nodes
@@ -47,6 +52,11 @@ def queue_child(node: "ChildNode") -> None:
     _pending_nodes.append(("child", node))
 
 
+def queue_tag(node: "Tag") -> None:
+    """Queue a tag node for the next root registration."""
+    _pending_nodes.append(("tag", node))
+
+
 class Tree:
     """
     Class for storing the nodes of the current context.
@@ -60,6 +70,8 @@ class Tree:
         """Initialize a new `Tree` instance."""
         self.root: "RootNode | None" = None
         self.recent: "ParentNode | None" = None
+        self.recent_tag: "Tag | None" = None
+        self.tags: dict[str, "Tag"] = {}
 
     def register_root(self, node: "RootNode") -> None:
         """
@@ -87,14 +99,47 @@ class Tree:
                 self.recent = cast("ParentNode", node_inst)
                 self.root[node_inst.name] = node_inst
             elif node_type == "child":
-                if self.recent is None:
-                    raise NoParentError(node_inst.name)
+                if self.recent_tag is not None:
+                    tag = self.recent_tag
+                    child_inst = cast("ChildNode", node_inst)
 
-                name = self.recent.name
-                parent_node = cast("ParentNode", self.root[name])
-                index = len(parent_node)
-                assert parent_node.children is not None
-                parent_node.children[index] = cast("ChildNode", node_inst)
+                    sentinel = object()
+                    is_validation_only = False
+
+                    try:
+                        result = child_inst.process(
+                            sentinel,
+                            *child_inst.process_args,
+                            siblings=[],
+                            tags={},
+                            parent=tag,
+                            **child_inst.process_kwargs,
+                        )
+                        is_validation_only = (
+                            result is sentinel or result is None
+                        )
+                    except Exception:
+                        is_validation_only = True
+
+                    if not is_validation_only:
+                        raise InvalidChildOnTagError(
+                            child_name=child_inst.__class__.__name__,
+                            tag_name=tag.name,
+                        )
+
+                    index = len(tag)
+                    tag[index] = child_inst
+                elif self.recent is not None:
+                    name = self.recent.name
+                    parent_node = cast("ParentNode", self.root[name])
+                    index = len(parent_node)
+                    parent_node[index] = cast("ChildNode", node_inst)
+                else:
+                    raise NoParentError(node_inst.name)
+            elif node_type == "tag":
+                tag_inst = cast("Tag", node_inst)
+                self.tags[tag_inst.name] = tag_inst
+                self.recent_tag = tag_inst
 
     def register_parent(self, node: "ParentNode") -> None:
         """
@@ -132,8 +177,7 @@ class Tree:
         name = self.recent.name
         parent_node = cast("ParentNode", self.root[name])
         index = len(parent_node)
-        assert parent_node.children is not None
-        parent_node.children[index] = node
+        parent_node[index] = node
 
     def visualize(self) -> None:
         """Visualize the tree."""

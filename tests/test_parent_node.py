@@ -38,7 +38,13 @@ class DummyChildForParent(ChildNode):
     """Simple ChildNode for testing with ParentNode."""
 
     def process(
-        self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+        self,
+        value: Any,
+        *args: Any,
+        siblings: list[str],
+        tags: Any,
+        parent: Any,
+        **kwargs: Any,
     ) -> Any:
         """Uppercase the value."""
         return str(value).upper()
@@ -48,7 +54,13 @@ class MultiplyChild(ChildNode):
     """Child that multiplies numeric values."""
 
     def process(
-        self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+        self,
+        value: Any,
+        *args: Any,
+        siblings: list[str],
+        tags: Any,
+        parent: Any,
+        **kwargs: Any,
     ) -> Any:
         """Multiply by 2."""
         return value * 2
@@ -249,7 +261,7 @@ class TestParentNodeGetValue:
         node = ConcreteParentNode(name="test")
         child = DummyChildForParent(name="uppercase")
         assert node.children is not None
-        node.children["uppercase"] = child
+        node["uppercase"] = child
 
         result = node.get_value()
         assert result == "RAW_VALUE"
@@ -260,8 +272,8 @@ class TestParentNodeGetValue:
         child1 = MultiplyChild(name="multiply1")
         child2 = MultiplyChild(name="multiply2")
         assert node.children is not None
-        node.children["multiply1"] = child1
-        node.children["multiply2"] = child2
+        node["multiply1"] = child1
+        node["multiply2"] = child2
 
         result = node.get_value()
         # 5 * 2 * 2 = 20
@@ -273,21 +285,33 @@ class TestParentNodeGetValue:
 
         class AppendChild(ChildNode):
             def process(
-                self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
             ) -> Any:
                 return value + "_world"
 
         class UppercaseChild(ChildNode):
             def process(
-                self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
             ) -> Any:
                 return str(value).upper()
 
         child1 = AppendChild(name="append")
         child2 = UppercaseChild(name="uppercase")
         assert node.children is not None
-        node.children["append"] = child1
-        node.children["uppercase"] = child2
+        node["append"] = child1
+        node["uppercase"] = child2
 
         result = node.get_value()
         assert result == "HELLO_WORLD"
@@ -301,7 +325,13 @@ class TestParentNodeGetValue:
                 self.received_siblings: list[str] | None = None
 
             def process(
-                self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
             ) -> Any:
                 self.received_siblings = siblings
                 return value
@@ -312,9 +342,9 @@ class TestParentNodeGetValue:
         child3 = SiblingsCheckChild(name="child3")
 
         assert node.children is not None
-        node.children["child1"] = child1
-        node.children["child2"] = child2
-        node.children["child3"] = child3
+        node["child1"] = child1
+        node["child2"] = child2
+        node["child3"] = child3
 
         node.get_value()
 
@@ -327,7 +357,13 @@ class TestParentNodeGetValue:
 
         class MultiplierChild(ChildNode):
             def process(
-                self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
             ) -> Any:
                 multiplier = args[0] if args else 1
                 return value * multiplier
@@ -335,7 +371,7 @@ class TestParentNodeGetValue:
         node = EnvParentNode(name="test", env_value=10)
         child = MultiplierChild(name="multiply", process_args=(3,))
         assert node.children is not None
-        node.children["multiply"] = child
+        node["multiply"] = child
 
         result = node.get_value()
         assert result == 30
@@ -345,7 +381,13 @@ class TestParentNodeGetValue:
 
         class PrefixChild(ChildNode):
             def process(
-                self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
             ) -> Any:
                 prefix = kwargs.get("prefix", "")
                 return f"{prefix}{value}"
@@ -353,10 +395,192 @@ class TestParentNodeGetValue:
         node = ConcreteParentNode(name="test")
         child = PrefixChild(name="prefix", process_kwargs={"prefix": ">> "})
         assert node.children is not None
-        node.children["prefix"] = child
+        node["prefix"] = child
 
         result = node.get_value()
         assert result == ">> raw_value"
+
+    def test_get_value_with_validation_child_returns_none(self) -> None:
+        """Test that validation children returning None don't break the chain."""
+
+        class ValidationChild(ChildNode):
+            """Validation child that returns None."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                if not value:
+                    raise ValueError("Value cannot be empty")
+                return None
+
+        node = EnvParentNode(name="test", env_value="hello")
+        child = ValidationChild(name="validate")
+        assert node.children is not None
+        node["validate"] = child
+
+        result = node.get_value()
+        assert result == "hello"
+
+    def test_get_value_with_validation_between_transformations(self) -> None:
+        """Test validation child between two transformation children preserves value."""
+
+        class UppercaseChild(ChildNode):
+            """Transform to uppercase."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                return str(value).upper()
+
+        class ValidationChild(ChildNode):
+            """Validation that returns None."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                if len(str(value)) < 3:
+                    raise ValueError("Value too short")
+                return None
+
+        class ExclamationChild(ChildNode):
+            """Add exclamation mark."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                return f"{value}!"
+
+        node = EnvParentNode(name="test", env_value="hello")
+        assert node.children is not None
+        node["uppercase"] = UppercaseChild(name="uppercase")
+        node["validate"] = ValidationChild(name="validate")
+        node["exclaim"] = ExclamationChild(name="exclaim")
+
+        result = node.get_value()
+        assert result == "HELLO!"
+
+    def test_get_value_with_multiple_validations_in_chain(self) -> None:
+        """Test multiple validation children in a transformation chain."""
+
+        class DoubleChild(ChildNode):
+            """Double the number."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                return value * 2
+
+        class PositiveValidation(ChildNode):
+            """Validate value is positive."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                if value <= 0:
+                    raise ValueError("Value must be positive")
+                return None
+
+        class RangeValidation(ChildNode):
+            """Validate value is in range."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                if value > 100:
+                    raise ValueError("Value too large")
+                return None
+
+        class AddTenChild(ChildNode):
+            """Add 10 to value."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                return value + 10
+
+        node = EnvParentNode(name="test", env_value=5)
+        assert node.children is not None
+        node["double"] = DoubleChild(name="double")
+        node["positive"] = PositiveValidation(name="positive")
+        node["range"] = RangeValidation(name="range")
+        node["add_ten"] = AddTenChild(name="add_ten")
+
+        result = node.get_value()
+        assert result == 20
+
+    def test_get_value_validation_child_raises_error(self) -> None:
+        """Test that validation child errors propagate correctly."""
+
+        class StrictValidation(ChildNode):
+            """Validation that raises for invalid input."""
+
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: Any,
+                parent: Any,
+                **kwargs: Any,
+            ) -> Any:
+                if value != "valid":
+                    raise ValueError("Invalid value")
+                return None
+
+        node = EnvParentNode(name="test", env_value="invalid")
+        assert node.children is not None
+        node["validate"] = StrictValidation(name="validate")
+
+        with pytest.raises(ValueError, match="Invalid value"):
+            node.get_value()
 
 
 class TestParentNodeInheritance:
@@ -455,13 +679,13 @@ class TestParentNodeEdgeCases:
 
         child = DummyChildForParent(name="child1")
         assert node.children is not None
-        node.children["child1"] = child
+        node["child1"] = child
         assert node.children is not None
         assert len(node.children) == 1
 
         child2 = DummyChildForParent(name="child2")
         assert node.children is not None
-        node.children["child2"] = child2
+        node["child2"] = child2
         assert node.children is not None
         assert len(node.children) == 2
 

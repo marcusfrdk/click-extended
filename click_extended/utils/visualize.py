@@ -2,12 +2,11 @@
 
 # pylint: disable=import-outside-toplevel
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from click_extended.errors import NoRootError
 
 if TYPE_CHECKING:
-    from click_extended.core._parent_node import ParentNode
     from click_extended.core._root_node import RootNode
 
 
@@ -26,8 +25,7 @@ def visualize_tree(root: "RootNode | None") -> None:
     print(root.name)
     assert root.children is not None
     for parent in root.children.values():
-        parent_typed = cast("ParentNode", parent)
-        print(f"  {parent_typed.name}")
-        assert parent_typed.children is not None
-        for child in parent_typed.children.values():
+        print(f"  {parent.name}")
+        assert parent.children is not None
+        for child in parent.children.values():
             print(f"    {child.name}")

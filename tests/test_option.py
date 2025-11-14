@@ -532,6 +532,21 @@ class TestOptionFlags:
         assert opt.is_flag is True
         assert opt.short == "-v"
 
+    def test_flag_default_is_false_when_not_set(self) -> None:
+        """Test that flags default to False when is_flag=True and no default provided."""
+        opt = Option(long="--verbose", is_flag=True)
+        assert opt.default is False
+
+    def test_flag_default_can_be_overridden(self) -> None:
+        """Test that flag default can be explicitly set."""
+        opt = Option(long="--verbose", is_flag=True, default=True)
+        assert opt.default is True
+
+    def test_non_flag_default_remains_none(self) -> None:
+        """Test that non-flag options keep None as default."""
+        opt = Option(long="--port")
+        assert opt.default is None
+
 
 class TestOptionMultiple:
     """Test Option multiple values behavior."""
@@ -561,6 +576,35 @@ class TestOptionEdgeCases:
         opt = Option(long="--v")
         assert opt.long == "--v"
         assert opt.name == "v"
+
+    def test_option_with_tags_string(self) -> None:
+        """Test option with single string tag."""
+        opt = Option(long="--port", tags="api-config")
+        assert opt.tags == ["api-config"]
+
+    def test_option_with_tags_list(self) -> None:
+        """Test option with list of tags."""
+        opt = Option(long="--port", tags=["api-config", "server"])
+        assert opt.tags == ["api-config", "server"]
+
+    def test_option_with_no_tags(self) -> None:
+        """Test option without tags defaults to empty list."""
+        opt = Option(long="--port")
+        assert opt.tags == []
+
+    def test_option_with_tags_and_other_params(self) -> None:
+        """Test option with tags and other parameters."""
+        opt = Option(
+            long="--api-key",
+            short="-k",
+            tags="auth",
+            required=True,
+            help="API key for authentication",
+        )
+        assert opt.tags == ["auth"]
+        assert opt.short == "-k"
+        assert opt.required is True
+        assert opt.help == "API key for authentication"
 
     @patch("click_extended.core._parent_node.queue_parent")
     def test_multiple_option_decorators_independent(

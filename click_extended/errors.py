@@ -1,5 +1,8 @@
 """Exceptions used in the `click_extended` library."""
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+
 
 class ClickExtendedError(Exception):
     """Base exception for exceptions defined in the `click_extended` library."""
@@ -70,5 +73,56 @@ class RootNodeExistsError(ClickExtendedError):
         message = (
             "Cannot register root node as a root node has already been "
             "defined. Only one root node is allowed per tree instance."
+        )
+        super().__init__(message)
+
+
+class InvalidChildOnTagError(ClickExtendedError):
+    """Exception raised when a transformation child is attached to a tag."""
+
+    def __init__(self, child_name: str, tag_name: str) -> None:
+        """
+        Initialize a new `InvalidChildOnTagError` instance.
+
+        Args:
+            child_name (str):
+                The name of the child node.
+            tag_name (str):
+                The name of the tag.
+        """
+        message = (
+            f"Cannot attach transformation child '{child_name}' to tag "
+            f"'{tag_name}'. Tags can only have validation-only children "
+            "(no return statement or return None)."
+        )
+        super().__init__(message)
+
+
+class DuplicateNameError(ClickExtendedError):
+    """Exception raised when a name collision is detected."""
+
+    def __init__(
+        self, name: str, type1: str, type2: str, location1: str, location2: str
+    ) -> None:
+        """
+        Initialize a new `DuplicateNameError` instance.
+
+        Args:
+            name (str):
+                The conflicting name.
+            type1 (str):
+                The type of the first node (e.g., "option", "tag").
+            type2 (str):
+                The type of the second node.
+            location1 (str):
+                Description of where the first node is defined.
+            location2 (str):
+                Description of where the second node is defined.
+        """
+        message = (
+            f"The name '{name}' is used by both "
+            f"{type1} {location1} and {type2} {location2}. "
+            f"All names (options, arguments, environment variables, and tags) "
+            f"must be unique within a command."
         )
         super().__init__(message)

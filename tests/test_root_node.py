@@ -97,7 +97,7 @@ class TestRootNodeAbstractMethods:
                 return click.Command
 
         with pytest.raises(NotImplementedError):
-            IncompleteRootNode._get_click_decorator()  # type: ignore[misc]
+            IncompleteRootNode._get_click_decorator()  # type: ignore
 
     def test_get_click_cls_not_implemented(self) -> None:
         """Test that _get_click_cls must be implemented."""
@@ -108,7 +108,7 @@ class TestRootNodeAbstractMethods:
                 return click.command
 
         with pytest.raises(NotImplementedError):
-            IncompleteRootNode._get_click_cls()  # type: ignore[misc]
+            IncompleteRootNode._get_click_cls()  # type: ignore
 
 
 class TestRootNodeAsDecorator:
@@ -271,8 +271,8 @@ class TestRootNodeWrap:
             return "result"
 
         assert isinstance(test_func, RootNodeWrapper)
-        assert test_func._underlying is not None  # type: ignore[misc]
-        assert isinstance(test_func._underlying, click.Command)  # type: ignore[misc]
+        assert test_func._underlying is not None  # type: ignore
+        assert isinstance(test_func._underlying, click.Command)  # type: ignore
 
     @patch("click_extended.core._tree.get_pending_nodes")
     def test_wrap_applies_option_decorators(
@@ -286,8 +286,8 @@ class TestRootNodeWrap:
         def test_func(test_param: str) -> str:
             return test_param
 
-        assert test_func._underlying is not None  # type: ignore[misc]
-        assert isinstance(test_func._underlying, click.Command)  # type: ignore[misc]
+        assert test_func._underlying is not None  # type: ignore
+        assert isinstance(test_func._underlying, click.Command)  # type: ignore
 
     @patch("click_extended.core._tree.get_pending_nodes")
     def test_wrap_applies_argument_decorators(
@@ -460,7 +460,7 @@ class TestRootNodeInheritance:
         def test_func() -> None:
             pass
 
-        assert isinstance(test_func._root_instance, RootNode)  # type: ignore[misc]
+        assert isinstance(test_func._root_instance, RootNode)  # type: ignore
 
 
 class TestRootNodeEdgeCases:

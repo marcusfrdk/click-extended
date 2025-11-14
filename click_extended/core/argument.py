@@ -24,6 +24,7 @@ class Argument(ParentNode):
         help: str | None = None,
         required: bool = True,
         default: Any = None,
+        tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
         """
@@ -43,6 +44,8 @@ class Argument(ParentNode):
                 Whether this argument is required. Defaults to `True`.
             default (Any):
                 Default value if not provided. Defaults to `None`.
+            tags (str | list[str], optional):
+                Tag(s) to associate with this argument for grouping.
             **kwargs (Any):
                 Additional keyword arguments.
         """
@@ -52,6 +55,7 @@ class Argument(ParentNode):
             help=help,
             required=required,
             default=default,
+            tags=tags,
         )
         self.nargs = nargs
         self.type = type
@@ -65,6 +69,7 @@ def argument(
     help: str | None = None,
     required: bool = True,
     default: Any = None,
+    tags: str | list[str] | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
@@ -84,6 +89,8 @@ def argument(
             Whether this argument is required. Defaults to `True`.
         default (Any):
             Default value if not provided. Defaults to `None`.
+        tags (str | list[str], optional):
+            Tag(s) to associate with this argument for grouping.
         **kwargs (Any):
             Additional Click argument parameters.
 
@@ -119,5 +126,6 @@ def argument(
         help=help,
         required=required,
         default=default,
+        tags=tags,
         **kwargs,
     )

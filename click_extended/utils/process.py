@@ -1,20 +1,32 @@
 """Utility functions for processing child nodes."""
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Mapping, cast
 
 if TYPE_CHECKING:
     from click_extended.core._child_node import ChildNode
+    from click_extended.core._parent_node import ParentNode
+    from click_extended.core.tag import Tag
 
 
-def process_children(value: Any, children: dict[Any, Any]) -> Any:
+def process_children(
+    value: Any,
+    children: Mapping[Any, Any],
+    parent: "ParentNode | Tag",
+    tags: dict[str, "Tag"] | None = None,
+) -> Any:
     """
     Process a value through a chain of child nodes.
 
     Args:
         value (Any):
             The initial value to process.
-        children (dict[Any, Any]):
-            Dictionary of child nodes to process the value through.
+        children (Mapping[Any, Any]):
+            Mapping of child nodes to process the value through.
+        parent (ParentNode | Tag):
+            The parent node that owns these children.
+        tags (dict[str, Tag], optional):
+            Dictionary mapping tag names to Tag instances.
+            Passed to each child's process method.
 
     Returns:
         Any:
@@ -22,16 +34,24 @@ def process_children(value: Any, children: dict[Any, Any]) -> Any:
     """
     all_children = [cast("ChildNode", child) for child in children.values()]
 
+    if tags is None:
+        tags = {}
+
     for child in all_children:
         siblings = list(
             {c.__class__.__name__ for c in all_children if id(c) != id(child)}
         )
 
-        value = child.process(
+        result = child.process(
             value,
             *child.process_args,
             siblings=siblings,
+            tags=tags,
+            parent=parent,
             **child.process_kwargs,
         )
+
+        if result is not None:
+            value = result
 
     return value

@@ -1,10 +1,13 @@
 """Tests for the Env class."""
 
 import os
+from typing import Any
 from unittest.mock import MagicMock, patch
 
+from click_extended.core._child_node import ChildNode
 from click_extended.core._parent_node import ParentNode
 from click_extended.core.env import Env, env
+from click_extended.core.tag import Tag
 
 
 class TestEnvInitialization:
@@ -549,8 +552,11 @@ class TestEnvIntegration:
             def process(
                 self,
                 value: str,
-                *args: tuple[str, ...],
-                **kwargs: dict[str, str],
+                *args: Any,
+                siblings: list[str],
+                tags: dict[str, Tag],
+                parent: ParentNode | Tag,
+                **kwargs: Any,
             ) -> str:
                 """Uppercase the value."""
                 return value.upper() if value else value
@@ -559,7 +565,7 @@ class TestEnvIntegration:
             e = Env(name="test", env_name="TEST_VAR")
             child = UppercaseChild(name="uppercase")
             assert e.children is not None
-            e.children[0] = child
+            e[0] = child
 
             value = e.get_value()
             assert value == "LOWERCASE"

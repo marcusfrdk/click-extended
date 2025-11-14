@@ -1,31 +1,25 @@
 """The node used as a root node."""
 
 # pylint: disable=invalid-name
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-locals
 
 import asyncio
 from functools import wraps
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generic,
-    ParamSpec,
-    TypeVar,
-    cast,
-)
+from typing import Any, Callable, Generic, Mapping, ParamSpec, TypeVar, cast
 
 import click
 
 from click_extended.core._node import Node
+from click_extended.core._parent_node import ParentNode
 from click_extended.core._tree import Tree
 from click_extended.core.argument import Argument
 from click_extended.core.option import Option
-from click_extended.errors import NoRootError
+from click_extended.core.tag import Tag
+from click_extended.errors import DuplicateNameError, NoRootError
 from click_extended.utils.process import process_children
 from click_extended.utils.visualize import visualize_tree
-
-if TYPE_CHECKING:
-    from click_extended.core._parent_node import ParentNode
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -47,8 +41,10 @@ class RootNodeWrapper(Generic[ClickType]):
         Initialize the wrapper.
 
         Args:
-            underlying: The underlying Click Command or Group instance.
-            instance: The RootNode instance to wrap.
+            underlying (ClickType):
+                The underlying Click Command or Group instance.
+            instance (RootNode):
+                The `RootNode` instance to wrap.
         """
         self._underlying = underlying
         self._root_instance = instance
@@ -90,6 +86,18 @@ class RootNode(Node):
         self.extra_args = args
         self.extra_kwargs = kwargs
 
+    @property
+    def children(
+        self,
+    ) -> Mapping[str | int, "ParentNode"]:
+        """Get the children with proper ParentNode typing."""
+        return cast(Mapping[str | int, "ParentNode"], self._children)
+
+    @children.setter
+    def children(self, value: dict[str | int, Node] | None) -> None:
+        """Set the children storage."""
+        self._children = value
+
     @classmethod
     def _get_click_decorator(cls) -> Callable[..., Any]:
         """
@@ -99,7 +107,8 @@ class RootNode(Node):
 
         Returns:
             Callable:
-                The Click decorator function (e.g., click.command, click.group).
+                The Click decorator function (e.g.,
+                `click.command`, `click.group`).
         """
         raise NotImplementedError(
             "Subclasses must implement _get_click_decorator()"
@@ -115,7 +124,7 @@ class RootNode(Node):
 
         Returns:
             type[click.Command]:
-                The Click class (e.g., AliasedCommand, AliasedGroup).
+                The Click class (e.g., `AliasedCommand`, `AliasedGroup`).
         """
         raise NotImplementedError("Subclasses must implement _get_click_cls()")
 
@@ -168,26 +177,95 @@ class RootNode(Node):
                     raise NoRootError
 
                 assert instance.tree.root.children is not None
+
+                all_tag_names: set[str] = set()
+                for parent_node in instance.tree.root.children.values():
+                    if isinstance(
+                        parent_node, (Option, Argument, type(parent_node))
+                    ):
+                        all_tag_names.update(parent_node.tags)
+
+                tags_dict: dict[str, "Tag"] = {}
+                for tag_name, tag in instance.tree.tags.items():
+                    tags_dict[tag_name] = tag
+                    tag.parent_nodes = []
+
+                for tag_name in all_tag_names:
+                    if tag_name not in tags_dict:
+                        auto_tag = Tag(name=tag_name)
+                        tags_dict[tag_name] = auto_tag
+                        auto_tag.parent_nodes = []
+
+                for parent_node in instance.tree.root.children.values():
+                    if isinstance(
+                        parent_node, (Option, Argument, type(parent_node))
+                    ):
+                        for tag_name in parent_node.tags:
+                            if tag_name in tags_dict:
+                                tags_dict[tag_name].parent_nodes.append(
+                                    parent_node
+                                )
+
+                seen_names: dict[str, tuple[str, str]] = {}
+
+                for parent_node in instance.tree.root.children.values():
+                    if isinstance(
+                        parent_node, (Option, Argument, type(parent_node))
+                    ):
+                        node_type = parent_node.__class__.__name__.lower()
+                        node_desc = f"'{parent_node.name}'"
+
+                        if parent_node.name in seen_names:
+                            prev_type, prev_desc = seen_names[parent_node.name]
+                            raise DuplicateNameError(
+                                parent_node.name,
+                                prev_type,
+                                node_type,
+                                prev_desc,
+                                node_desc,
+                            )
+                        seen_names[parent_node.name] = (node_type, node_desc)
+
+                for tag_name in tags_dict:
+                    if tag_name in seen_names:
+                        prev_type, prev_desc = seen_names[tag_name]
+                        raise DuplicateNameError(
+                            tag_name,
+                            prev_type,
+                            "tag",
+                            prev_desc,
+                            f"'{tag_name}'",
+                        )
+                    seen_names[tag_name] = ("tag", f"'{tag_name}'")
+
                 for (
                     parent_name,
                     parent_node,
                 ) in instance.tree.root.children.items():
                     if isinstance(parent_name, str):
-                        parent_node_typed = cast("ParentNode", parent_node)
-                        parent_node_children = parent_node_typed.children
-
-                        if isinstance(parent_node_typed, (Option, Argument)):
+                        if isinstance(parent_node, (Option, Argument)):
                             raw_value = call_kwargs.get(parent_name)
-                            if parent_node_children:
+                            was_provided = (
+                                parent_name in call_kwargs
+                                and raw_value != parent_node.default
+                            )
+                            parent_node.set_raw_value(raw_value, was_provided)
+
+                            if parent_node.children:
                                 parent_values[parent_name] = process_children(
-                                    raw_value, parent_node_children
+                                    raw_value,
+                                    parent_node.children,
+                                    parent_node,
+                                    tags_dict,
                                 )
                             else:
                                 parent_values[parent_name] = raw_value
                         else:
-                            parent_values[parent_name] = (
-                                parent_node_typed.get_value()
-                            )
+                            parent_values[parent_name] = parent_node.get_value()
+
+                for tag_name, tag in instance.tree.tags.items():
+                    if tag.children:
+                        process_children(None, tag.children, tag, tags_dict)
 
                 merged_kwargs: dict[str, Any] = {**call_kwargs, **parent_values}
 
@@ -217,7 +295,7 @@ class RootNode(Node):
             name (str):
                 The name of the root node.
             instance (RootNode):
-                The RootNode instance that owns this tree.
+                The `RootNode` instance that owns this tree.
             **kwargs (Any):
                 Additional keyword arguments passed to the Click decorator.
 

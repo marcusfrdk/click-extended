@@ -1,12 +1,13 @@
 """Base class for all node types."""
 
 from abc import ABC
+from typing import Mapping
 
 
 class Node(ABC):
     """Base class for all node types."""
 
-    children: dict[str | int, "Node"] | None
+    _children: dict[str | int, "Node"] | None
 
     def __init__(
         self,
@@ -19,7 +20,17 @@ class Node(ABC):
         """
         self.name = name
         self.parent = parent
-        self.children = children or {}
+        self._children = children or {}
+
+    @property
+    def children(self) -> Mapping[str | int, "Node"] | None:
+        """Get the children dictionary."""
+        return self._children
+
+    @children.setter
+    def children(self, value: dict[str | int, "Node"] | None) -> None:
+        """Set the children dictionary."""
+        self._children = value
 
     def get(self, name: str) -> "Node | None":
         """
@@ -29,24 +40,24 @@ class Node(ABC):
             name (str):
                 The name of the child.
         """
-        if self.children is None:
+        if self._children is None:
             return None
-        return self.children.get(name, None)
+        return self._children.get(name, None)
 
-    def __getitem__(self, name: str) -> "Node":
-        if self.children is None:
+    def __getitem__(self, name: str | int) -> "Node":
+        if self._children is None:
             raise KeyError("Node has no children")
-        return self.children[name]
+        return self._children[name]
 
-    def __setitem__(self, name: str, node: "Node") -> None:
-        if self.children is None:
+    def __setitem__(self, name: str | int, node: "Node") -> None:
+        if self._children is None:
             raise TypeError("Cannot set child on a node with no children")
-        self.children[name] = node
+        self._children[name] = node
 
     def __len__(self) -> int:
-        if self.children is None:
+        if self._children is None:
             return 0
-        return len(self.children)
+        return len(self._children)
 
     def __str__(self) -> str:
         return repr(self)

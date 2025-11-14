@@ -28,6 +28,7 @@ class Env(ParentNode):
         help: str | None = None,
         required: bool = False,
         default: Any = None,
+        tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
         """
@@ -45,6 +46,8 @@ class Env(ParentNode):
                 Whether this parameter is required. Defaults to `False`.
             default (Any):
                 Default value if environment variable is not set.
+            tags (str | list[str], optional):
+                Tag(s) to associate with this parameter for grouping.
             **kwargs (Any):
                 Additional keyword arguments.
         """
@@ -53,6 +56,7 @@ class Env(ParentNode):
             help=help,
             required=required,
             default=default,
+            tags=tags,
         )
         self.env_name = env_name
         self.extra_kwargs = kwargs
@@ -72,13 +76,18 @@ class Env(ParentNode):
                 regardless of whether a default is provided.
         """
         value = os.getenv(self.env_name)
+        was_provided = value is not None
+
         if value is None:
             if self.required:
                 raise ValueError(
                     f"Required environment variable '{self.env_name}' "
                     "is not set."
                 )
-            return self.default
+            value = self.default
+
+        self._was_provided = was_provided
+        self._raw_value = value
         return value
 
 
@@ -88,6 +97,7 @@ def env(
     help: str | None = None,
     required: bool = False,
     default: Any = None,
+    tags: str | list[str] | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
@@ -111,6 +121,8 @@ def env(
         default (Any):
             Default value if environment variable is not set and
             `required=False`. Defaults to `None`.
+        tags (str | list[str], optional):
+            Tag(s) to associate with this parameter for grouping.
         **kwargs (Any):
             Additional keyword arguments.
 
@@ -136,5 +148,6 @@ def env(
         help=help,
         required=required,
         default=default,
+        tags=tags,
         **kwargs,
     )

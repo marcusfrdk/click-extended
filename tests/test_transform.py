@@ -236,7 +236,7 @@ cases: list[Case] = [
 class TestSnakeCase:
     """Test the snake case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -246,7 +246,7 @@ class TestSnakeCase:
 class TestScreamingSnakeCase:
     """Test the screaming snake case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -256,7 +256,7 @@ class TestScreamingSnakeCase:
 class TestCamelCase:
     """Test the camel case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -266,7 +266,7 @@ class TestCamelCase:
 class TestPascalCase:
     """Test the pascal case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -276,7 +276,7 @@ class TestPascalCase:
 class TestKebabCase:
     """Test the kebab case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -286,7 +286,7 @@ class TestKebabCase:
 class TestTrainCase:
     """Test the train case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -296,7 +296,7 @@ class TestTrainCase:
 class TestFlatCaase:
     """Test the flat case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -306,7 +306,7 @@ class TestFlatCaase:
 class TestDotCase:
     """Test the dot case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -316,7 +316,7 @@ class TestDotCase:
 class TestTitleCase:
     """Test the pascal case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)
@@ -326,7 +326,7 @@ class TestTitleCase:
 class TestPathCase:
     """Test the path case methods."""
 
-    def test_cases(self):
+    def test_cases(self) -> None:
         """Test cases."""
         for case in cases:
             t = Transform(case.value)

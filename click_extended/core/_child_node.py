@@ -9,6 +9,7 @@ from click_extended.utils.transform import Transform
 
 if TYPE_CHECKING:
     from click_extended.core._parent_node import ParentNode
+    from click_extended.core.tag import Tag
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -56,7 +57,7 @@ class ChildNode(Node, ABC):
         """
         return None
 
-    def __getitem__(self, name: str) -> Node:
+    def __getitem__(self, name: str | int) -> Node:
         raise KeyError("A ChildNode instance has no children.")
 
     @classmethod
@@ -91,7 +92,13 @@ class ChildNode(Node, ABC):
 
     @abstractmethod
     def process(
-        self, value: Any, *args: Any, siblings: list[str], **kwargs: Any
+        self,
+        value: Any,
+        *args: Any,
+        siblings: list[str],
+        tags: dict[str, "Tag"],
+        parent: "ParentNode | Tag",
+        **kwargs: Any,
     ) -> Any:
         """
         Process the value of the chain and returns the processed value.
@@ -107,8 +114,16 @@ class ChildNode(Node, ABC):
             siblings (list[str]):
                 A list of unique class names of all sibling child nodes
                 in the parent. This is always provided by the ParentNode.
+            tags (dict[str, Tag]):
+                Dictionary mapping tag names to Tag instances.
+                Allows cross-node validation and access to tagged parameters
+                via `Tag.get_provided_values()` or `Tag.parent_nodes`.
+            parent (ParentNode | Tag):
+                The parent node (ParentNode or Tag) that this child is
+                attached to. Use `isinstance(parent, Tag)` to check if attached
+                to a tag.
             **kwargs (Any):
-                Additional keyword arguments passed from as_decorator.
+                Additional keyword arguments passed from `as_decorator`.
 
         Returns:
             Any:

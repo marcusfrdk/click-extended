@@ -171,7 +171,7 @@ class TestArgumentAsDecorator:
 
         decorator(dummy)
 
-        instance = mock_queue.call_args[0][0]  # type: ignore[index]
+        instance = mock_queue.call_args[0][0]  # type: ignore
         assert instance.name == "port"
         assert instance.nargs == 1
         assert instance.type is int
@@ -252,7 +252,7 @@ class TestArgumentDecoratorFunction:
         def test_func(port: int) -> int:  # type: ignore
             return port
 
-        instance = mock_queue.call_args[0][0]  # type: ignore[index]
+        instance = mock_queue.call_args[0][0]  # type: ignore
         assert instance.name == "port"
         assert instance.nargs == 1
         assert instance.type is int
@@ -270,7 +270,7 @@ class TestArgumentDecoratorFunction:
         def test_func(files: list[str]) -> list[str]:  # type: ignore
             return files
 
-        instance = mock_queue.call_args[0][0]  # type: ignore[index]
+        instance = mock_queue.call_args[0][0]  # type: ignore
         assert instance.nargs == -1
 
     @patch("click_extended.core._parent_node.queue_parent")
@@ -283,7 +283,7 @@ class TestArgumentDecoratorFunction:
         def test_func(count: int) -> int:  # type: ignore
             return count
 
-        instance = mock_queue.call_args[0][0]  # type: ignore[index]
+        instance = mock_queue.call_args[0][0]  # type: ignore
         assert instance.type is int
 
     @patch("click_extended.core._parent_node.queue_parent")
@@ -294,7 +294,7 @@ class TestArgumentDecoratorFunction:
         def test_func(file: str) -> str:  # type: ignore
             return file
 
-        instance = mock_queue.call_args[0][0]  # type: ignore[index]
+        instance = mock_queue.call_args[0][0]  # type: ignore
         assert instance.help == "Input file path"
 
     @patch("click_extended.core._parent_node.queue_parent")
@@ -307,7 +307,7 @@ class TestArgumentDecoratorFunction:
         def test_func(file: str) -> str:  # type: ignore
             return file
 
-        instance = mock_queue.call_args[0][0]  # type: ignore[index]
+        instance = mock_queue.call_args[0][0]  # type: ignore
         assert instance.extra_kwargs == {"custom": "value"}
 
     @patch("click_extended.core._parent_node.queue_parent")
@@ -574,7 +574,6 @@ class TestArgumentEdgeCases:
 
         assert func1() == "func1"
         assert func2() == "func2"
-        # Should be called twice (once per function)
         assert mock_queue.call_count == 2
 
     def test_argument_preserves_parent_node_get_value(self) -> None:
