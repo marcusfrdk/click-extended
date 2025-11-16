@@ -15,6 +15,7 @@ from click_extended.core._node import Node
 from click_extended.core._parent_node import ParentNode
 from click_extended.core._tree import Tree
 from click_extended.core.argument import Argument
+from click_extended.core.env import Env
 from click_extended.core.option import Option
 from click_extended.core.tag import Tag
 from click_extended.errors import DuplicateNameError, NoRootError
@@ -237,6 +238,36 @@ class RootNode(Node):
                             f"'{tag_name}'",
                         )
                     seen_names[tag_name] = ("tag", f"'{tag_name}'")
+
+                missing_env_vars: list[str] = []
+                for parent_node in instance.tree.root.children.values():
+                    if isinstance(parent_node, Env):
+                        missing_var = parent_node.check_required()
+                        if missing_var:
+                            missing_env_vars.append(missing_var)
+
+                if missing_env_vars:
+                    match len(missing_env_vars):
+                        case 1:
+                            error_msg = (
+                                f"Required environment variable "
+                                f"'{missing_env_vars[0]}' is not set."
+                            )
+                        case 2:
+                            error_msg = (
+                                f"Required environment variables "
+                                f"'{missing_env_vars[0]}' and "
+                                f"'{missing_env_vars[1]}' are not set."
+                            )
+                        case _:
+                            vars_list = "', '".join(missing_env_vars[:-1])
+                            error_msg = (
+                                f"Required environment variables "
+                                f"'{vars_list}' and '{missing_env_vars[-1]}' "
+                                f"are not set."
+                            )
+
+                    raise ValueError(error_msg)
 
                 for (
                     parent_name,

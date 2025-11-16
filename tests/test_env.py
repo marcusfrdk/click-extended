@@ -629,3 +629,267 @@ class TestEnvIntegration:
         with patch.dict(os.environ, {}, clear=True):
             e = Env(name="test", env_name="NONEXISTENT_VAR")
             assert e.get_raw_value() is None
+
+
+class TestEnvCheckRequired:
+    """Test Env.check_required functionality."""
+
+    def test_check_required_returns_none_when_env_var_set(self) -> None:
+        """Test check_required returns None when required env var is set."""
+        with patch.dict(os.environ, {"TEST_VAR": "value"}):
+            e = Env(name="test", env_name="TEST_VAR", required=True)
+            assert e.check_required() is None
+
+    def test_check_required_returns_env_name_when_missing(self) -> None:
+        """Test check_required returns env_name when required var is missing."""
+        with patch.dict(os.environ, {}, clear=True):
+            e = Env(name="test", env_name="MISSING_VAR", required=True)
+            assert e.check_required() == "MISSING_VAR"
+
+    def test_check_required_returns_none_when_not_required(self) -> None:
+        """Test check_required returns None when env var is not required."""
+        with patch.dict(os.environ, {}, clear=True):
+            e = Env(name="test", env_name="OPTIONAL_VAR", required=False)
+            assert e.check_required() is None
+
+    def test_check_required_with_required_false_and_env_set(self) -> None:
+        """Test check_required with optional env var that is set."""
+        with patch.dict(os.environ, {"OPTIONAL_VAR": "value"}):
+            e = Env(name="test", env_name="OPTIONAL_VAR", required=False)
+            assert e.check_required() is None
+
+    def test_check_required_ignores_default_value(self) -> None:
+        """Test check_required ignores default value when required=True."""
+        with patch.dict(os.environ, {}, clear=True):
+            e = Env(
+                name="test",
+                env_name="MISSING_VAR",
+                required=True,
+                default="default_value",
+            )
+            assert e.check_required() == "MISSING_VAR"
+
+    def test_check_required_does_not_raise_exception(self) -> None:
+        """Test check_required does not raise exception (unlike get_raw_value)."""
+        with patch.dict(os.environ, {}, clear=True):
+            e = Env(name="test", env_name="MISSING_VAR", required=True)
+            result = e.check_required()
+            assert result == "MISSING_VAR"
+
+    def test_check_required_multiple_times(self) -> None:
+        """Test check_required can be called multiple times."""
+        with patch.dict(os.environ, {}, clear=True):
+            e = Env(name="test", env_name="MISSING_VAR", required=True)
+            assert e.check_required() == "MISSING_VAR"
+            assert e.check_required() == "MISSING_VAR"
+            assert e.check_required() == "MISSING_VAR"
+
+    def test_check_required_with_empty_string_env_var(self) -> None:
+        """Test check_required treats empty string as set."""
+        with patch.dict(os.environ, {"EMPTY_VAR": ""}):
+            e = Env(name="test", env_name="EMPTY_VAR", required=True)
+            assert e.check_required() is None
+
+
+class TestEnvMultipleMissingVariables:
+    """Test multiple missing required environment variables error handling."""
+
+    def test_single_missing_variable_error_message(self) -> None:
+        """Test error message for single missing required variable."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("MISSING_VAR_1", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert (
+                    "Required environment variable 'MISSING_VAR_1' is not set"
+                    in error_msg
+                )
+                assert " and " not in error_msg
+
+    def test_two_missing_variables_error_message(self) -> None:
+        """Test error message for two missing required variables."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("MISSING_VAR_1", required=True)
+        @env("MISSING_VAR_2", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert "Required environment variables" in error_msg
+                assert "'MISSING_VAR_1'" in error_msg
+                assert "'MISSING_VAR_2'" in error_msg
+                assert " and " in error_msg
+                assert error_msg.count("'") == 4
+
+    def test_three_missing_variables_error_message(self) -> None:
+        """Test error message for three missing required variables."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("MISSING_VAR_1", required=True)
+        @env("MISSING_VAR_2", required=True)
+        @env("MISSING_VAR_3", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert "Required environment variables" in error_msg
+                assert "'MISSING_VAR_1'" in error_msg
+                assert "'MISSING_VAR_2'" in error_msg
+                assert "'MISSING_VAR_3'" in error_msg
+                assert " and " in error_msg
+                assert "," in error_msg
+
+    def test_mixed_required_and_optional_variables(self) -> None:
+        """Test only required missing variables are reported."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("REQUIRED_VAR", required=True)
+        @env("OPTIONAL_VAR", required=False)
+        @env("REQUIRED_VAR_2", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert "'REQUIRED_VAR'" in error_msg
+                assert "'REQUIRED_VAR_2'" in error_msg
+                assert "'OPTIONAL_VAR'" not in error_msg
+
+    def test_some_required_variables_set(self) -> None:
+        """Test error message when some required variables are set."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("SET_VAR", required=True)
+        @env("MISSING_VAR_1", required=True)
+        @env("MISSING_VAR_2", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {"SET_VAR": "value"}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert "'MISSING_VAR_1'" in error_msg
+                assert "'MISSING_VAR_2'" in error_msg
+                assert "'SET_VAR'" not in error_msg
+
+    def test_all_required_variables_set_no_error(self) -> None:
+        """Test no error when all required variables are set."""
+        from click_extended.core.command import command
+
+        call_count = 0
+
+        @command()
+        @env("VAR_1", required=True)
+        @env("VAR_2", required=True)
+        @env("VAR_3", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            nonlocal call_count
+            call_count += 1
+
+        with patch.dict(
+            os.environ,
+            {"VAR_1": "v1", "VAR_2": "v2", "VAR_3": "v3"},
+            clear=True,
+        ):
+            test_cmd([], standalone_mode=False)
+            assert call_count == 1
+
+    def test_error_raised_before_processing(self) -> None:
+        """Test that validation happens before any processing."""
+        from click_extended.core.command import command
+
+        process_called = False
+
+        class TestChild(ChildNode):  # type: ignore
+            def process(
+                self,
+                value: Any,
+                *args: Any,
+                siblings: list[str],
+                tags: dict[str, Tag],
+                parent: ParentNode | Tag,
+                **kwargs: Any,
+            ) -> Any:
+                nonlocal process_called
+                process_called = True
+                return value
+
+        @command()
+        @env("MISSING_VAR", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError:
+                assert not process_called
+
+    def test_error_message_grammar_for_one_variable(self) -> None:
+        """Test proper grammar (singular) for one missing variable."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("MISSING_VAR", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert "variable" in error_msg.lower()
+                assert "is not set" in error_msg
+
+    def test_error_message_grammar_for_multiple_variables(self) -> None:
+        """Test proper grammar (plural) for multiple missing variables."""
+        from click_extended.core.command import command
+
+        @command()
+        @env("VAR_1", required=True)
+        @env("VAR_2", required=True)
+        def test_cmd(**kwargs: Any) -> None:
+            pass
+
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                test_cmd([], standalone_mode=False)
+                assert False, "Expected ValueError"
+            except ValueError as ex:
+                error_msg = str(ex)
+                assert "variables" in error_msg.lower()
+                assert "are not set" in error_msg

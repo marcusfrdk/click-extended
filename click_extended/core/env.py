@@ -90,6 +90,19 @@ class Env(ParentNode):
         self._raw_value = value
         return value
 
+    def check_required(self) -> str | None:
+        """
+        Check if required environment variable is set.
+
+        Returns:
+            str | None:
+                The name of the missing environment variable if required
+                and not set, otherwise None.
+        """
+        if self.required and os.getenv(self.env_name) is None:
+            return self.env_name
+        return None
+
 
 def env(
     env_name: str,
