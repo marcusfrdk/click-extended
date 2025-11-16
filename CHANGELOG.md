@@ -15,6 +15,9 @@
 
 - Updated unit tests for the `Tree` class.
 - Added new sections to `README.md` file.
+- Renamed `publish.yml` to `release.yml`.
+- Improved release action to include relevant changelog section.
+- Renamed name of `tests.yml` from `CI` to `Tests`.
 
 ## v0.0.2
 
