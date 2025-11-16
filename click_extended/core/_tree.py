@@ -3,8 +3,11 @@
 # pylint: disable=global-variable-not-assigned
 # pylint: disable=import-outside-toplevel
 # pylint: disable=broad-exception-caught
+# pylint: disable=too-many-locals
+# pylint: disable=protected-access
+# pylint: disable=too-many-branches
 
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from click_extended.errors import (
     InvalidChildOnTagError,
@@ -17,6 +20,7 @@ from click_extended.utils.visualize import visualize_tree
 
 if TYPE_CHECKING:
     from click_extended.core._child_node import ChildNode
+    from click_extended.core._global_node import GlobalNode
     from click_extended.core._parent_node import ParentNode
     from click_extended.core._root_node import RootNode
     from click_extended.core.tag import Tag
@@ -24,17 +28,18 @@ if TYPE_CHECKING:
 
 _pending_nodes: list[
     tuple[
-        Literal["parent", "child", "tag"],
-        "ParentNode | ChildNode | Tag",
+        Literal["parent", "child", "tag", "global"],
+        "ParentNode | ChildNode | Tag | GlobalNode",
     ]
 ] = []
 
 
-def get_pending_nodes() -> (
-    list[
-        tuple[Literal["parent", "child", "tag"], "ParentNode | ChildNode | Tag"]
+def get_pending_nodes() -> list[
+    tuple[
+        Literal["parent", "child", "tag", "global"],
+        "ParentNode | ChildNode | Tag | GlobalNode",
     ]
-):
+]:
     """Get and clear the pending nodes queue."""
     global _pending_nodes
     nodes = _pending_nodes.copy()
@@ -57,6 +62,11 @@ def queue_tag(node: "Tag") -> None:
     _pending_nodes.append(("tag", node))
 
 
+def queue_global(node: "GlobalNode") -> None:
+    """Queue a global node for the next root registration."""
+    _pending_nodes.append(("global", node))
+
+
 class Tree:
     """
     Class for storing the nodes of the current context.
@@ -72,6 +82,34 @@ class Tree:
         self.recent: "ParentNode | None" = None
         self.recent_tag: "Tag | None" = None
         self.tags: dict[str, "Tag"] = {}
+        self.globals: list["GlobalNode"] = []
+        self.data: dict[str, Any] = {}
+
+    def get_data(self, key: str) -> Any:
+        """
+        Get a value from the custom data dictionary.
+
+        Args:
+            key (str):
+                The key in the dictionary.
+
+        Returns:
+            Any:
+                The value of the key if found, `None` otherwise.
+        """
+        return self.data.get(key, None)
+
+    def set_data(self, key: str, value: Any) -> None:
+        """
+        Add a new key/value pair to the custom data dictionary.
+
+        Args:
+            key (str):
+                The key in the dictionary.
+            value (Any):
+                The value to add to the dictionary.
+        """
+        self.data[key] = value
 
     def register_root(self, node: "RootNode") -> None:
         """
@@ -140,6 +178,24 @@ class Tree:
                 tag_inst = cast("Tag", node_inst)
                 self.tags[tag_inst.name] = tag_inst
                 self.recent_tag = tag_inst
+            elif node_type == "global":
+                global_inst = cast("GlobalNode", node_inst)
+
+                if not global_inst.delay:
+                    global_inst.process(
+                        self,
+                        self.root,
+                        list(self.root.children.values()),
+                        self.tags,
+                        self.globals,
+                        (),
+                        {},
+                        *global_inst.process_args,
+                        **global_inst.process_kwargs,
+                    )
+                    global_inst._executed = True  # type: ignore
+
+                self.globals.insert(0, global_inst)
 
     def register_parent(self, node: "ParentNode") -> None:
         """

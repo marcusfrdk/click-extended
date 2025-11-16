@@ -5,12 +5,14 @@ from typing import Any
 import pytest
 
 from click_extended.core._child_node import ChildNode
+from click_extended.core._global_node import GlobalNode
 from click_extended.core._parent_node import ParentNode
 from click_extended.core._root_node import RootNode
 from click_extended.core._tree import (
     Tree,
     get_pending_nodes,
     queue_child,
+    queue_global,
     queue_parent,
 )
 from click_extended.errors import (
@@ -61,6 +63,32 @@ class DummyChildNode(ChildNode):
         return value
 
 
+class DummyGlobalNode(GlobalNode):
+    """Dummy GlobalNode for testing."""
+
+    def __init__(
+        self, name: str | None = None, delay: bool = False, **kwargs: Any
+    ) -> None:
+        """Initialize with optional return value."""
+        super().__init__(name=name, delay=delay)
+        self.return_value = kwargs.get("return_value", None)
+
+    def process(
+        self,
+        tree: Tree,
+        root: "RootNode",
+        parents: list["ParentNode"],
+        tags: dict[str, Any],
+        globals: list["GlobalNode"],
+        call_args: tuple[Any, ...],
+        call_kwargs: dict[str, Any],
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        """Return configured value."""
+        return self.return_value
+
+
 class TestTreeInitialization:
     """Tests for Tree initialization."""
 
@@ -69,6 +97,12 @@ class TestTreeInitialization:
         tree = Tree()
         assert tree.root is None
         assert tree.recent is None
+
+    def test_init_creates_empty_globals_list(self) -> None:
+        """Test that Tree initializes with empty globals list."""
+        tree = Tree()
+        assert isinstance(tree.globals, list)
+        assert len(tree.globals) == 0
 
     def test_multiple_trees_are_independent(self) -> None:
         """Test that multiple Tree instances are independent."""
@@ -108,6 +142,15 @@ class TestPendingNodesQueue:
         assert len(pending) == 1
         assert pending[0] == ("child", child)
 
+    def test_queue_global_adds_to_pending(self) -> None:
+        """Test that queue_global adds a global node to pending queue."""
+        global_node = DummyGlobalNode(name="test_global")
+        queue_global(global_node)
+
+        pending = get_pending_nodes()
+        assert len(pending) == 1
+        assert pending[0] == ("global", global_node)
+
     def test_get_pending_nodes_clears_queue(self) -> None:
         """Test that get_pending_nodes clears the queue after retrieval."""
         parent = DummyParentNode(name="test_parent")
@@ -134,6 +177,22 @@ class TestPendingNodesQueue:
         assert pending[0] == ("parent", parent)
         assert pending[1] == ("child", child1)
         assert pending[2] == ("child", child2)
+
+    def test_mixed_node_types_queued_in_order(self) -> None:
+        """Test that mixed node types are queued in order."""
+        parent = DummyParentNode(name="parent")
+        child = DummyChildNode(name="child")
+        global_node = DummyGlobalNode(name="global")
+
+        queue_global(global_node)
+        queue_parent(parent)
+        queue_child(child)
+
+        pending = get_pending_nodes()
+        assert len(pending) == 3
+        assert pending[0] == ("global", global_node)
+        assert pending[1] == ("parent", parent)
+        assert pending[2] == ("child", child)
 
     def test_queue_preserves_node_references(self) -> None:
         """Test that queued nodes maintain their identity."""
@@ -203,6 +262,36 @@ class TestTreeRegisterRoot:
         assert 0 in parent.children
         assert parent.children[0] is child
 
+    def test_register_root_processes_pending_globals(self) -> None:
+        """Test that register_root processes pending global nodes."""
+        tree = Tree()
+        root = DummyRootNode(name="root")
+        global_node = DummyGlobalNode(name="test_global")
+
+        queue_global(global_node)
+        tree.register_root(root)
+
+        assert len(tree.globals) == 1
+        assert tree.globals[0] is global_node
+
+    def test_register_root_processes_multiple_globals(self) -> None:
+        """Test that register_root processes multiple global nodes."""
+        tree = Tree()
+        root = DummyRootNode(name="root")
+        global1 = DummyGlobalNode(name="global1")
+        global2 = DummyGlobalNode(name="global2")
+        global3 = DummyGlobalNode(name="global3")
+
+        queue_global(global1)
+        queue_global(global2)
+        queue_global(global3)
+        tree.register_root(root)
+
+        assert len(tree.globals) == 3
+        assert tree.globals[0] is global1
+        assert tree.globals[1] is global2
+        assert tree.globals[2] is global3
+
     def test_register_root_reverses_pending_order(self) -> None:
         """Test that register_root processes nodes in reverse order."""
         tree = Tree()
@@ -241,6 +330,28 @@ class TestTreeRegisterRoot:
 
         with pytest.raises(NoParentError):
             tree.register_root(root)
+
+    def test_register_root_with_mixed_node_types(self) -> None:
+        """Test register_root with parent, child, and global nodes."""
+        tree = Tree()
+        root = DummyRootNode(name="root")
+        parent = DummyParentNode(name="parent")
+        child = DummyChildNode(name="child")
+        global_node = DummyGlobalNode(name="global")
+
+        queue_global(global_node)
+        queue_child(child)
+        queue_parent(parent)
+        tree.register_root(root)
+
+        assert tree.root is root
+        assert len(tree.globals) == 1
+        assert tree.globals[0] is global_node
+        assert root.children is not None
+        assert "parent" in root.children
+        assert parent.children is not None
+        assert 0 in parent.children
+        assert parent.children[0] is child
 
     def test_register_root_sets_recent_to_last_parent(self) -> None:
         """Test that register_root sets recent to the most recent parent."""
@@ -641,3 +752,27 @@ class TestTreeEdgeCases:
 
         assert tree.root is None
         assert tree.recent is None
+
+    def test_globals_list_independence(self) -> None:
+        """Test that globals list is independent between trees."""
+        tree1 = Tree()
+        tree2 = Tree()
+
+        global1 = DummyGlobalNode(name="global1")
+        global2 = DummyGlobalNode(name="global2")
+
+        tree1.globals.append(global1)
+        tree2.globals.append(global2)
+
+        assert len(tree1.globals) == 1
+        assert len(tree2.globals) == 1
+        assert tree1.globals[0] is global1
+        assert tree2.globals[0] is global2
+
+    def test_empty_globals_list_preserved(self) -> None:
+        """Test that empty globals list remains empty."""
+        tree = Tree()
+
+        assert len(tree.globals) == 0
+        _ = tree.globals
+        assert len(tree.globals) == 0

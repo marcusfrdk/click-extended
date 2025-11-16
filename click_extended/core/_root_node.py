@@ -4,6 +4,7 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-locals
+# pylint: disable=protected-access
 
 import asyncio
 from functools import wraps
@@ -239,6 +240,50 @@ class RootNode(Node):
                         )
                     seen_names[tag_name] = ("tag", f"'{tag_name}'")
 
+                for global_node in instance.tree.globals:
+                    if global_node.inject_name is not None:
+                        if global_node.inject_name in seen_names:
+                            prev_type, prev_desc = seen_names[
+                                global_node.inject_name
+                            ]
+                            raise DuplicateNameError(
+                                global_node.inject_name,
+                                prev_type,
+                                "global",
+                                prev_desc,
+                                f"'{global_node.inject_name}'",
+                            )
+                        seen_names[global_node.inject_name] = (
+                            "global",
+                            f"'{global_node.inject_name}'",
+                        )
+
+                global_values: dict[str, Any] = {}
+                parent_list = [
+                    cast("ParentNode", p)
+                    for p in instance.tree.root.children.values()
+                    if isinstance(p, (Option, Argument, Env))
+                ]
+
+                for global_node in instance.tree.globals:
+                    has_delay = global_node.delay
+                    has_executed = global_node._executed  # type: ignore
+                    if not has_delay and not has_executed:
+                        result = global_node.process(
+                            instance.tree,
+                            instance,
+                            parent_list,
+                            tags_dict,
+                            instance.tree.globals,
+                            call_args,
+                            call_kwargs,
+                            *global_node.process_args,
+                            **global_node.process_kwargs,
+                        )
+
+                        if global_node.inject_name is not None:
+                            global_values[global_node.inject_name] = result
+
                 missing_env_vars: list[str] = []
                 for parent_node in instance.tree.root.children.values():
                     if isinstance(parent_node, Env):
@@ -298,7 +343,28 @@ class RootNode(Node):
                     if tag.children:
                         process_children(None, tag.children, tag, tags_dict)
 
-                merged_kwargs: dict[str, Any] = {**call_kwargs, **parent_values}
+                for global_node in instance.tree.globals:
+                    if global_node.delay:
+                        result = global_node.process(
+                            instance.tree,
+                            instance,
+                            parent_list,
+                            tags_dict,
+                            instance.tree.globals,
+                            call_args,
+                            call_kwargs,
+                            *global_node.process_args,
+                            **global_node.process_kwargs,
+                        )
+
+                        if global_node.inject_name is not None:
+                            global_values[global_node.inject_name] = result
+
+                merged_kwargs: dict[str, Any] = {
+                    **call_kwargs,
+                    **parent_values,
+                    **global_values,
+                }
 
                 return func(*call_args, **merged_kwargs)
 
