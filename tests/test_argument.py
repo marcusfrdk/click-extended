@@ -472,11 +472,61 @@ class TestArgumentDefault:
         arg = Argument(name="test", default={"key": "value"})
         assert arg.default == {"key": "value"}
 
-    def test_default_with_required_false(self) -> None:
-        """Test default with required=False."""
+    def test_default_makes_argument_optional(self) -> None:
+        """Test that default automatically makes argument optional."""
+        arg = Argument(name="test", default="default")
+        assert arg.required is False
+        assert arg.default == "default"
+
+    def test_default_with_explicit_required_false(self) -> None:
+        """Test default with explicit required=False still works."""
         arg = Argument(name="test", required=False, default="default")
         assert arg.required is False
         assert arg.default == "default"
+
+
+class TestArgumentDefaultBehavior:
+    """Tests for default value auto-optional behavior."""
+
+    def test_default_string_makes_optional(self) -> None:
+        """Test that string default makes argument optional."""
+        arg = Argument(name="test", default="value")
+        assert arg.required is False
+
+    def test_default_int_makes_optional(self) -> None:
+        """Test that int default makes argument optional."""
+        arg = Argument(name="test", default=42)
+        assert arg.required is False
+
+    def test_default_zero_makes_optional(self) -> None:
+        """Test that default=0 makes argument optional."""
+        arg = Argument(name="test", default=0)
+        assert arg.required is False
+
+    def test_default_empty_string_makes_optional(self) -> None:
+        """Test that default='' makes argument optional."""
+        arg = Argument(name="test", default="")
+        assert arg.required is False
+
+    def test_default_false_makes_optional(self) -> None:
+        """Test that default=False makes argument optional."""
+        arg = Argument(name="test", default=False)
+        assert arg.required is False
+
+    def test_default_empty_list_makes_optional(self) -> None:
+        """Test that default=[] makes argument optional."""
+        arg = Argument(name="test", default=[])
+        assert arg.required is False
+
+    def test_no_default_stays_required(self) -> None:
+        """Test that no default keeps argument required."""
+        arg = Argument(name="test")
+        assert arg.required is True
+
+    def test_default_none_stays_required(self) -> None:
+        """Test that default=None doesn't change required status."""
+        arg = Argument(name="test", default=None)
+        assert arg.required is True
 
 
 class TestArgumentExtraKwargs:

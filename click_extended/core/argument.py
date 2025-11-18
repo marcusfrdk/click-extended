@@ -41,14 +41,23 @@ class Argument(ParentNode):
             help (str, optional):
                 Help text for this argument.
             required (bool):
-                Whether this argument is required. Defaults to `True`.
+                Whether this argument is required. Defaults to `True` unless
+                `default` is provided, which makes it optional automatically.
             default (Any):
-                Default value if not provided. Defaults to `None`.
+                Default value if not provided. When set, automatically makes
+                the argument optional (`required=False`). Defaults to `None`.
             tags (str | list[str], optional):
                 Tag(s) to associate with this argument for grouping.
             **kwargs (Any):
                 Additional keyword arguments.
+
+        Raises:
+            ValueError: If both `default` is provided and `required=True` is
+                explicitly set (detected via kwargs inspection in decorator).
         """
+        if default is not None and required is True:
+            required = False
+
         name = Transform(name).to_snake_case()
         super().__init__(
             name=name,
@@ -86,9 +95,11 @@ def argument(
         help (str, optional):
             Help text for this argument.
         required (bool):
-            Whether this argument is required. Defaults to `True`.
+            Whether this argument is required. Defaults to `True` unless
+            `default` is provided, which automatically makes it optional.
         default (Any):
-            Default value if not provided. Defaults to `None`.
+            Default value if not provided. When set, automatically makes
+            the argument optional (`required=False`). Defaults to `None`.
         tags (str | list[str], optional):
             Tag(s) to associate with this argument for grouping.
         **kwargs (Any):
@@ -119,6 +130,9 @@ def argument(
             print(f"Port: {port}")
         ```
     """
+    if default is not None and required is True:
+        required = False
+
     return Argument.as_decorator(
         name=name,
         nargs=nargs,

@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v0.0.4
+
+### Added
+
+- Added documentation for the `argument` decorator.
+
 ## v0.0.3
 
 ### Added
