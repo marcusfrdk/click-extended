@@ -7,6 +7,7 @@
 ### Added
 
 - Added documentation for the `argument` decorator.
+- Added documentation for the `option` decorator.
 
 ## v0.0.3
 
