@@ -8,6 +8,11 @@
 
 - Added documentation for the `argument` decorator.
 - Added documentation for the `option` decorator.
+- Added documentation for the `command` decorator.
+
+### Updated
+
+- Help message now only uses the first line of the docstring.
 
 ## v0.0.3
 

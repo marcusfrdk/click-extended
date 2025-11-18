@@ -172,7 +172,7 @@ def group(
             string or a list of strings.
         help (str, optional):
             The help message for the group. If not provided,
-            uses the function's docstring.
+            uses the first line of the function's docstring.
         **kwargs (Any):
             Additional arguments to pass to `click.Group`.
 
@@ -184,4 +184,13 @@ def group(
         kwargs["aliases"] = aliases
     if help is not None:
         kwargs["help"] = help
-    return Group.as_decorator(name, **kwargs)
+
+    def decorator(func: Callable[..., Any]) -> GroupWrapper:
+        if help is None and func.__doc__:
+            first_line = func.__doc__.strip().split("\n")[0].strip()
+            if first_line:
+                kwargs["help"] = first_line
+        wrapper: GroupWrapper = Group.as_decorator(name, **kwargs)(func)
+        return wrapper
+
+    return decorator
