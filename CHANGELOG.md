@@ -13,6 +13,7 @@
 - Added documentation for the `group` decorator.
 - Added documentation for the `tag` decorator.
 - Added documentation for the `RootNode` class.
+- Added documentation for the `ParentNode` class.
 
 ### Updated
 
