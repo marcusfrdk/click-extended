@@ -39,7 +39,7 @@ def my_command(username: str, password: str):
 
 ## Examples
 
-> [!INFO]
+> [!NOTE]
 > For demonstration purposes, many examples include child validation decorators that are custom (i.e. not available in `click_extended`).
 
 ### Basic Tag Grouping with Validation
