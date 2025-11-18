@@ -9,6 +9,7 @@
 - Added documentation for the `argument` decorator.
 - Added documentation for the `option` decorator.
 - Added documentation for the `command` decorator.
+- Added documentation for the `env` decorator.
 
 ### Updated
 
