@@ -11,6 +11,7 @@
 - Added documentation for the `command` decorator.
 - Added documentation for the `env` decorator.
 - Added documentation for the `group` decorator.
+- Added documentation for the `tag` decorator.
 
 ### Updated
 
