@@ -22,6 +22,7 @@
 - **Testing**: Added integration tests for type validation system.
 - **Validation**: Added `validation` module.
 - **@is_positive**: Added `validation.is_positive` decorator with unit tests.
+- **@as_path**: Added `@as_path` child decorator for validating and transforming a path.
 
 ### Updated
 
@@ -40,6 +41,7 @@
 - **Docs**: Updated structure of `CHANGELOG.md`.
 - **@tag**: Updated tag processing to iterate through each parent node value individually.
 - **Testing**: Updated unit tests for new process context parameter.
+- **pyproject.toml**: Disabled the pyright error `reportUnnecessaryIsInstance` (Disabled the warning for unnecessary isinstance checks).
 
 ### Fixed
 
