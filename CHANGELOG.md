@@ -10,10 +10,25 @@
 - Added new `ProcessMethod` type.
 - Added `validation` module.
 - Added `validation.is_positive` decorator with unit tests.
+- Added type validation system for `ChildNode` with `types` attribute and `validate_type()` method.
+- Added `TypeMismatchError` exception for type validation failures.
+- Added automatic type inference for `Option` and `Argument` classes.
+- Added comprehensive unit tests for type inference.
+- Added integration tests for type validation system.
 
 ### Updated
 
 - Updated unit tests for new process context parameter.
+- Updated `Option` class to infer type from default value when not explicitly specified.
+- Updated `Argument` class to infer type from default value when not explicitly specified.
+- Updated `process_children()` to validate child node types before processing.
+- Updated documentation for `Option` with type inference section and examples.
+- Updated documentation for `Argument` with type inference section and examples.
+
+### Fixed
+
+- Fixed circular import issue in type validation by using class name checks instead of isinstance.
+- Fixed Pylance type errors by adding proper type annotations with `cast()`.
 
 ## v0.0.4
 

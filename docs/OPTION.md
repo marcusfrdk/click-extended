@@ -6,19 +6,77 @@ An option in the command line interface is a named parameter that can be specifi
 
 ## Parameters
 
-| Name       | Description                                                                                                                                    | Type             | Required | Default |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | -------- | ------- |
-| `long`     | The long flag for the option (e.g., `--port`, `--config-file`). The parameter name is extracted by removing `--` and converting to snake_case. | str              | Yes      |         |
-| `short`    | The short flag for the option (e.g., `-p`, `-c`). Single letter with hyphen prefix.                                                            | str              | No       | None    |
-| `is_flag`  | Whether this is a boolean flag (no value needed). When `True`, defaults to `False` if not provided.                                            | bool             | No       | False   |
-| `type`     | Type to convert input to. Supports primitives (`int`, `str`, `float`, `bool`) and Click types (`click.Path`, `click.File`, etc.).              | type             | No       | str     |
-| `multiple` | Whether to allow multiple values for this option. Can be specified multiple times on command line.                                             | bool             | No       | False   |
-| `help`     | Help text displayed in CLI help output.                                                                                                        | str              | No       | None    |
-| `required` | Whether the option is required. Defaults to `False` (options are typically optional by nature).                                                | bool             | No       | False   |
-| `default`  | Default value if option not provided.                                                                                                          | Any              | No       | None    |
-| `tags`     | Tag(s) to associate with this option for validation or grouping. Used with the `@tag` decorator.                                               | str or list[str] | No       | None    |
+| Name       | Description                                                                                                                                    | Type             | Required | Default  |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | -------- | -------- |
+| `long`     | The long flag for the option (e.g., `--port`, `--config-file`). The parameter name is extracted by removing `--` and converting to snake_case. | str              | Yes      |          |
+| `short`    | The short flag for the option (e.g., `-p`, `-c`). Single letter with hyphen prefix.                                                            | str              | No       | None     |
+| `is_flag`  | Whether this is a boolean flag (no value needed). When `True`, defaults to `False` if not provided.                                            | bool             | No       | False    |
+| `type`     | Type to convert input to. If not specified, defaults to `str` or is inferred from `default`. Supports primitives and Click types.              | type             | No       | Inferred |
+| `multiple` | Whether to allow multiple values for this option. Can be specified multiple times on command line.                                             | bool             | No       | False    |
+| `help`     | Help text displayed in CLI help output.                                                                                                        | str              | No       | None     |
+| `required` | Whether the option is required. Defaults to `False` (options are typically optional by nature).                                                | bool             | No       | False    |
+| `default`  | Default value if option not provided.                                                                                                          | Any              | No       | None     |
+| `tags`     | Tag(s) to associate with this option for validation or grouping. Used with the `@tag` decorator.                                               | str or list[str] | No       | None     |
 
-> **Note:** The parameter name in your function is automatically derived from the long flag by removing `--` and converting hyphens to underscores (e.g., `--config-file` becomes `config_file`).
+> [!NOTE]
+> The parameter name in your function is automatically derived from the long flag by removing `--` and converting hyphens to underscores (e.g., `--config-file` becomes `config_file`).
+
+## Type Inference
+
+The `type` parameter supports automatic inference based on the following rules:
+
+1. **Explicit type specified**: Uses the specified type (e.g., `type=int`)
+2. **Default value provided**: Infers type from the default value (e.g., `default=5` → `int`)
+3. **Neither specified**: Defaults to `str`
+
+### Examples
+
+```python
+# Type inferred as int from default
+@option("--port", default=8080)  # type = int
+
+# Type inferred as float from default
+@option("--ratio", default=1.5)  # type = float
+
+# Type defaults to str (no default, no type)
+@option("--name")  # type = str
+
+# Explicit type overrides inference
+@option("--value", type=str, default=42)  # type = str, not int
+```
+
+This inference system helps reduce boilerplate while maintaining type safety and enabling proper validation.
+
+## Type Inference and Validators
+
+Type inference integrates seamlessly with the validation system. When using validators that specify supported types (like `@is_positive()` which supports `int` and `float`), the inferred type is automatically checked:
+
+```python
+from click_extended import command, option
+from click_extended.validation import is_positive
+
+# Working
+@command()
+@option("--count", default=5)
+@is_positive()
+def process(count: int):
+    print(f"Processing {count} items")
+
+@command()
+@option("--port", type=int)
+@is_positive()
+def serve(port: int):
+    print(f"Serving on port {port}")
+
+# Raises exception
+@command()
+@option("--name")  # Type inferred as str
+@is_positive()  # Error: is_positive only supports int and float
+def greet(name: str):
+    print(f"Hello, {name}!")
+```
+
+This type checking happens at validation time, providing clear error messages when validators are applied to incompatible types.
 
 ## Examples
 

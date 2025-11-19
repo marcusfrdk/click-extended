@@ -14,7 +14,7 @@ class TestArgumentInitialization:
         arg = Argument(name="filename")
         assert arg.name == "filename"
         assert arg.nargs == 1
-        assert arg.type is None
+        assert arg.type == str  # Inferred as str when no type/default
         assert arg.help is None
         assert arg.required is True
         assert arg.default is None
@@ -390,10 +390,21 @@ class TestArgumentNargs:
 class TestArgumentType:
     """Tests for type parameter."""
 
-    def test_type_default_is_none(self) -> None:
-        """Test that type defaults to None."""
+    def test_type_defaults_to_str(self) -> None:
+        """Test that type defaults to str when no default provided."""
         arg = Argument(name="test")
-        assert arg.type is None
+        assert arg.type == str
+
+    def test_type_inferred_from_default(self) -> None:
+        """Test that type is inferred from default value."""
+        arg_int = Argument(name="test", default=42)
+        assert arg_int.type == int
+
+        arg_float = Argument(name="test", default=3.14)
+        assert arg_float.type == float
+
+        arg_str = Argument(name="test", default="hello")
+        assert arg_str.type == str
 
     def test_type_can_be_int(self) -> None:
         """Test that type can be int."""
@@ -423,6 +434,90 @@ class TestArgumentType:
 
         arg = Argument(name="test", type=CustomType)
         assert arg.type is CustomType
+
+
+class TestArgumentTypeInference:
+    """Tests for argument type inference from default values."""
+
+    def test_type_defaults_to_str_when_no_type_or_default(self) -> None:
+        """Test that type defaults to str when neither type nor default provided."""
+        arg = Argument(name="filename")
+        assert arg.type == str
+
+    def test_type_inferred_as_int_from_int_default(self) -> None:
+        """Test that type is inferred as int from int default."""
+        arg = Argument(name="port", default=8080)
+        assert arg.type == int
+
+    def test_type_inferred_as_float_from_float_default(self) -> None:
+        """Test that type is inferred as float from float default."""
+        arg = Argument(name="ratio", default=2.5)
+        assert arg.type == float
+
+    def test_type_inferred_as_str_from_str_default(self) -> None:
+        """Test that type is inferred as str from str default."""
+        arg = Argument(name="name", default="default")
+        assert arg.type == str
+
+    def test_type_inferred_as_bool_from_bool_default(self) -> None:
+        """Test that type is inferred as bool from bool default."""
+        arg = Argument(name="flag", default=False)
+        assert arg.type == bool
+
+    def test_type_inferred_as_list_from_list_default(self) -> None:
+        """Test that type is inferred as list from list default."""
+        arg = Argument(name="items", default=[1, 2, 3])
+        assert arg.type == list
+
+    def test_type_inferred_as_tuple_from_tuple_default(self) -> None:
+        """Test that type is inferred as tuple from tuple default."""
+        arg = Argument(name="coords", default=(0, 0))
+        assert arg.type == tuple
+
+    def test_explicit_type_overrides_inference(self) -> None:
+        """Test that explicit type overrides type inference from default."""
+        arg = Argument(name="value", type=str, default=42)
+        assert arg.type == str
+        assert arg.default == 42
+
+    def test_explicit_float_type_with_int_default(self) -> None:
+        """Test explicit float type with int default."""
+        arg = Argument(name="ratio", type=float, default=5)
+        assert arg.type == float
+        assert arg.default == 5
+
+    def test_type_inference_with_none_default(self) -> None:
+        """Test that type defaults to str when default is None."""
+        arg = Argument(name="value", default=None)
+        assert arg.type == str
+
+    def test_type_inference_with_zero_default(self) -> None:
+        """Test that type is inferred correctly from zero values."""
+        arg_int = Argument(name="count", default=0)
+        assert arg_int.type == int
+
+        arg_float = Argument(name="ratio", default=0.0)
+        assert arg_float.type == float
+
+    def test_type_inference_with_empty_string_default(self) -> None:
+        """Test that type is inferred as str from empty string default."""
+        arg = Argument(name="name", default="")
+        assert arg.type == str
+
+    def test_type_inference_with_nargs(self) -> None:
+        """Test that type inference works with nargs parameter."""
+        arg = Argument(name="ports", nargs=-1, default=8080)
+        assert arg.type == int
+        assert arg.nargs == -1
+
+    def test_type_inference_preserved_with_other_params(self) -> None:
+        """Test that type inference works with other parameters."""
+        arg = Argument(
+            name="port", default=3000, help="Server port", required=False
+        )
+        assert arg.type == int
+        assert arg.default == 3000
+        assert arg.required is False
 
 
 class TestArgumentRequired:

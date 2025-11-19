@@ -16,7 +16,7 @@ class TestOptionInitialization:
         assert opt.name == "port"
         assert opt.short is None
         assert opt.is_flag is False
-        assert opt.type is None
+        assert opt.type == str  # Inferred as str when no type/default
         assert opt.multiple is False
         assert opt.help is None
         assert opt.required is False
@@ -511,6 +511,88 @@ class TestOptionTypes:
 
         opt = Option(long="--custom", type=CustomType)
         assert opt.type == CustomType
+
+
+class TestOptionTypeInference:
+    """Test Option type inference from default values."""
+
+    def test_type_defaults_to_str_when_no_type_or_default(self) -> None:
+        """Test that type defaults to str when neither type nor default provided."""
+        opt = Option(long="--name")
+        assert opt.type == str
+
+    def test_type_inferred_as_int_from_int_default(self) -> None:
+        """Test that type is inferred as int from int default."""
+        opt = Option(long="--count", default=5)
+        assert opt.type == int
+
+    def test_type_inferred_as_float_from_float_default(self) -> None:
+        """Test that type is inferred as float from float default."""
+        opt = Option(long="--ratio", default=3.14)
+        assert opt.type == float
+
+    def test_type_inferred_as_str_from_str_default(self) -> None:
+        """Test that type is inferred as str from str default."""
+        opt = Option(long="--name", default="hello")
+        assert opt.type == str
+
+    def test_type_inferred_as_bool_from_bool_default(self) -> None:
+        """Test that type is inferred as bool from bool default."""
+        opt = Option(long="--enabled", default=True)
+        assert opt.type == bool
+
+    def test_type_inferred_as_list_from_list_default(self) -> None:
+        """Test that type is inferred as list from list default."""
+        opt = Option(long="--items", default=[])
+        assert opt.type == list
+
+    def test_type_inferred_as_dict_from_dict_default(self) -> None:
+        """Test that type is inferred as dict from dict default."""
+        opt = Option(long="--config", default={})
+        assert opt.type == dict
+
+    def test_explicit_type_overrides_inference(self) -> None:
+        """Test that explicit type overrides type inference from default."""
+        opt = Option(long="--value", type=str, default=42)
+        assert opt.type == str
+        assert opt.default == 42
+
+    def test_explicit_int_type_with_str_default(self) -> None:
+        """Test explicit int type with string default."""
+        opt = Option(long="--port", type=int, default="8080")
+        assert opt.type == int
+        assert opt.default == "8080"
+
+    def test_type_inference_with_none_default(self) -> None:
+        """Test that type defaults to str when default is None."""
+        opt = Option(long="--value", default=None)
+        assert opt.type == str
+
+    def test_type_inference_with_zero_default(self) -> None:
+        """Test that type is inferred correctly from zero values."""
+        opt_int = Option(long="--count", default=0)
+        assert opt_int.type == int
+
+        opt_float = Option(long="--ratio", default=0.0)
+        assert opt_float.type == float
+
+    def test_type_inference_with_empty_string_default(self) -> None:
+        """Test that type is inferred as str from empty string default."""
+        opt = Option(long="--name", default="")
+        assert opt.type == str
+
+    def test_type_inference_preserved_with_other_params(self) -> None:
+        """Test that type inference works with other parameters."""
+        opt = Option(
+            long="--port",
+            short="-p",
+            default=8080,
+            help="Server port",
+            required=False,
+        )
+        assert opt.type == int
+        assert opt.short == "-p"
+        assert opt.default == 8080
 
 
 class TestOptionFlags:

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
 from click_extended.core._node import Node
 from click_extended.core._tree import queue_child
+from click_extended.errors import TypeMismatchError
 from click_extended.utils.transform import Transform
 
 if TYPE_CHECKING:
@@ -59,6 +60,7 @@ class ChildNode(Node, ABC):
     """The node used as a child node."""
 
     parent: "ParentNode"
+    types: list[type] = []
 
     def __init__(
         self,
@@ -81,6 +83,38 @@ class ChildNode(Node, ABC):
         self.children = None
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
+
+    def validate_type(self, parent: "ParentNode") -> None:
+        """
+        Validate that the parent's type is supported by this child node.
+
+        An empty types list means all types are supported.
+        If types list is not empty, the parent's type must be in the list.
+
+        Args:
+            parent (ParentNode):
+                The parent node to validate against.
+
+        Raises:
+            TypeMismatchError:
+                If the parent's type is not supported by this child node.
+        """
+
+        if not self.types:
+            return
+
+        parent_type = getattr(parent, "type", None)
+
+        if parent_type is None:
+            return
+
+        if parent_type not in self.types:
+            raise TypeMismatchError(
+                child_name=self.__class__.__name__,
+                parent_name=parent.name,
+                parent_type=parent_type,
+                supported_types=self.types,
+            )
 
     def get(self, name: str) -> None:
         """

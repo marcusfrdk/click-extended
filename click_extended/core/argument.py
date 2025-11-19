@@ -4,7 +4,8 @@
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
 
-from typing import Any, Callable, ParamSpec, TypeVar
+from builtins import type as builtins_type
+from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
 from click_extended.core._parent_node import ParentNode
 from click_extended.utils.transform import Transform
@@ -20,7 +21,7 @@ class Argument(ParentNode):
         self,
         name: str,
         nargs: int = 1,
-        type: Any = None,
+        type: Type[Any] | Any = None,
         help: str | None = None,
         required: bool = True,
         default: Any = None,
@@ -58,6 +59,12 @@ class Argument(ParentNode):
         if default is not None and required is True:
             required = False
 
+        if type is None:
+            if default is not None:
+                type = cast(Type[Any], builtins_type(default))  # type: ignore
+            else:
+                type = str
+
         name = Transform(name).to_snake_case()
         super().__init__(
             name=name,
@@ -74,7 +81,7 @@ class Argument(ParentNode):
 def argument(
     name: str,
     nargs: int = 1,
-    type: Any = None,
+    type: Type[Any] | Any = None,
     help: str | None = None,
     required: bool = True,
     default: Any = None,

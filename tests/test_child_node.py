@@ -4,10 +4,16 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from click.testing import CliRunner
 
 from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core._node import Node
+from click_extended.core.argument import argument
+from click_extended.core.command import command
+from click_extended.core.option import option
 from click_extended.core.tag import Tag
+from click_extended.errors import TypeMismatchError
+from click_extended.validation.is_positive import is_positive
 
 
 def make_context(
@@ -471,3 +477,451 @@ class TestChildNodeEdgeCases:
         assert node.process_kwargs == {}
         assert len(node.process_args) == 0
         assert len(node.process_kwargs) == 0
+
+
+class TestChildNodeTypeValidation:
+    """Test ChildNode type validation system."""
+
+    def test_default_types_list_is_empty(self) -> None:
+        """Test that default types list is empty (accepts all types)."""
+        node = ConcreteChildNode(name="test")
+        assert node.types == []
+        assert isinstance(node.types, list)
+
+    def test_types_can_be_overridden_in_subclass(self) -> None:
+        """Test that subclasses can override the types list."""
+
+        class IntOnlyNode(ChildNode):
+            """Node that only accepts int types."""
+
+            types = [int]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value * 2
+
+        node = IntOnlyNode(name="test")
+        assert node.types == [int]
+        assert int in node.types
+
+    def test_validate_type_with_empty_types_list(self) -> None:
+        """Test that validation passes when types list is empty."""
+
+        node = ConcreteChildNode(name="test")
+        parent = MagicMock()
+        parent.name = "test_parent"
+        parent.type = str
+
+        node.validate_type(parent)  # Should not raise
+
+    def test_validate_type_with_matching_type(self) -> None:
+        """Test that validation passes when parent type matches."""
+
+        class IntOnlyNode(ChildNode):
+            """Node that only accepts int types."""
+
+            types = [int]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value
+
+        node = IntOnlyNode(name="test")
+        parent = MagicMock()
+        parent.name = "count"
+        parent.type = int
+
+        # Should not raise
+        node.validate_type(parent)
+
+    def test_validate_type_with_mismatched_type(self) -> None:
+        """Test that validation fails when parent type doesn't match."""
+
+        class IntOnlyNode(ChildNode):
+            """Node that only accepts int types."""
+
+            types = [int]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value
+
+        node = IntOnlyNode(name="test")
+        parent = MagicMock()
+        parent.name = "name"
+        parent.type = str
+
+        with pytest.raises(TypeMismatchError) as exc_info:
+            node.validate_type(parent)
+
+        error_msg = str(exc_info.value)
+        assert "IntOnlyNode" in error_msg
+        assert "name" in error_msg
+        assert "str" in error_msg
+        assert "int" in error_msg
+
+    def test_validate_type_with_none_parent_type(self) -> None:
+        """Test that validation passes when parent type is None."""
+
+        class IntOnlyNode(ChildNode):
+            """Node that only accepts int types."""
+
+            types = [int]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value
+
+        node = IntOnlyNode(name="test")
+        parent = MagicMock()
+        parent.name = "value"
+        parent.type = None
+
+        node.validate_type(parent)
+
+    def test_validate_type_with_multiple_supported_types(self) -> None:
+        """Test validation with multiple supported types."""
+
+        class NumericNode(ChildNode):
+            """Node that accepts int and float types."""
+
+            types = [int, float]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value
+
+        node = NumericNode(name="test")
+        parent_int = MagicMock()
+        parent_int.name = "count"
+        parent_int.type = int
+
+        parent_float = MagicMock()
+        parent_float.name = "ratio"
+        parent_float.type = float
+
+        # Both should pass
+        node.validate_type(parent_int)
+        node.validate_type(parent_float)
+
+    def test_validate_type_error_message_format(self) -> None:
+        """Test that TypeMismatchError has proper formatting."""
+
+        class IntFloatNode(ChildNode):
+            """Node that accepts int and float."""
+
+            types = [int, float]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value
+
+        node = IntFloatNode(name="test")
+        parent = MagicMock()
+        parent.name = "username"
+        parent.type = str
+
+        with pytest.raises(TypeMismatchError) as exc_info:
+            node.validate_type(parent)
+
+        error_msg = str(exc_info.value)
+        assert "Type mismatch" in error_msg
+        assert "IntFloatNode" in error_msg
+        assert "username" in error_msg
+        assert "str" in error_msg
+        assert "int, float" in error_msg or "int" in error_msg
+
+    def test_validate_type_with_parent_without_type_attribute(self) -> None:
+        """Test validation when parent has no type attribute."""
+
+        class IntOnlyNode(ChildNode):
+            """Node that only accepts int types."""
+
+            types = [int]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                return value
+
+        node = IntOnlyNode(name="test")
+        parent = MagicMock(spec=[])
+        parent.name = "value"
+
+        node.validate_type(parent)
+
+
+class TestTypeValidationIntegration:
+    """Integration tests for type validation across the CLI."""
+
+    def test_type_validation_with_option_and_argument(self) -> None:
+        """Test type validation works with both options and arguments."""
+
+        @command()
+        @option("--count", type=int, default=5)
+        @is_positive()
+        @argument("amount", type=float)
+        @is_positive()
+        def test_cmd(count: int, amount: float) -> None:
+            """Test command with multiple validated parameters."""
+            print(f"Count: {count}, Amount: {amount}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["10.5", "--count", "3"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Count: 3, Amount: 10.5" in result.output
+
+    def test_type_validation_rejects_invalid_option_type(self) -> None:
+        """Test that invalid option type is rejected early."""
+
+        @command()
+        @option("--name", type=str, default="test")
+        @is_positive()  # Should fail as str is not supported
+        def test_cmd(name: str) -> None:
+            """Test command."""
+            print(f"Name: {name}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--name", "hello"])  # type: ignore
+
+        assert result.exit_code != 0
+        assert result.exception is not None
+        assert isinstance(result.exception, TypeMismatchError)
+
+    def test_type_validation_rejects_invalid_argument_type(self) -> None:
+        """Test that invalid argument type is rejected early."""
+
+        @command()
+        @argument("username", type=str)
+        @is_positive()  # Should fail as str is not supported
+        def test_cmd(username: str) -> None:
+            """Test command."""
+            print(f"Username: {username}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["john"])  # type: ignore
+
+        assert result.exit_code != 0
+        assert result.exception is not None
+        assert isinstance(result.exception, TypeMismatchError)
+        assert "str" in str(result.exception)
+
+    def test_type_validation_with_multiple_validators_same_parent(
+        self,
+    ) -> None:
+        """Test multiple validators on the same parent."""
+
+        class IsEven(ChildNode):
+            """Validator that checks if value is even."""
+
+            types = [int]
+
+            def process(self, value: int, context: ProcessContext) -> None:
+                if value % 2 != 0:
+                    raise ValueError(f"Value must be even, got {value}")
+
+        @command()
+        @option("--count", type=int, default=2)
+        @is_positive()
+        @IsEven.as_decorator()
+        def test_cmd(count: int) -> None:
+            """Test command."""
+            print(f"Count: {count}")
+
+        runner = CliRunner()
+
+        result = runner.invoke(test_cmd, ["--count", "4"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Count: 4" in result.output
+
+        result = runner.invoke(test_cmd, ["--count", "3"])  # type: ignore
+        assert result.exit_code != 0
+        assert "must be even" in str(result.exception).lower()
+
+    def test_type_validation_with_inferred_type_from_default(self) -> None:
+        """Test that type validation works when type is inferred from default."""
+
+        @command()
+        @option("--value", default=5)  # Type inferred as int from default
+        @is_positive()  # Supports int, float
+        def test_cmd(value: int) -> None:
+            """Test command."""
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--value", "10"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Value: 10" in result.output
+
+    def test_type_validation_with_no_type_no_default(self) -> None:
+        """Test that type defaults to str when neither type nor default specified."""
+
+        @command()
+        @option("--name")  # Type inferred as str (no default, no type)
+        @is_positive()  # Should fail as str is not supported
+        def test_cmd(name: str) -> None:
+            """Test command."""
+            print(f"Name: {name}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--name", "hello"])  # type: ignore
+
+        assert result.exit_code != 0
+        assert result.exception is not None
+        assert isinstance(result.exception, TypeMismatchError)
+        assert "str" in str(result.exception)
+
+    def test_type_validation_with_mixed_type_requirements(self) -> None:
+        """Test validators with different type requirements."""
+
+        class StringLength(ChildNode):
+            """Validator for string length."""
+
+            types = [str]
+
+            def process(self, value: str, context: ProcessContext) -> None:
+                if len(value) < 3:
+                    raise ValueError(
+                        f"String must be at least 3 characters, got {len(value)}"
+                    )
+
+        @command()
+        @option("--count", type=int, default=5)
+        @is_positive()  # Accepts int, float
+        @option("--name", type=str, default="test")
+        @StringLength.as_decorator()  # Accepts str
+        def test_cmd(count: int, name: str) -> None:
+            """Test command with different validators."""
+            print(f"Count: {count}, Name: {name}")
+
+        runner = CliRunner()
+
+        # Valid values
+        result = runner.invoke(
+            test_cmd, ["--count", "10", "--name", "alice"]  # type: ignore
+        )
+        assert result.exit_code == 0
+        assert "Count: 10, Name: alice" in result.output
+
+        # Invalid count
+        result = runner.invoke(
+            test_cmd, ["--count", "-5", "--name", "alice"]  # type: ignore
+        )
+        assert result.exit_code != 0
+        assert "must be positive" in str(result.exception).lower()
+
+        # Invalid name
+        result = runner.invoke(
+            test_cmd, ["--count", "10", "--name", "ab"]  # type: ignore
+        )
+        assert result.exit_code != 0
+        assert "at least 3 characters" in str(result.exception).lower()
+
+    def test_type_validation_error_provides_clear_message(self) -> None:
+        """Test that type validation errors provide helpful messages."""
+
+        @command()
+        @option("--port", type=int, default=8080)
+        @argument("host", type=str)
+        @is_positive()  # Will fail on str argument
+        def test_cmd(port: int, host: str) -> None:
+            """Test command."""
+            print(f"Port: {port}, Host: {host}")
+
+        runner = CliRunner()
+        result = runner.invoke(
+            test_cmd, ["localhost", "--port", "3000"]  # type: ignore
+        )
+
+        assert result.exit_code != 0
+        assert result.exception is not None
+
+        error_msg = str(result.exception)
+        assert "Type mismatch" in error_msg
+        assert "IsPositive" in error_msg
+        assert "host" in error_msg
+        assert "str" in error_msg
+        assert "int" in error_msg or "float" in error_msg
+
+    def test_type_validation_with_default_values(self) -> None:
+        """Test that type validation works with default values."""
+
+        @command()
+        @option("--count", type=int, default=10)
+        @is_positive()
+        def test_cmd(count: int) -> None:
+            """Test command."""
+            print(f"Count: {count}")
+
+        runner = CliRunner()
+
+        # Using default value
+        result = runner.invoke(test_cmd, [])  # type: ignore
+        assert result.exit_code == 0
+        assert "Count: 10" in result.output
+
+        # Overriding with valid value
+        result = runner.invoke(test_cmd, ["--count", "5"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Count: 5" in result.output
+
+        # Overriding with invalid value
+        result = runner.invoke(test_cmd, ["--count", "-1"])  # type: ignore
+        assert result.exit_code != 0
+        assert "must be positive" in str(result.exception).lower()
+
+    def test_type_validation_fails_before_processing(self) -> None:
+        """Test that type validation happens before value processing."""
+
+        process_called: list[bool] = []
+
+        class TrackingNode(ChildNode):
+            """Node that tracks if process was called."""
+
+            types = [int]
+
+            def process(self, value: Any, context: ProcessContext) -> Any:
+                process_called.append(True)
+                return value * 2
+
+        @command()
+        @option("--name", type=str, default="test")
+        @TrackingNode.as_decorator()  # Should fail before processing
+        def test_cmd(name: str) -> None:
+            """Test command."""
+            print(f"Name: {name}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--name", "hello"])  # type: ignore
+
+        # Should fail with TypeMismatchError
+        assert result.exit_code != 0
+        assert isinstance(result.exception, TypeMismatchError)
+
+        # Process should not have been called
+        assert len(process_called) == 0
+
+
+class TestTypeValidationPerformance:
+    """Test that type validation doesn't significantly impact performance."""
+
+    def test_validation_with_many_parameters(self) -> None:
+        """Test validation works efficiently with many parameters."""
+
+        @command()
+        @option("--a", type=int, default=1)
+        @is_positive()
+        @option("--b", type=int, default=2)
+        @is_positive()
+        @option("--c", type=int, default=3)
+        @is_positive()
+        @option("--d", type=int, default=4)
+        @is_positive()
+        @option("--e", type=int, default=5)
+        @is_positive()
+        def test_cmd(a: int, b: int, c: int, d: int, e: int) -> None:
+            """Test command with many parameters."""
+            print(f"Sum: {a + b + c + d + e}")
+
+        runner = CliRunner()
+        result = runner.invoke(
+            test_cmd,  # type: ignore
+            ["--a", "1", "--b", "2", "--c", "3", "--d", "4", "--e", "5"],
+        )
+
+        assert result.exit_code == 0
+        assert "Sum: 15" in result.output

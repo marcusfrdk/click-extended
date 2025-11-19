@@ -33,11 +33,19 @@ def process_children(
     Returns:
         Any:
             The processed value after passing through all children.
+
+    Raises:
+        TypeMismatchError:
+            If a child node doesn't support the parent's type.
     """
     all_children = [cast("ChildNode", child) for child in children.values()]
 
     if tags is None:
         tags = {}
+
+    if parent.__class__.__name__ not in ("Tag",):
+        for child in all_children:
+            child.validate_type(cast("ParentNode", parent))
 
     for child in all_children:
         siblings = list(

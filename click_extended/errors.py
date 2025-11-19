@@ -126,3 +126,37 @@ class DuplicateNameError(ClickExtendedError):
             f"must be unique within a command."
         )
         super().__init__(message)
+
+
+class TypeMismatchError(ClickExtendedError):
+    """Exception raised when a child node doesn't support the parent's type."""
+
+    def __init__(
+        self,
+        child_name: str,
+        parent_name: str,
+        parent_type: type | None,
+        supported_types: list[type],
+    ) -> None:
+        """
+        Initialize a new `TypeMismatchError` instance.
+
+        Args:
+            child_name (str):
+                The name of the child node.
+            parent_name (str):
+                The name of the parent node.
+            parent_type (type | None):
+                The actual type of the parent.
+            supported_types (list[type]):
+                List of types supported by the child node.
+        """
+        type_names = ", ".join(t.__name__ for t in supported_types)
+        parent_type_name = parent_type.__name__ if parent_type else "None"
+
+        message = (
+            f"Type mismatch: Child node '{child_name}' does not support "
+            f"parent '{parent_name}' with type '{parent_type_name}'. "
+            f"Supported types: {type_names}"
+        )
+        super().__init__(message)

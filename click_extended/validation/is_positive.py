@@ -13,6 +13,8 @@ T = TypeVar("T")
 class IsPositive(ChildNode):
     """Validation child for checking if a value is positive."""
 
+    types = [int, float]
+
     def process(self, value: int | float, context: ProcessContext) -> None:
         if value <= 0:
             raise ValueError(ERROR_MESSAGE.format(context.parent.name, value))

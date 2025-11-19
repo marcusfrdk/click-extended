@@ -6,6 +6,7 @@ from click.testing import CliRunner
 from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core.command import command
 from click_extended.core.option import option
+from click_extended.errors import TypeMismatchError
 from click_extended.validation.is_positive import IsPositive, is_positive
 
 
@@ -243,3 +244,94 @@ class TestIsPositiveDecorator:
             return "test"
 
         assert callable(test_func)
+
+
+class TestIsPositiveTypeValidation:
+    """Test type validation for IsPositive decorator."""
+
+    def test_supports_int_type(self) -> None:
+        """Test that is_positive supports int type."""
+
+        @command()
+        @option("--count", "-c", type=int, default=1)
+        @is_positive()
+        def test_cmd(count: int) -> None:
+            """Test command."""
+            print(f"Count: {count}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--count", "5"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Count: 5" in result.output
+
+    def test_supports_float_type(self) -> None:
+        """Test that is_positive supports float type."""
+
+        @command()
+        @option("--ratio", "-r", type=float, default=1.0)
+        @is_positive()
+        def test_cmd(ratio: float) -> None:
+            """Test command."""
+            print(f"Ratio: {ratio}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--ratio", "2.5"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Ratio: 2.5" in result.output
+
+    def test_rejects_string_type(self) -> None:
+        """Test that is_positive rejects string type."""
+
+        @command()
+        @option("--name", "-n", type=str, default="test")
+        @is_positive()
+        def test_cmd(name: str) -> None:
+            """Test command."""
+            print(f"Name: {name}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--name", "hello"])  # type: ignore
+
+        assert result.exit_code != 0
+        assert result.exception is not None
+        assert isinstance(result.exception, TypeMismatchError)
+        assert "IsPositive" in str(result.exception)
+        assert "str" in str(result.exception)
+
+    def test_rejects_bool_type(self) -> None:
+        """Test that is_positive rejects explicit bool type."""
+
+        @command()
+        @option("--enabled", "-e", type=bool, default=False)
+        @is_positive()
+        def test_cmd(enabled: bool) -> None:
+            """Test command."""
+            print(f"Enabled: {enabled}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--enabled", "true"])  # type: ignore
+
+        assert result.exit_code != 0
+        assert result.exception is not None
+        assert isinstance(result.exception, TypeMismatchError)
+        assert "IsPositive" in str(result.exception)
+        assert "bool" in str(result.exception)
+
+    def test_allows_no_type_specified(self) -> None:
+        """Test that is_positive allows options with no type specified."""
+
+        @command()
+        @option("--value", "-v", default=5)
+        @is_positive()
+        def test_cmd(value: int) -> None:
+            """Test command."""
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["--value", "10"])  # type: ignore
+
+        # Should succeed because no type means validation is skipped
+        assert result.exit_code == 0
+        assert "Value: 10" in result.output

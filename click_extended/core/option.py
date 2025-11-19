@@ -5,7 +5,8 @@
 # pylint: disable=redefined-builtin
 
 import re
-from typing import Any, Callable, ParamSpec, TypeVar
+from builtins import type as builtins_type
+from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
 from click_extended.core._parent_node import ParentNode
 from click_extended.utils.transform import Transform
@@ -77,6 +78,12 @@ class Option(ParentNode):
 
         if is_flag and default is None:
             default = False
+
+        if type is None:
+            if default is not None:
+                type = cast(Type[Any], builtins_type(default))  # type: ignore
+            else:
+                type = str
 
         name = Transform(long).to_snake_case()
         super().__init__(
