@@ -8,6 +8,8 @@
 
 - Added new `context` parameter for the `ChildNode.process` method.
 - Added new `ProcessMethod` type.
+- Added `validation` module.
+- Added `validation.is_positive` decorator with unit tests.
 
 ### Updated
 
