@@ -4,6 +4,8 @@
 
 The `RootNode` is the base class for top-level CLI entry points in click-extended. It serves as the foundation for both `@command` and `@group` decorators, providing the core functionality for building CLI applications with automatic value injection, tree visualization, and parameter management.
 
+Read more about the [command](./COMMAND.md) and [group](./GROUP.md).
+
 ## Overview
 
 A `RootNode` represents the entry point of your CLI application. It orchestrates the following:

@@ -18,10 +18,12 @@
 - Added documentation for the `Tree` class.
 - Added documentation for the `GlobalNode` class.
 - Added banner specific for documentation.
+- Added migration guide
 
 ### Updated
 
 - Help message now only uses the first line of the docstring.
+- Updated README.md
 
 ## v0.0.3
 
