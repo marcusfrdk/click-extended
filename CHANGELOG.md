@@ -45,6 +45,7 @@
 
 - **@argument**: Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
 - **ChildNode**: Fixed issue where a `sentinel` object would be passed as a value to the `process()` method.
+- **RootNode**: Fixed issue where the type-hinting system would not raise exception when types mismatch.
 - **Typing**: Disabled `unidiomatic-typecheck` rule for pylint.
 - **Typing**: Fixed circular import issue in type validation by using class name checks instead of isinstance.
 - **Typing**: Fixed Pylance type errors by adding proper type annotations with `cast()`.

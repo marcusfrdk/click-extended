@@ -342,6 +342,9 @@ class RootNode(Node):
                 for tag_name, tag in instance.tree.tags.items():
                     if tag.children:
                         for parent_node in tag.parent_nodes:
+                            for child in tag.children.values():
+                                child.validate_type(parent_node)
+
                             value = parent_node.get_value()
                             process_children(
                                 value, tag.children, tag, tags_dict
