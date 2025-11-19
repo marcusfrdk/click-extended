@@ -169,8 +169,9 @@ class ChildNode(Node, ABC):
 
         Returns:
             bool:
-                `True` if `None` is not in the value
-                type hint, `False` otherwise.
+                `True` if `None` is not in the value type hint, `False`
+                otherwise. Returns `False` for `Any` type
+                (accepts everything including None).
         """
         try:
             hints = get_type_hints(self.process)
@@ -178,6 +179,10 @@ class ChildNode(Node, ABC):
                 return True
 
             value_hint = hints["value"]
+
+            if value_hint is Any:
+                return False
+
             origin = get_origin(value_hint)
 
             if origin is Union:

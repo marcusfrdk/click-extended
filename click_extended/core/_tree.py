@@ -4,9 +4,12 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=broad-exception-caught
 # pylint: disable=too-many-locals
+# pylint: disable=too-many-nested-blocks
 # pylint: disable=protected-access
 # pylint: disable=too-many-branches
 
+import ast
+import inspect
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from click_extended.errors import (
@@ -141,25 +144,19 @@ class Tree:
                     tag = self.recent_tag
                     child_inst = cast("ChildNode", node_inst)
 
-                    sentinel = object()
-                    is_validation_only = False
-
+                    is_validation_only = True
                     try:
-                        from click_extended.core._child_node import (
-                            ProcessContext,
-                        )
-
-                        context = ProcessContext(
-                            parent=tag,
-                            siblings=[],
-                            tags={},
-                            args=child_inst.process_args,
-                            kwargs=child_inst.process_kwargs,
-                        )
-                        result = child_inst.process(sentinel, context)
-                        is_validation_only = (
-                            result is sentinel or result is None
-                        )
+                        source = inspect.getsource(child_inst.process)
+                        ast_tree = ast.parse(source)
+                        for ast_node in ast.walk(ast_tree):
+                            if isinstance(ast_node, ast.Return):
+                                if ast_node.value is not None:
+                                    if not (
+                                        isinstance(ast_node.value, ast.Constant)
+                                        and ast_node.value.value is None
+                                    ):
+                                        is_validation_only = False
+                                        break
                     except Exception:
                         is_validation_only = True
 

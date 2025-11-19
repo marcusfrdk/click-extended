@@ -77,6 +77,10 @@
 
 - Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
 
+#### ChildNode
+
+- Fixed issue where a `sentinel` object would be passed as a value to the `process()` method.
+
 #### Typing
 
 - Disabled `unidiomatic-typecheck` rule for pylint.
