@@ -1,4 +1,4 @@
-![Banner](../assets/click-extended-banner.png)
+![Banner](../assets/click-extended-documentation-banner.png)
 
 # Parent Node
 
