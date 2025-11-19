@@ -113,6 +113,25 @@ Follow these guidelines:
 
 - **Code Style**: Use Black formatting (80 char line length)
 - **Type Hints**: All functions must have type hints
+- **Type-Hint-First Design**: When creating validators or transformers that extend `ChildNode`, use type hints on the `process()` method's `value` parameter to specify supported types and control `None` handling:
+
+  ```python
+    class IsPositive(ChildNode):
+        """Validator that only accepts int or float, skips `None`."""
+        def process(self, value: int | float, context: ProcessContext):
+            if value <= 0:
+                raise ValueError("Must be positive")
+
+    class MustBePositive(ChildNode):
+        """Validator that must be a positive number, does not skip `None`."""
+        def process(self, value: int | float | None, context: ProcessContext):
+            if value is None:
+                raise ValueError("Missing value")
+
+            if value <= 0:
+                raise ValueError("Must be positive")
+  ```
+
 - **Docstrings**: Use the project's docstring format (a custom version of the Google-style docstrings):
 
   ```python

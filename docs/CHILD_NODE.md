@@ -108,7 +108,6 @@ Command line interfaces are never predictable in terms of missing values. The ch
 1. **Skip None by Default**: If `None` is not in the type hint, the `process()` method is skipped for `None` values:
 
    ```python
-   # Process is not called if the value is None
    class MyValidator(ChildNode):
        """My custom validator."""
 
@@ -120,7 +119,6 @@ Command line interfaces are never predictable in terms of missing values. The ch
 2. **Accept None**: Add `None` to the type hint to handle missing values explicitly:
 
    ```python
-   # Process is called even if the value is None
    class MyValidator(ChildNode):
        """My custom validator."""
 
@@ -131,14 +129,26 @@ Command line interfaces are never predictable in terms of missing values. The ch
                raise ValueError("Value must be positive")
    ```
 
-3. **No Type Hint**: Without a type hint, `None` values are skipped by default:
+3. **Accept All**: Use `typing.Any` type hint to accept all types including `None`:
+
+   ```python
+   from typing import Any
+
+   class MyTransform(ChildNode):
+       """Transform any value, including None."""
+
+       def process(self, value: Any, context: ProcessContext):
+           print(f"Value: {value}")
+           return value
+   ```
+
+4. **No Type Hint**: Without a type hint, `None` values are skipped by default (same as explicit type without `None`):
 
    ```python
    class MyTransform(ChildNode):
        """Transform any non-None value."""
 
        def process(self, value, context: ProcessContext):
-           # This is only called for non-None values
            return str(value).upper()
    ```
 
