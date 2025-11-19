@@ -18,7 +18,8 @@
 - Added documentation for the `Tree` class.
 - Added documentation for the `GlobalNode` class.
 - Added banner specific for documentation.
-- Added migration guide
+- Added migration guide.
+- Added documentation for contributing.
 
 ### Updated
 
