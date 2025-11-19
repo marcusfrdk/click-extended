@@ -23,60 +23,17 @@ An option in the command line interface is a named parameter that can be specifi
 
 ## Type Inference
 
-The `type` parameter supports automatic inference based on the following rules:
+The `type` parameter is automatically inferred:
 
-1. **Explicit type specified**: Uses the specified type (e.g., `type=int`)
-2. **Default value provided**: Infers type from the default value (e.g., `default=5` → `int`)
-3. **Neither specified**: Defaults to `str`
-
-### Examples
+- **Explicit type**: `type=int` uses `int`
+- **From default**: `default=8080` infers `int`
+- **Neither**: defaults to `str`
 
 ```python
-# Type inferred as int from default
 @option("--port", default=8080)  # type = int
-
-# Type inferred as float from default
-@option("--ratio", default=1.5)  # type = float
-
-# Type defaults to str (no default, no type)
 @option("--name")  # type = str
-
-# Explicit type overrides inference
-@option("--value", type=str, default=42)  # type = str, not int
+@option("--value", type=str, default=42)  # type = str (explicit overrides)
 ```
-
-This inference system helps reduce boilerplate while maintaining type safety and enabling proper validation.
-
-## Type Inference and Validators
-
-Type inference integrates seamlessly with the validation system. When using validators that specify supported types (like `@is_positive()` which supports `int` and `float`), the inferred type is automatically checked:
-
-```python
-from click_extended import command, option
-from click_extended.validation import is_positive
-
-# Working
-@command()
-@option("--count", default=5)
-@is_positive()
-def process(count: int):
-    print(f"Processing {count} items")
-
-@command()
-@option("--port", type=int)
-@is_positive()
-def serve(port: int):
-    print(f"Serving on port {port}")
-
-# Raises exception
-@command()
-@option("--name")  # Type inferred as str
-@is_positive()  # Error: is_positive only supports int and float
-def greet(name: str):
-    print(f"Hello, {name}!")
-```
-
-This type checking happens at validation time, providing clear error messages when validators are applied to incompatible types.
 
 ## Examples
 

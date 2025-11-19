@@ -106,6 +106,12 @@ class TestIsPositive:
         validator = IsPositive(name="custom_name")
         assert validator.name == "custom_name"
 
+    def test_none_value_is_skipped(self) -> None:
+        """Test that None values are skipped without raising an error."""
+        validator = IsPositive(name="test_validator")
+        context = make_context("optional_value")
+        validator.process(None, context)  # Should not raise
+
 
 class TestIsPositiveDecorator:
     """Test is_positive decorator in CLI context."""
@@ -244,6 +250,26 @@ class TestIsPositiveDecorator:
             return "test"
 
         assert callable(test_func)
+
+    def test_decorator_with_optional_argument_not_provided(self) -> None:
+        """Test that validator handles optional arguments when not provided."""
+        from click_extended.core.argument import argument
+
+        @command()
+        @argument("value", type=int, default=None)
+        @is_positive()
+        def test_cmd(value: int | None) -> None:
+            """Test command."""
+            if value is None:
+                print("No value provided")
+            else:
+                print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, [])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "No value provided" in result.output
 
 
 class TestIsPositiveTypeValidation:

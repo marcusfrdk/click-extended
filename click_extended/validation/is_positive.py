@@ -15,7 +15,12 @@ class IsPositive(ChildNode):
 
     types = [int, float]
 
-    def process(self, value: int | float, context: ProcessContext) -> None:
+    def process(
+        self, value: int | float | None, context: ProcessContext
+    ) -> None:
+        if value is None:
+            return
+
         if value <= 0:
             raise ValueError(ERROR_MESSAGE.format(context.parent.name, value))
 

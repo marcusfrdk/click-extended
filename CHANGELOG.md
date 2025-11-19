@@ -15,6 +15,8 @@
 - Added automatic type inference for `Option` and `Argument` classes.
 - Added comprehensive unit tests for type inference.
 - Added integration tests for type validation system.
+- Added sentinel value `_MISSING` to properly distinguish between no default and `default=None`.
+- Added comprehensive unit tests for required/optional argument behavior.
 
 ### Updated
 
@@ -24,11 +26,15 @@
 - Updated `process_children()` to validate child node types before processing.
 - Updated documentation for `Option` with type inference section and examples.
 - Updated documentation for `Argument` with type inference section and examples.
+- Updated `Argument` class to automatically set `required=False` when `default` is provided (including `None`).
+- Updated `_root_node.py` to properly pass `required` parameter to Click's `argument()` function.
 
 ### Fixed
 
 - Fixed circular import issue in type validation by using class name checks instead of isinstance.
 - Fixed Pylance type errors by adding proper type annotations with `cast()`.
+- Fixed `is_positive` validator to handle `None` values.
+- Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
 
 ## v0.0.4
 

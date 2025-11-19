@@ -13,6 +13,8 @@ from click_extended.utils.transform import Transform
 P = ParamSpec("P")
 T = TypeVar("T")
 
+_MISSING = object()
+
 
 class Argument(ParentNode):
     """`ParentNode` that represents a Click argument."""
@@ -24,7 +26,7 @@ class Argument(ParentNode):
         type: Type[Any] | Any = None,
         help: str | None = None,
         required: bool = True,
-        default: Any = None,
+        default: Any = _MISSING,
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
@@ -56,8 +58,11 @@ class Argument(ParentNode):
             ValueError: If both `default` is provided and `required=True` is
                 explicitly set (detected via kwargs inspection in decorator).
         """
-        if default is not None and required is True:
+        if default is not _MISSING and required is True:
             required = False
+
+        if default is _MISSING:
+            default = None
 
         if type is None:
             if default is not None:
@@ -84,7 +89,7 @@ def argument(
     type: Type[Any] | Any = None,
     help: str | None = None,
     required: bool = True,
-    default: Any = None,
+    default: Any = _MISSING,
     tags: str | list[str] | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
@@ -137,9 +142,6 @@ def argument(
             print(f"Port: {port}")
         ```
     """
-    if default is not None and required is True:
-        required = False
-
     return Argument.as_decorator(
         name=name,
         nargs=nargs,

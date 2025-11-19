@@ -439,12 +439,22 @@ class RootNode(Node):
                     )(func)
 
                 elif isinstance(parent_node, Argument):
+                    arg_kwargs: dict[str, Any] = {
+                        "type": parent_node.type,
+                        "required": parent_node.required,
+                        "nargs": parent_node.nargs,
+                        **parent_node.extra_kwargs,
+                    }
+
+                    if (
+                        not parent_node.required
+                        or parent_node.default is not None
+                    ):
+                        arg_kwargs["default"] = parent_node.default
+
                     func = click.argument(
                         parent_node.name,
-                        type=parent_node.type,
-                        default=parent_node.default,
-                        nargs=parent_node.nargs,
-                        **parent_node.extra_kwargs,
+                        **arg_kwargs,
                     )(func)
 
         if not h_flag_taken:

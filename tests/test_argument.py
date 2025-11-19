@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from click_extended.core._parent_node import ParentNode
 from click_extended.core.argument import Argument, argument
+from click_extended.core.command import command
 
 
 class TestArgumentInitialization:
@@ -14,7 +15,7 @@ class TestArgumentInitialization:
         arg = Argument(name="filename")
         assert arg.name == "filename"
         assert arg.nargs == 1
-        assert arg.type == str  # Inferred as str when no type/default
+        assert arg.type == str
         assert arg.help is None
         assert arg.required is True
         assert arg.default is None
@@ -618,9 +619,173 @@ class TestArgumentDefaultBehavior:
         arg = Argument(name="test")
         assert arg.required is True
 
-    def test_default_none_stays_required(self) -> None:
-        """Test that default=None doesn't change required status."""
+    def test_default_none_makes_optional(self) -> None:
+        """Test that explicitly passing default=None makes argument optional."""
         arg = Argument(name="test", default=None)
+        assert arg.required is False
+        assert arg.default is None
+
+
+class TestArgumentRequiredOptionalBehavior:
+    """Tests for required/optional argument behavior with Click integration."""
+
+    def test_required_argument_without_default(self) -> None:
+        """Test that argument without default is required by Click."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("value", type=int)
+        def test_cmd(value: int) -> None:
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, [])  # type: ignore
+
+        assert result.exit_code == 2
+        assert "Missing argument" in result.output
+
+    def test_required_argument_with_value_works(self) -> None:
+        """Test that required argument works when value is provided."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("value", type=int)
+        def test_cmd(value: int) -> None:
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["42"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Value: 42" in result.output
+
+    def test_optional_argument_with_none_default(self) -> None:
+        """Test that default=None makes argument optional."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("value", type=int, default=None)
+        def test_cmd(value: int | None) -> None:
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, [])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Value: None" in result.output
+
+    def test_optional_argument_with_value_default(self) -> None:
+        """Test that argument with default value is optional."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("port", type=int, default=8080)
+        def test_cmd(port: int) -> None:
+            print(f"Port: {port}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, [])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Port: 8080" in result.output
+
+    def test_explicit_required_false_makes_optional(self) -> None:
+        """Test that explicit required=False makes argument optional."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("value", type=int, required=False)
+        def test_cmd(value: int | None) -> None:
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, [])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Value: None" in result.output
+
+    def test_optional_argument_can_be_overridden(self) -> None:
+        """Test that optional argument can be provided a value."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("value", type=int, default=10)
+        def test_cmd(value: int) -> None:
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, ["99"])  # type: ignore
+
+        assert result.exit_code == 0
+        assert "Value: 99" in result.output
+
+    def test_multiple_required_arguments(self) -> None:
+        """Test that multiple required arguments work correctly."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("first", type=int)
+        @argument("second", type=int)
+        def test_cmd(first: int, second: int) -> None:
+            print(f"Values: {first}, {second}")
+
+        runner = CliRunner()
+
+        # Missing both
+        result = runner.invoke(test_cmd, [])  # type: ignore
+        assert result.exit_code == 2
+        assert "Missing argument" in result.output
+
+        # With both values
+        result = runner.invoke(test_cmd, ["1", "2"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Values: 1, 2" in result.output
+
+    def test_mixed_required_and_optional_arguments(self) -> None:
+        """Test mixing required and optional arguments."""
+        from click.testing import CliRunner
+
+        @command()
+        @argument("required_arg", type=int)
+        @argument("optional_arg", type=int, default=100)
+        def test_cmd(required_arg: int, optional_arg: int) -> None:
+            print(f"Required: {required_arg}, Optional: {optional_arg}")
+
+        runner = CliRunner()
+
+        # Only required
+        result = runner.invoke(test_cmd, ["50"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Required: 50, Optional: 100" in result.output
+
+        # Both provided
+        result = runner.invoke(test_cmd, ["50", "200"])  # type: ignore
+        assert result.exit_code == 0
+        assert "Required: 50, Optional: 200" in result.output
+
+    def test_argument_with_none_default_accepts_none(self) -> None:
+        """Test that argument with default=None properly receives None."""
+        from click.testing import CliRunner
+
+        received_value = []
+
+        @command()
+        @argument("value", type=str, default=None)
+        def test_cmd(value: str | None) -> None:
+            received_value.append(value)  # type: ignore
+            print(f"Value: {value}")
+
+        runner = CliRunner()
+        result = runner.invoke(test_cmd, [])  # type: ignore
+
+        assert result.exit_code == 0
+        assert received_value[0] is None
+
+    def test_sentinel_value_not_exposed(self) -> None:
+        """Test that the sentinel value is converted to None internally."""
+        arg = Argument(name="test")
+        # Should be None, not the sentinel
+        assert arg.default is None
         assert arg.required is True
 
 

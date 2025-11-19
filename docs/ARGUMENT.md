@@ -12,69 +12,26 @@ An argument in the command line interface is a positional argument. For this lib
 | `nargs`    | Number of values to accept. `1` for single value, `N` for exactly N values (returns tuple), `-1` for unlimited values (returns tuple). | int              | No       | 1        |
 | `type`     | Type to convert input to. If not specified, defaults to `str` or is inferred from `default`. Supports primitives and Click types.      | type             | No       | Inferred |
 | `help`     | Help text displayed in CLI help output.                                                                                                | str              | No       | None     |
-| `required` | Whether the argument is required. Automatically set to `False` when `default` is provided (except when `default=None`).                | bool             | No       | True     |
-| `default`  | Default value if argument not provided. When set (and not `None`), automatically makes the argument optional.                          | Any              | No       | None     |
+| `required` | Whether the argument is required. Automatically set to `False` when `default` is provided (including `None`).                          | bool             | No       | True     |
+| `default`  | Default value if argument not provided. When explicitly set, automatically makes the argument optional.                                | Any              | No       | None     |
 | `tags`     | Tag(s) to associate with this argument for validation or grouping. Used with the `@tag` decorator.                                     | str or list[str] | No       | None     |
 
 > [!NOTE]
-> When you provide a `default` value (other than `None`), the argument automatically becomes optional. You don't need to set `required=False` explicitly.
+> Providing a `default` (including `None`) automatically makes the argument optional.
 
 ## Type Inference
 
-The `type` parameter supports automatic inference based on the following rules:
+The `type` parameter is automatically inferred:
 
-1. **Explicit type specified**: Uses the specified type (e.g., `type=int`)
-2. **Default value provided**: Infers type from the default value (e.g., `default=8080` → `int`)
-3. **Neither specified**: Defaults to `str`
-
-### Examples
+- **Explicit type**: `type=int` uses `int`
+- **From default**: `default=8080` infers `int`
+- **Neither**: defaults to `str`
 
 ```python
-# Type inferred as int from default
 @argument("port", default=8080)  # type = int
-
-# Type inferred as float from default
-@argument("ratio", default=2.5)  # type = float
-
-# Type defaults to str (no default, no type)
 @argument("filename")  # type = str
-
-# Explicit type overrides inference
-@argument("value", type=str, default=42)  # type = str, not int
+@argument("value", type=str, default=42)  # type = str (explicit overrides)
 ```
-
-This inference system helps reduce boilerplate while maintaining type safety and enabling proper validation.
-
-## Type Inference and Validators
-
-Type inference integrates seamlessly with the validation system. When using validators that specify supported types (like `@is_positive()` which supports `int` and `float`), the inferred type is automatically checked:
-
-```python
-from click_extended import command, argument
-from click_extended.validation import is_positive
-
-# Working
-@command()
-@argument("count", default=10)
-@is_positive()
-def process(count: int):
-    print(f"Processing {count} items")
-
-@command()
-@argument("port", type=int)
-@is_positive()
-def serve(port: int):
-    print(f"Serving on port {port}")
-
-# Raises exception
-@command()
-@argument("filename")  # Type inferred as str
-@is_positive()  # Error: is_positive only supports int and float
-def load(filename: str):
-    print(f"Loading {filename}")
-```
-
-This type checking happens at validation time, providing clear error messages when validators are applied to incompatible types.
 
 ## Examples
 
