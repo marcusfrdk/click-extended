@@ -128,7 +128,7 @@ $ python app.py
 Using token: secret12...
 ```
 
-### Value Validation
+### Custom Validators
 
 ```python
 from click_extended import command, option, ChildNode, ProcessContext
@@ -136,7 +136,7 @@ from click_extended import command, option, ChildNode, ProcessContext
 class IsPositive(ChildNode):
     """Validate that a number is positive."""
 
-    def process(self, value, context: ProcessContext):
+    def process(self, value: float | int, context: ProcessContext):
         if value <= 0:
             raise ValueError(f"Value must be positive, got {value}")
 
