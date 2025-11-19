@@ -16,6 +16,7 @@
 - Added documentation for the `ParentNode` class.
 - Added documentation for the `ChildNode` class.
 - Added documentation for the `Tree` class.
+- Added documentation for the `GlobalNode` class.
 - Added banner specific for documentation.
 
 ### Updated
