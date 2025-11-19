@@ -36,16 +36,20 @@ Each child node receives:
 **Transformation Nodes**: Return a modified value
 
 ```python
+from click_extended.types import ProcessContext
+
 class Uppercase(ChildNode):
-    def process(self, value, *args, **kwargs):
-        return value.upper()  # Returns new value
+    def process(self, value, context: ProcessContext):
+        return value.upper()
 ```
 
 **Validation Nodes**: Return `None` or nothing to preserve the value, or raise exceptions
 
 ```python
+from click_extended.types import ProcessContext
+
 class ValidateLength(ChildNode):
-    def process(self, value, *args, **kwargs):
+    def process(self, value, context: ProcessContext):
         if len(value) < 3:
             raise ValueError("Too short")
 ```
@@ -62,18 +66,19 @@ When creating a `ChildNode`:
 
 ## Methods
 
-### `process(value, *args, siblings, tags, parent, **kwargs) -> Any`
+### `process(value, context: ProcessContext) -> Any`
 
 Process and return the transformed/validated value. Must be implemented by subclasses.
 
 **Parameters:**
 
 - `value` (Any): The current value from the previous node or raw source
-- `*args` (Any): Additional positional arguments from `process_args`
-- `siblings` (list[str]): Class names of all sibling child nodes
-- `tags` (dict[str, Tag]): Dictionary of tag instances for cross-parameter access
-- `parent` (ParentNode | Tag): The parent node this child is attached to
-- `**kwargs` (Any): Additional keyword arguments from `process_kwargs`
+- `context` (ProcessContext): Context object containing:
+  - `context.parent` (ParentNode | Tag): The parent node this child is attached to
+  - `context.siblings` (list[str]): Class names of all sibling child nodes
+  - `context.tags` (dict[str, Tag]): Dictionary of tag instances for cross-parameter access
+  - `context.args` (tuple[Any, ...]): Additional positional arguments from `process_args`
+  - `context.kwargs` (dict[str, Any]): Additional keyword arguments from `process_kwargs`
 
 **Returns:**
 
@@ -82,10 +87,10 @@ Process and return the transformed/validated value. Must be implemented by subcl
 - Raises exception to indicate validation failure
 
 ```python
-from click_extended import ChildNode
+from click_extended import ChildNode, ProcessContext
 
 class Uppercase(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.upper()
 ```
 
@@ -110,12 +115,12 @@ def greet(name: str):
 ### Basic Transformation
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class Uppercase(ChildNode):
     """Transform value to uppercase."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.upper() if value else value
 
 def uppercase(*args, **kwargs):
@@ -136,12 +141,12 @@ def greet(name: str):
 ### Basic Validation
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class ValidateLength(ChildNode):
     """Validate value length."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         if len(value) < 3:
             raise ValueError("Value must be at least 3 characters")
         return None
@@ -164,13 +169,13 @@ def register(username: str):
 ### Transformation with Arguments
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class Multiply(ChildNode):
     """Multiply value by a factor."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        factor = args[0] if args else 1
+    def process(self, value, context: ProcessContext):
+        factor = context.args[0] if context.args else 1
         return value * factor
 
 def multiply(*args, **kwargs):
@@ -191,13 +196,13 @@ def repeat(count: int):
 ### Transformation with Keyword Arguments
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class AddPrefix(ChildNode):
     """Add prefix to value."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        prefix = kwargs.get("prefix", "")
+    def process(self, value, context: ProcessContext):
+        prefix = context.kwargs.get("prefix", "")
         return f"{prefix}{value}"
 
 def add_prefix(*args, **kwargs):
@@ -218,10 +223,10 @@ def log(message: str):
 ### Multiple Child Nodes (Chaining)
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class Strip(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.strip()
 
 def strip(*args, **kwargs):
@@ -229,7 +234,7 @@ def strip(*args, **kwargs):
     return Strip.as_decorator(*args, **kwargs)
 
 class Uppercase(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.upper()
 
 def uppercase(*args, **kwargs):
@@ -237,7 +242,7 @@ def uppercase(*args, **kwargs):
     return Uppercase.as_decorator(*args, **kwargs)
 
 class AddExclamation(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         return f"{value}!"
 
 def add_exclamation(*args, **kwargs):
@@ -261,12 +266,12 @@ def shout(text: str):
 ### Validation and Transformation Combined
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class ValidatePositive(ChildNode):
     """Validate number is positive."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         if value <= 0:
             raise ValueError("Number must be positive")
         return None  # Preserve value
@@ -278,8 +283,8 @@ def validate_positive(*args, **kwargs):
 class Round(ChildNode):
     """Round to specified decimal places."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        places = args[0] if args else 0
+    def process(self, value, context: ProcessContext):
+        places = context.args[0] if context.args else 0
         return round(value, places)
 
 def round_decimal(*args, **kwargs):
@@ -301,13 +306,13 @@ def set_price(price: float):
 ### Using Siblings Information
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class LogSiblings(ChildNode):
     """Log information about sibling nodes."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        print(f"Sibling nodes: {', '.join(siblings)}")
+    def process(self, value, context: ProcessContext):
+        print(f"Sibling nodes: {', '.join(context.siblings)}")
         return value
 
 def log_siblings(*args, **kwargs):
@@ -315,7 +320,7 @@ def log_siblings(*args, **kwargs):
     return LogSiblings.as_decorator(*args, **kwargs)
 
 class Uppercase(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.upper()
 
 def uppercase(*args, **kwargs):
@@ -336,13 +341,13 @@ def test(name: str):
 ### Cross-Parameter Validation with Tags
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class ValidatePassword(ChildNode):
     """Validate password requirements."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        auth_tag = tags.get("auth")
+    def process(self, value, context: ProcessContext):
+        auth_tag = context.tags.get("auth")
         if auth_tag:
             provided = auth_tag.get_provided_values()
             username = provided.get("username")
@@ -372,17 +377,17 @@ def register(username: str, password: str):
 ### Checking Parent Information
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 from click_extended.core.tag import Tag
 
 class CheckIfProvided(ChildNode):
     """Only process if value was explicitly provided."""
 
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        if isinstance(parent, Tag):
+    def process(self, value, context: ProcessContext):
+        if isinstance(context.parent, Tag):
             return value
 
-        if parent.was_provided():
+        if context.parent.was_provided():
             return value.upper()
 
         return value
@@ -412,7 +417,7 @@ To create a new `ChildNode` subclass, implement the abstract `process()` method:
 
 ```python
 from typing import Any
-from click_extended import ChildNode
+from click_extended import ChildNode, ProcessContext
 
 class CustomTransform(ChildNode):
     """Custom transformation logic."""
@@ -420,11 +425,7 @@ class CustomTransform(ChildNode):
     def process(
         self,
         value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, Any],
-        parent: Any,
-        **kwargs: Any
+        context: ProcessContext
     ) -> Any:
         """
         Transform the value.
@@ -432,16 +433,13 @@ class CustomTransform(ChildNode):
         Args:
             value (Any):
                 Current value from previous node.
-            *args (Any):
-                Additional positional arguments.
-            siblings (list[str]):
-                List of sibling node class names.
-            tags (dict[str, Any]):
-                Dictionary of tag instances.
-            parent (Any):
-                Parent node reference.
-            **kwargs (Any):
-                Additional keyword arguments.
+            context (ProcessContext):
+                Context object containing:
+                - parent: Parent node reference
+                - siblings: List of sibling node class names
+                - tags: Dictionary of tag instances
+                - args: Additional positional arguments
+                - kwargs: Additional keyword arguments
 
         Returns:
             Any:
@@ -470,9 +468,9 @@ def process(text: str):
 
 ```python
 class CustomTransform(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        multiplier = kwargs.get("multiplier", 1)
-        prefix = kwargs.get("prefix", "")
+    def process(self, value, context: ProcessContext):
+        multiplier = context.kwargs.get("multiplier", 1)
+        prefix = context.kwargs.get("prefix", "")
         return f"{prefix}{value * multiplier}"
 
 def custom_transform(multiplier: int, prefix: str, *args, **kwargs):
@@ -490,7 +488,7 @@ def process(text: str):
 
 ```python
 from typing import Any
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class ValidatePort(ChildNode):
     """Validate port number range."""
@@ -498,11 +496,7 @@ class ValidatePort(ChildNode):
     def process(
         self,
         value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, Any],
-        parent: Any,
-        **kwargs: Any
+        context: ProcessContext
     ) -> Any:
         """
         Validate port is in valid range.
@@ -514,8 +508,8 @@ class ValidatePort(ChildNode):
         if not isinstance(value, int):
             raise TypeError(f"Port must be an integer, got {type(value)}")
 
-        min_port = kwargs.get("min_port", 1024)
-        max_port = kwargs.get("max_port", 65535)
+        min_port = context.kwargs.get("min_port", 1024)
+        max_port = context.kwargs.get("max_port", 65535)
 
         if not (min_port <= value <= max_port):
             raise ValueError(

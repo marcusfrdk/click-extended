@@ -1,6 +1,6 @@
 """Types used in `click_extended` which can be useful for users."""
 
-from click_extended.core._child_node import ChildNode
+from click_extended.core._child_node import ProcessContext
 from click_extended.core._node import Node
 from click_extended.core._parent_node import ParentNode
 from click_extended.core._root_node import RootNode
@@ -17,10 +17,10 @@ Siblings = list[str]
 Parent = ParentNode | Tag
 
 __all__ = [
-    "ChildNode",
     "Node",
     "Parent",
     "ParentNode",
+    "ProcessContext",
     "RootNode",
     "Tree",
     "Argument",

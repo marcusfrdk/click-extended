@@ -5,23 +5,32 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from click_extended.core._child_node import ChildNode
+from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core._node import Node
 from click_extended.core.tag import Tag
+
+
+def make_context(
+    parent: Any = None,
+    siblings: list[str] | None = None,
+    tags: dict[str, Tag] | None = None,
+    args: tuple[Any, ...] | None = None,
+    kwargs: dict[str, Any] | None = None,
+) -> ProcessContext:
+    """Helper to create a ProcessContext for testing."""
+    return ProcessContext(
+        parent=parent,  # type: ignore
+        siblings=siblings or [],
+        tags=tags or {},
+        args=args or (),
+        kwargs=kwargs or {},
+    )
 
 
 class ConcreteChildNode(ChildNode):
     """Concrete ChildNode implementation for testing."""
 
-    def process(
-        self,
-        value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, Tag],
-        parent: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def process(self, value: Any, context: ProcessContext) -> Any:
         """Simple process that returns the value unchanged."""
         return value
 
@@ -29,15 +38,7 @@ class ConcreteChildNode(ChildNode):
 class UppercaseNode(ChildNode):
     """ChildNode that uppercases string values."""
 
-    def process(
-        self,
-        value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, Tag],
-        parent: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def process(self, value: Any, context: ProcessContext) -> Any:
         """Convert value to uppercase."""
         return str(value).upper()
 
@@ -45,34 +46,18 @@ class UppercaseNode(ChildNode):
 class MultiplyNode(ChildNode):
     """ChildNode that multiplies numeric values."""
 
-    def process(
-        self,
-        value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, Tag],
-        parent: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def process(self, value: Any, context: ProcessContext) -> Any:
         """Multiply value by the first arg or 2 if no args."""
-        multiplier = args[0] if args else 2
+        multiplier = context.args[0] if context.args else 2
         return value * multiplier
 
 
 class PrefixNode(ChildNode):
     """ChildNode that adds a prefix to values."""
 
-    def process(
-        self,
-        value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, Tag],
-        parent: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def process(self, value: Any, context: ProcessContext) -> Any:
         """Add prefix from kwargs or default."""
-        prefix = kwargs.get("prefix", "PREFIX: ")
+        prefix = context.kwargs.get("prefix", "PREFIX: ")
         return f"{prefix}{value}"
 
 
@@ -291,7 +276,10 @@ class TestChildNodeProcess:
     def test_process_with_simple_implementation(self) -> None:
         """Test process with simple implementation."""
         node = ConcreteChildNode(name="test")
-        result = node.process("value", siblings=[], tags={}, parent=None)
+        context = ProcessContext(
+            parent=None, siblings=[], tags={}, args=(), kwargs={}  # type: ignore
+        )
+        result = node.process("value", context)
         assert result == "value"
 
     def test_process_receives_all_parameters(self) -> None:
@@ -302,21 +290,14 @@ class TestChildNodeProcess:
                 super().__init__(*args, **kwargs)
                 self.last_call: dict[str, Any] | None = None
 
-            def process(
-                self,
-                value: Any,
-                *args: Any,
-                siblings: list[str],
-                tags: dict[str, Tag],
-                parent: Any,
-                **kwargs: Any,
-            ) -> Any:
+            def process(self, value: Any, context: ProcessContext) -> Any:
                 self.last_call = {
                     "value": value,
-                    "args": args,
-                    "siblings": siblings,
-                    "tags": tags,
-                    "kwargs": kwargs,
+                    "parent": context.parent,
+                    "siblings": context.siblings,
+                    "tags": context.tags,
+                    "args": context.args,
+                    "kwargs": context.kwargs,
                 }
                 return value
 
@@ -325,15 +306,15 @@ class TestChildNodeProcess:
         dummy_tag = Tag(name="tag1")
         dummy_tag.parent_nodes = []
 
-        result = node.process(
-            "test_value",
-            "arg1",
-            "arg2",
+        context = ProcessContext(
+            parent=None,  # type: ignore
             siblings=["SiblingOne", "SiblingTwo"],
             tags={"tag1": dummy_tag},
-            parent=None,
-            custom_param="custom",
+            args=("arg1", "arg2"),
+            kwargs={"custom_param": "custom"},
         )
+
+        result = node.process("test_value", context)
 
         assert result == "test_value"
         assert node.last_call is not None
@@ -350,58 +331,34 @@ class TestConcreteImplementations:
     def test_uppercase_node(self) -> None:
         """Test UppercaseNode implementation."""
         node = UppercaseNode(name="uppercase")
-        assert (
-            node.process("hello", siblings=[], tags={}, parent=None) == "HELLO"
-        )
-        assert (
-            node.process("world", siblings=[], tags={}, parent=None) == "WORLD"
-        )
-        assert node.process("", siblings=[], tags={}, parent=None) == ""
+        assert node.process("hello", make_context()) == "HELLO"
+        assert node.process("world", make_context()) == "WORLD"
+        assert node.process("", make_context()) == ""
 
     def test_multiply_node_with_args(self) -> None:
         """Test MultiplyNode with process_args."""
         node = MultiplyNode(name="multiply", process_args=(3,))
-        assert (
-            node.process(
-                5, *node.process_args, siblings=[], tags={}, parent=None
-            )
-            == 15
-        )
-        assert (
-            node.process(
-                10, *node.process_args, siblings=[], tags={}, parent=None
-            )
-            == 30
-        )
+        assert node.process(5, make_context(args=node.process_args)) == 15
+        assert node.process(10, make_context(args=node.process_args)) == 30
 
     def test_multiply_node_without_args(self) -> None:
         """Test MultiplyNode without process_args (uses default)."""
         node = MultiplyNode(name="multiply")
-        assert (
-            node.process(
-                5, *node.process_args, siblings=[], tags={}, parent=None
-            )
-            == 10
-        )
-        assert (
-            node.process(
-                7, *node.process_args, siblings=[], tags={}, parent=None
-            )
-            == 14
-        )
+        assert node.process(5, make_context()) == 10
+        assert node.process(7, make_context()) == 14
 
     def test_prefix_node_with_kwargs(self) -> None:
         """Test PrefixNode with process_kwargs."""
         node = PrefixNode(name="prefix", process_kwargs={"prefix": ">>> "})
         result = node.process(
-            "message", siblings=[], tags={}, parent=None, **node.process_kwargs
+            "message", make_context(kwargs=node.process_kwargs)
         )
         assert result == ">>> message"
 
     def test_prefix_node_without_kwargs(self) -> None:
         """Test PrefixNode without process_kwargs (uses default)."""
         node = PrefixNode(name="prefix")
-        result = node.process("message", siblings=[], tags={}, parent=None)
+        result = node.process("message", make_context())
         assert result == "PREFIX: message"
 
     def test_siblings_parameter(self) -> None:
@@ -411,21 +368,14 @@ class TestConcreteImplementations:
             def process(
                 self,
                 value: Any,
-                *args: Any,
-                siblings: list[str],
-                tags: dict[str, Tag],
-                parent: Any,
-                **kwargs: Any,
+                context: ProcessContext,
             ) -> Any:
-                return f"Value: {value}, Siblings: {len(siblings)}"
+                return f"Value: {value}, Siblings: {len(context.siblings)}"
 
         node = SiblingsInspectorNode(name="inspector")
         result = node.process(
             "test",
-            siblings=["NodeOne", "NodeTwo", "NodeThree"],
-            tags={},
-            parent=None,
-            tag=None,
+            make_context(siblings=["NodeOne", "NodeTwo", "NodeThree"]),
         )
         assert result == "Value: test, Siblings: 3"
 
@@ -464,28 +414,26 @@ class TestChildNodeEdgeCases:
     def test_process_with_empty_siblings(self) -> None:
         """Test process with empty siblings list."""
         node = ConcreteChildNode(name="test")
-        result = node.process("value", siblings=[], tags={}, parent=None)
+        result = node.process("value", make_context())
         assert result == "value"
 
     def test_process_with_none_value(self) -> None:
         """Test process with None value."""
         node = ConcreteChildNode(name="test")
-        result = node.process(None, siblings=[], tags={}, parent=None)
+        result = node.process(None, make_context())
         assert result is None
 
     def test_process_with_complex_value(self) -> None:
         """Test process with complex data types."""
         node = ConcreteChildNode(name="test")
 
-        result = node.process([1, 2, 3], siblings=[], tags={}, parent=None)
+        result = node.process([1, 2, 3], make_context())
         assert result == [1, 2, 3]
 
-        result = node.process(
-            {"key": "value"}, siblings=[], tags={}, parent=None
-        )
+        result = node.process({"key": "value"}, make_context())
         assert result == {"key": "value"}
 
-        result = node.process((1, 2, 3), siblings=[], tags={}, parent=None)
+        result = node.process((1, 2, 3), make_context())
         assert result == (1, 2, 3)
 
     def test_process_args_immutability(self) -> None:

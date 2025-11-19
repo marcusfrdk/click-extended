@@ -1,5 +1,9 @@
 """The node used as a child node.."""
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=too-few-public-methods
+
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
@@ -13,6 +17,42 @@ if TYPE_CHECKING:
 
 P = ParamSpec("P")
 T = TypeVar("T")
+
+
+class ProcessContext:
+    """
+    Context provided to `ChildNode.process()` containing
+    all processing information.
+    """
+
+    def __init__(
+        self,
+        parent: "ParentNode | Tag",
+        siblings: list[str],
+        tags: dict[str, "Tag"],
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+    ) -> None:
+        """
+        Initialize a new ProcessContext instance.
+
+        Args:
+            parent (ParentNode | Tag):
+                The parent node (ParentNode or Tag) this child is attached to.
+            siblings (list[str]):
+                List of unique class names of all sibling child nodes.
+            tags (dict[str, Tag]):
+                Dictionary mapping tag names to Tag instances.
+            args (tuple[Any, ...]):
+                Additional positional arguments from `as_decorator`.
+            kwargs (dict[str, Any]):
+                Additional keyword arguments from `as_decorator`.
+        """
+        self.parent = parent
+        self.siblings = siblings
+        self.tags = tags
+        self.args = args
+        self.kwargs = kwargs
 
 
 class ChildNode(Node, ABC):
@@ -91,42 +131,19 @@ class ChildNode(Node, ABC):
         return decorator
 
     @abstractmethod
-    def process(
-        self,
-        value: Any,
-        *args: Any,
-        siblings: list[str],
-        tags: dict[str, "Tag"],
-        parent: "ParentNode | Tag",
-        **kwargs: Any,
-    ) -> Any:
+    def process(self, value: Any, context: ProcessContext) -> Any:
         """
-        Process the value of the chain and returns the processed value.
-
-        This method should only be called by the `ParentNode` class.
+        Process the value and return the processed result.
 
         Args:
             value (Any):
-                The previous value from the chain or directly from the
-                `ParentNode`.
-            *args (Any):
-                Additional positional arguments passed from as_decorator.
-            siblings (list[str]):
-                A list of unique class names of all sibling child nodes
-                in the parent. This is always provided by the ParentNode.
-            tags (dict[str, Tag]):
-                Dictionary mapping tag names to Tag instances.
-                Allows cross-node validation and access to tagged parameters
-                via `Tag.get_provided_values()` or `Tag.parent_nodes`.
-            parent (ParentNode | Tag):
-                The parent node (ParentNode or Tag) that this child is
-                attached to. Use `isinstance(parent, Tag)` to check if attached
-                to a tag.
-            **kwargs (Any):
-                Additional keyword arguments passed from `as_decorator`.
+                The value to process (from previous child or parent).
+                Subclasses can override the type annotation for value.
+            context (ProcessContext):
+                Context containing parent, siblings, tags, and decorator args.
 
         Returns:
             Any:
-                The processed value.
+                The processed value, or None to leave the value unchanged.
         """
         raise NotImplementedError

@@ -8,15 +8,7 @@
 import asyncio
 from abc import ABC
 from functools import wraps
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Mapping,
-    ParamSpec,
-    TypeVar,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
 from click_extended.core._node import Node
 from click_extended.core._tree import queue_parent
@@ -82,9 +74,9 @@ class ParentNode(Node, ABC):
     @property
     def children(
         self,
-    ) -> Mapping[str | int, "ChildNode"]:
+    ) -> dict[str | int, "ChildNode"]:
         """Get the children with proper ChildNode typing."""
-        return cast(Mapping[str | int, "ChildNode"], self._children)
+        return cast(dict[str | int, "ChildNode"], self._children)
 
     @children.setter
     def children(self, value: dict[str | int, Node] | None) -> None:

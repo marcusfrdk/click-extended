@@ -8,6 +8,7 @@ from click_extended.core._child_node import ChildNode
 from click_extended.core._parent_node import ParentNode
 from click_extended.core.env import Env, env
 from click_extended.core.tag import Tag
+from click_extended.types import ProcessContext
 
 
 class TestEnvInitialization:
@@ -549,15 +550,7 @@ class TestEnvIntegration:
         class UppercaseChild(ChildNode):
             """Test child that uppercases values."""
 
-            def process(
-                self,
-                value: str,
-                *args: Any,
-                siblings: list[str],
-                tags: dict[str, Tag],
-                parent: ParentNode | Tag,
-                **kwargs: Any,
-            ) -> str:
+            def process(self, value: str, context: ProcessContext) -> str:
                 """Uppercase the value."""
                 return value.upper() if value else value
 

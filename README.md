@@ -131,12 +131,12 @@ Using token: secret12...
 ### Value Validation
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class IsPositive(ChildNode):
     """Validate that a number is positive."""
 
-    def process(self, value, *args, **kwargs):
+    def process(self, value, context: ProcessContext):
         if value <= 0:
             raise ValueError(f"Value must be positive, got {value}")
 

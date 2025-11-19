@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING, Any, Mapping, cast
 
+from click_extended.core._child_node import ProcessContext
+
 if TYPE_CHECKING:
     from click_extended.core._child_node import ChildNode
     from click_extended.core._parent_node import ParentNode
@@ -42,14 +44,15 @@ def process_children(
             {c.__class__.__name__ for c in all_children if id(c) != id(child)}
         )
 
-        result = child.process(
-            value,
-            *child.process_args,
+        context = ProcessContext(
+            parent=parent,
             siblings=siblings,
             tags=tags,
-            parent=parent,
-            **child.process_kwargs,
+            args=child.process_args,
+            kwargs=child.process_kwargs,
         )
+
+        result = child.process(value, context)
 
         if result is not None:
             value = result

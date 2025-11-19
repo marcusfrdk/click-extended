@@ -224,10 +224,10 @@ def greet(name: str, count: int):
 ### Tree with Child Nodes
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class Uppercase(ChildNode):
-    def process(self, value, *args, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.upper()
 
 def uppercase(*args, **kwargs):
@@ -248,11 +248,11 @@ def greet(name: str):
 ### Tree with Tags
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class ValidatePassword(ChildNode):
-    def process(self, value, *args, siblings, tags, parent, **kwargs):
-        auth_tag = tags.get("auth")
+    def process(self, value, context: ProcessContext):
+        auth_tag = context.tags.get("auth")
         if auth_tag:
             provided = auth_tag.get_provided_values()
             username = provided.get("username")
@@ -284,24 +284,24 @@ def register(username: str, password: str):
 ### Tree with Multiple Children per Parent
 
 ```python
-from click_extended import command, option, ChildNode
+from click_extended import command, option, ChildNode, ProcessContext
 
 class Strip(ChildNode):
-    def process(self, value, *args, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.strip()
 
 def strip(*args, **kwargs):
     return Strip.as_decorator(*args, **kwargs)
 
 class Uppercase(ChildNode):
-    def process(self, value, *args, **kwargs):
+    def process(self, value, context: ProcessContext):
         return value.upper()
 
 def uppercase(*args, **kwargs):
     return Uppercase.as_decorator(*args, **kwargs)
 
 class AddExclamation(ChildNode):
-    def process(self, value, *args, **kwargs):
+    def process(self, value, context: ProcessContext):
         return f"{value}!"
 
 def add_exclamation(*args, **kwargs):

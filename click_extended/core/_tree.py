@@ -145,14 +145,18 @@ class Tree:
                     is_validation_only = False
 
                     try:
-                        result = child_inst.process(
-                            sentinel,
-                            *child_inst.process_args,
+                        from click_extended.core._child_node import (
+                            ProcessContext,
+                        )
+
+                        context = ProcessContext(
+                            parent=tag,
                             siblings=[],
                             tags={},
-                            parent=tag,
-                            **child_inst.process_kwargs,
+                            args=child_inst.process_args,
+                            kwargs=child_inst.process_kwargs,
                         )
+                        result = child_inst.process(sentinel, context)
                         is_validation_only = (
                             result is sentinel or result is None
                         )

@@ -2,6 +2,17 @@
 
 # Changelog
 
+## v1.0.0
+
+### Added
+
+- Added new `context` parameter for the `ChildNode.process` method.
+- Added new `ProcessMethod` type.
+
+### Updated
+
+- Updated unit tests for new process context parameter.
+
 ## v0.0.4
 
 ### Added
