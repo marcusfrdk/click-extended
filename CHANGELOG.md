@@ -14,6 +14,7 @@
 - Added documentation for the `tag` decorator.
 - Added documentation for the `RootNode` class.
 - Added documentation for the `ParentNode` class.
+- Added documentation for the `ChildNode` class.
 
 ### Updated
 
