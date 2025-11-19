@@ -64,48 +64,83 @@ When creating a `ChildNode`:
 | `process_args`   | Positional arguments to pass to the `process()` method. | tuple | No       | ()      |
 | `process_kwargs` | Keyword arguments to pass to the `process()` method.    | dict  | No       | {}      |
 
-## Class Attributes
+## Type Hints and Type Safety
 
-| Name        | Description                                      | Type       | Default |
-| ----------- | ------------------------------------------------ | ---------- | ------- |
-| `skip_none` | Whether to skip processing when value is `None`. | bool\|None | None    |
-| `types`     | List of supported parent types for validation.   | list[type] | []      |
+click-extended uses type hints from the `process()` method to provide type safety:
 
-## Missing Values
-
-Command line interfaces are never predictable in terms of missing values. The child node handles this in several ways:
-
-1. **Explicitly**: Setting the attribute `skip_none` to `True` or `False`.
+1. **Automatic Type Validation**: The type hint on the `value` parameter determines which parent types are supported:
 
    ```python
-   class MyValidator(ChildNode):
-       """ My custom validator. """
-       skip_none = True
+   class IsPositive(ChildNode):
+       """Validator for positive numbers."""
 
        def process(self, value: int | float, context: ProcessContext):
            if value <= 0:
                raise ValueError("Value must be positive")
    ```
 
-2. **Implicitly**: If you add `None` as a type for the `value` parameter, you tell `click-extended` that you accept `None`, meaning you need to handle the case where the value is missing. If you omit `None`, the `process()` method is skipped.
+   This validator automatically rejects non-numeric types at registration time.
+
+2. **No Type Hint = Accept All Types**:
+
+   ```python
+   class LogValue(ChildNode):
+       """Log any value."""
+
+       def process(self, value, context: ProcessContext):
+           print(f"Value: {value}")
+   ```
+
+3. **Union Types**: Use union syntax to support multiple types:
+
+   ```python
+   class FormatNumber(ChildNode):
+       """Format numeric values."""
+
+       def process(self, value: int | float, context: ProcessContext):
+           return f"{value:,.2f}"
+   ```
+
+## Missing Values
+
+Command line interfaces are never predictable in terms of missing values. The child node handles this using type hints:
+
+1. **Skip None by Default**: If `None` is not in the type hint, the `process()` method is skipped for `None` values:
 
    ```python
    # Process is not called if the value is None
    class MyValidator(ChildNode):
-       """ My custom validator. """
+       """My custom validator."""
+
        def process(self, value: int | float, context: ProcessContext):
            if value <= 0:
-               raise ValueError("Value must be provided")
-
-   # Process is called if the value is missing or None
-   class MyValidator(ChildNode):
-       """ My custom validator. """
-       def process(self, value: int | float | None, context: ProcessContext):
-           if value <= 0:
-               raise ValueError("Value must be provided")
+               raise ValueError("Value must be positive")
    ```
 
-3. **Default**: By default, the `process()` method is not called on missing values.
+2. **Accept None**: Add `None` to the type hint to handle missing values explicitly:
+
+   ```python
+   # Process is called even if the value is None
+   class MyValidator(ChildNode):
+       """My custom validator."""
+
+       def process(self, value: int | float | None, context: ProcessContext):
+           if value is None:
+               raise ValueError("Value must be provided")
+           if value <= 0:
+               raise ValueError("Value must be positive")
+   ```
+
+3. **No Type Hint**: Without a type hint, `None` values are skipped by default:
+
+   ```python
+   class MyTransform(ChildNode):
+       """Transform any non-None value."""
+
+       def process(self, value, context: ProcessContext):
+           # This is only called for non-None values
+           return str(value).upper()
+   ```
 
 ## Methods
 
@@ -117,11 +152,20 @@ Process and return the transformed/validated value. Must be implemented by subcl
 
 - `value` (Any): The current value from the previous node or raw source
 - `context` (ProcessContext): Context object containing:
+
   - `context.parent` (ParentNode | Tag): The parent node this child is attached to
   - `context.siblings` (list[str]): Class names of all sibling child nodes
   - `context.tags` (dict[str, Tag]): Dictionary of tag instances for cross-parameter access
   - `context.args` (tuple[Any, ...]): Additional positional arguments from `process_args`
   - `context.kwargs` (dict[str, Any]): Additional keyword arguments from `process_kwargs`
+
+  **Helper Methods:**
+
+  - `context.is_tag()`: Check if parent is a Tag
+  - `context.is_option()`: Check if parent is an Option
+  - `context.is_argument()`: Check if parent is an Argument
+  - `context.is_env()`: Check if parent is an Env
+  - `context.get_tag_values()`: Get dictionary of tag parent node values (only for tags)
 
 **Returns:**
 

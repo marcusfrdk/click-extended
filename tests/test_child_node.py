@@ -482,29 +482,26 @@ class TestChildNodeEdgeCases:
 class TestChildNodeTypeValidation:
     """Test ChildNode type validation system."""
 
-    def test_default_types_list_is_empty(self) -> None:
-        """Test that default types list is empty (accepts all types)."""
+    def test_default_get_supported_types_is_empty(self) -> None:
+        """Test that default get_supported_types returns empty (accepts all types)."""
         node = ConcreteChildNode(name="test")
-        assert node.types == []
-        assert isinstance(node.types, list)
+        assert node.get_supported_types() == []
 
-    def test_types_can_be_overridden_in_subclass(self) -> None:
-        """Test that subclasses can override the types list."""
+    def test_types_inferred_from_type_hints(self) -> None:
+        """Test that types are inferred from process() type hints."""
 
         class IntOnlyNode(ChildNode):
             """Node that only accepts int types."""
 
-            types = [int]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(self, value: int, context: ProcessContext) -> Any:
                 return value * 2
 
         node = IntOnlyNode(name="test")
-        assert node.types == [int]
-        assert int in node.types
+        assert node.get_supported_types() == [int]
+        assert int in node.get_supported_types()
 
-    def test_validate_type_with_empty_types_list(self) -> None:
-        """Test that validation passes when types list is empty."""
+    def test_validate_type_with_no_type_hint(self) -> None:
+        """Test that validation passes when no type hint specified."""
 
         node = ConcreteChildNode(name="test")
         parent = MagicMock()
@@ -519,9 +516,7 @@ class TestChildNodeTypeValidation:
         class IntOnlyNode(ChildNode):
             """Node that only accepts int types."""
 
-            types = [int]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(self, value: int, context: ProcessContext) -> Any:
                 return value
 
         node = IntOnlyNode(name="test")
@@ -538,9 +533,7 @@ class TestChildNodeTypeValidation:
         class IntOnlyNode(ChildNode):
             """Node that only accepts int types."""
 
-            types = [int]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(self, value: int, context: ProcessContext) -> Any:
                 return value
 
         node = IntOnlyNode(name="test")
@@ -552,7 +545,7 @@ class TestChildNodeTypeValidation:
             node.validate_type(parent)
 
         error_msg = str(exc_info.value)
-        assert "IntOnlyNode" in error_msg
+        assert "test" in error_msg
         assert "name" in error_msg
         assert "str" in error_msg
         assert "int" in error_msg
@@ -563,9 +556,7 @@ class TestChildNodeTypeValidation:
         class IntOnlyNode(ChildNode):
             """Node that only accepts int types."""
 
-            types = [int]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(self, value: int, context: ProcessContext) -> Any:
                 return value
 
         node = IntOnlyNode(name="test")
@@ -576,14 +567,14 @@ class TestChildNodeTypeValidation:
         node.validate_type(parent)
 
     def test_validate_type_with_multiple_supported_types(self) -> None:
-        """Test validation with multiple supported types."""
+        """Test validation with multiple supported types using union syntax."""
 
         class NumericNode(ChildNode):
             """Node that accepts int and float types."""
 
-            types = [int, float]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(
+                self, value: int | float, context: ProcessContext
+            ) -> Any:
                 return value
 
         node = NumericNode(name="test")
@@ -605,9 +596,9 @@ class TestChildNodeTypeValidation:
         class IntFloatNode(ChildNode):
             """Node that accepts int and float."""
 
-            types = [int, float]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(
+                self, value: int | float, context: ProcessContext
+            ) -> Any:
                 return value
 
         node = IntFloatNode(name="test")
@@ -619,11 +610,10 @@ class TestChildNodeTypeValidation:
             node.validate_type(parent)
 
         error_msg = str(exc_info.value)
-        assert "Type mismatch" in error_msg
-        assert "IntFloatNode" in error_msg
+        assert "test" in error_msg
         assert "username" in error_msg
         assert "str" in error_msg
-        assert "int, float" in error_msg or "int" in error_msg
+        assert "int" in error_msg
 
     def test_validate_type_with_parent_without_type_attribute(self) -> None:
         """Test validation when parent has no type attribute."""
@@ -631,9 +621,7 @@ class TestChildNodeTypeValidation:
         class IntOnlyNode(ChildNode):
             """Node that only accepts int types."""
 
-            types = [int]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(self, value: int, context: ProcessContext) -> Any:
                 return value
 
         node = IntOnlyNode(name="test")
@@ -707,8 +695,6 @@ class TestTypeValidationIntegration:
         class IsEven(ChildNode):
             """Validator that checks if value is even."""
 
-            types = [int]
-
             def process(self, value: int, context: ProcessContext) -> None:
                 if value % 2 != 0:
                     raise ValueError(f"Value must be even, got {value}")
@@ -771,8 +757,6 @@ class TestTypeValidationIntegration:
         class StringLength(ChildNode):
             """Validator for string length."""
 
-            types = [str]
-
             def process(self, value: str, context: ProcessContext) -> None:
                 if len(value) < 3:
                     raise ValueError(
@@ -831,8 +815,8 @@ class TestTypeValidationIntegration:
         assert result.exception is not None
 
         error_msg = str(result.exception)
-        assert "Type mismatch" in error_msg
-        assert "IsPositive" in error_msg
+        assert "Decorator" in error_msg
+        assert "is_positive" in error_msg
         assert "host" in error_msg
         assert "str" in error_msg
         assert "int" in error_msg or "float" in error_msg
@@ -872,9 +856,7 @@ class TestTypeValidationIntegration:
         class TrackingNode(ChildNode):
             """Node that tracks if process was called."""
 
-            types = [int]
-
-            def process(self, value: Any, context: ProcessContext) -> Any:
+            def process(self, value: int, context: ProcessContext) -> Any:
                 process_called.append(True)
                 return value * 2
 

@@ -175,6 +175,36 @@ class TestOptionValidation:
         except ValueError as e:
             assert "Invalid short flag" in str(e)
 
+    def test_flag_cannot_have_int_type(self) -> None:
+        """Test that is_flag=True and type=int are mutually exclusive."""
+        try:
+            Option(long="--verbose", is_flag=True, type=int)
+            assert False, "Expected ValueError"
+        except ValueError as e:
+            assert "Cannot specify both is_flag=True and type" in str(e)
+            assert "boolean" in str(e)
+
+    def test_flag_cannot_have_str_type(self) -> None:
+        """Test that is_flag=True and type=str are mutually exclusive."""
+        try:
+            Option(long="--debug", is_flag=True, type=str)
+            assert False, "Expected ValueError"
+        except ValueError as e:
+            assert "Cannot specify both is_flag=True and type" in str(e)
+            assert "boolean" in str(e)
+
+    def test_flag_with_bool_type_allowed(self) -> None:
+        """Test that is_flag=True with type=bool is allowed (explicit)."""
+        opt = Option(long="--verbose", is_flag=True, type=bool)
+        assert opt.is_flag is True
+        assert opt.type == bool
+
+    def test_flag_without_type_defaults_to_bool(self) -> None:
+        """Test that is_flag=True without type works correctly."""
+        opt = Option(long="--verbose", is_flag=True)
+        assert opt.is_flag is True
+        assert opt.default is False
+
 
 class TestOptionNameTransformation:
     """Test Option name transformation from long flag."""

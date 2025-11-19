@@ -133,7 +133,7 @@ class TypeMismatchError(ClickExtendedError):
 
     def __init__(
         self,
-        child_name: str,
+        name: str,
         parent_name: str,
         parent_type: type | None,
         supported_types: list[type],
@@ -142,8 +142,8 @@ class TypeMismatchError(ClickExtendedError):
         Initialize a new `TypeMismatchError` instance.
 
         Args:
-            child_name (str):
-                The name of the child node.
+            name (str):
+                The name of the decorator.
             parent_name (str):
                 The name of the parent node.
             parent_type (type | None):
@@ -151,11 +151,16 @@ class TypeMismatchError(ClickExtendedError):
             supported_types (list[type]):
                 List of types supported by the child node.
         """
-        type_names = ", ".join(t.__name__ for t in supported_types)
-        parent_type_name = parent_type.__name__ if parent_type else "None"
+
+        def get_type_name(t: type) -> str:
+            """Get type name, handling both regular types and UnionType."""
+            return getattr(t, "__name__", str(t))
+
+        type_names = ", ".join(get_type_name(t) for t in supported_types)
+        parent_type_name = get_type_name(parent_type) if parent_type else "None"
 
         message = (
-            f"Type mismatch: Child node '{child_name}' does not support "
+            f"Decorator '{name}' does not support "
             f"parent '{parent_name}' with type '{parent_type_name}'. "
             f"Supported types: {type_names}"
         )

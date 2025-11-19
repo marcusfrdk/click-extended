@@ -76,6 +76,13 @@ class Option(ParentNode):
                 f"(e.g., -p, -v, -h)"
             )
 
+        if is_flag and type is not None and type != bool:
+            raise ValueError(
+                f"Cannot specify both is_flag=True and "
+                f"type={type.__name__ if hasattr(type, '__name__') else type}. "
+                f"Flags are always boolean."
+            )
+
         if is_flag and default is None:
             default = False
 

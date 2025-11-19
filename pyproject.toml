@@ -77,7 +77,7 @@ ignore-paths = ["^tests/.*$", "^docs/.*$", "^\\..*$"]
 persistent = true
 
 [tool.pylint.messages_control]
-disable = ["duplicate-code"]
+disable = ["duplicate-code", "unidiomatic-typecheck"]
 
 [tool.pylint.format]
 max-line-length = 80

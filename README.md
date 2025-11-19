@@ -17,10 +17,10 @@ An extension of the [Click](https://github.com/pallets/click) library with addit
 ## Features
 
 - **Aliasing**: Add multiple aliases to a group or command.
-- **Async supprt**: Automatically run both synchronous and asynchronous functions.
+- **Async support**: Automatically run both synchronous and asynchronous functions.
 - **Extensible decorator API**: Extend the Click decorator API with custom decorators like validators, transformers, and more.
+- **Type-hint First**: Built using the type-hinting system to it's full potential.
 - **Environment variables**: Automatically validate and inject environment variables into the function.
-- **Fully type-hinted**: The library is fully type-hinted and provides good types for easy development.
 - **Help alias**: The `-h` and `--help` automatically show the help menu unless overridden.
 
 ## Installation

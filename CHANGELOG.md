@@ -6,42 +6,87 @@
 
 ### Added
 
-- Added new `context` parameter for the `ChildNode.process` method.
-- Added new `ProcessMethod` type.
+#### Argument
+
+- Added automatic type inference for `Argument` class.
+- Added sentinel value `_MISSING` to properly distinguish between no default and `default=None`.
+
+#### ChildNode
+
+- Added new `context` parameter for the `ChildNode.process()` method.
+- Added new `ProcessMethod` data class.
+- Added `ProcessContext` helper methods: `is_tag()`, `is_option()`, `is_argument()`, `is_env()`, `get_tag_values()`.
+- Added type-hint-first system for `ChildNode` with automatic type inference from `process()` method signature.
+- Added `get_supported_types()` method to `ChildNode` for inspecting inferred types.
+- Added `should_skip_none()` method to `ChildNode` with automatic inference from type hints.
+- Added `TypeMismatchError` exception for type validation failures.
+
+#### Option
+
+- Added automatic type inference for `Option` class.
+- Made `is_flag` and `type` parameters exclusive for `option` decorator.
+
+#### Testing
+
+- Added unit tests for type inference.
+- Added unit tests for required/optional argument behavior.
+- Added integration tests for type validation system.
+
+#### Validation
+
 - Added `validation` module.
 - Added `validation.is_positive` decorator with unit tests.
-- Added type validation system for `ChildNode` with `types` attribute and `validate_type()` method.
-- Added `TypeMismatchError` exception for type validation failures.
-- Added automatic type inference for `Option` and `Argument` classes.
-- Added comprehensive unit tests for type inference.
-- Added integration tests for type validation system.
-- Added sentinel value `_MISSING` to properly distinguish between no default and `default=None`.
-- Added comprehensive unit tests for required/optional argument behavior.
-- Added `skip_none` class attribute to `ChildNode` for controlling `None` value handling.
-- Added `_should_skip_none()` method to `ChildNode` with hybrid type hint inference.
-- Added automatic `None` value skipping based on type hints in `process()` method.
 
 ### Updated
 
-- Updated unit tests for new process context parameter.
-- Updated `Option` class to infer type from default value when not explicitly specified.
-- Updated `Argument` class to infer type from default value when not explicitly specified.
+#### ChildNode
+
 - Updated `process_children()` to validate child node types before processing.
-- Updated documentation for `Option` with type inference section and examples.
-- Updated documentation for `Argument` with type inference section and examples.
+- Updated `process_children()` to automatically skip `None` values based on child node's `should_skip_none()` logic.
+- Updated `is_positive` validator to use type hints instead of `types` class attribute.
+- Updated `TypeMismatchError` to use decorator name instead of child node name and handle UnionType.
+
+#### Option
+
+- Updated `Option` class to infer type from default value when not explicitly specified.
+
+#### Argument
+
+- Updated `Argument` class to infer type from default value when not explicitly specified.
 - Updated `Argument` class to automatically set `required=False` when `default` is provided (including `None`).
 - Updated `_root_node.py` to properly pass `required` parameter to Click's `argument()` function.
-- Updated `process_children()` to automatically skip `None` values based on child node's `_should_skip_none()` logic.
-- Updated `is_positive` validator to leverage automatic `None` skipping.
-- Updated `CHILD_NODE.md` documentation with a section about missing values.
+
+#### Documentation
+
+- Updated documentation for `Option` with type inference section and examples.
+- Updated documentation for `Argument` with type inference section and examples.
+- Updated `CHILD_NODE.md` documentation with type-hint-first approach and ProcessContext helpers.
 - Updated `ARGUMENT.md` and `OPTION.md` with type inference sections.
+
+#### Tag
+
+- Updated tag processing to iterate through each parent node value individually.
+
+#### Testing
+
+- Updated unit tests for new process context parameter.
 
 ### Fixed
 
+#### Argument
+
+- Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
+
+#### Typing
+
+- Disabled `unidiomatic-typecheck` rule for pylint.
 - Fixed circular import issue in type validation by using class name checks instead of isinstance.
 - Fixed Pylance type errors by adding proper type annotations with `cast()`.
+- Fixed error formatting to handle Python 3.10+ union types (`int | float`).
+
+#### Validation
+
 - Fixed `is_positive` validator to handle `None` values.
-- Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
 
 ## v0.0.4
 

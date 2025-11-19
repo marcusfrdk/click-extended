@@ -322,7 +322,7 @@ class TestIsPositiveTypeValidation:
         assert result.exit_code != 0
         assert result.exception is not None
         assert isinstance(result.exception, TypeMismatchError)
-        assert "IsPositive" in str(result.exception)
+        assert "is_positive" in str(result.exception)
         assert "str" in str(result.exception)
 
     def test_rejects_bool_type(self) -> None:
@@ -341,7 +341,7 @@ class TestIsPositiveTypeValidation:
         assert result.exit_code != 0
         assert result.exception is not None
         assert isinstance(result.exception, TypeMismatchError)
-        assert "IsPositive" in str(result.exception)
+        assert "is_positive" in str(result.exception)
         assert "bool" in str(result.exception)
 
     def test_allows_no_type_specified(self) -> None:

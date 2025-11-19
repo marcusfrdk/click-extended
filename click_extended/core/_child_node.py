@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=too-many-return-statements
 # pylint: disable=too-few-public-methods
 # pylint: disable=broad-exception-caught
 
@@ -13,6 +14,7 @@ from typing import (
     ParamSpec,
     TypeVar,
     Union,
+    cast,
     get_args,
     get_origin,
     get_type_hints,
@@ -66,13 +68,44 @@ class ProcessContext:
         self.args = args
         self.kwargs = kwargs
 
+    def is_tag(self) -> bool:
+        """Check if parent is a Tag."""
+        return self.parent.__class__.__name__ == "Tag"
+
+    def is_option(self) -> bool:
+        """Check if parent is an Option."""
+        return self.parent.__class__.__name__ == "Option"
+
+    def is_argument(self) -> bool:
+        """Check if parent is an Argument."""
+        return self.parent.__class__.__name__ == "Argument"
+
+    def is_env(self) -> bool:
+        """Check if parent is an Env."""
+        return self.parent.__class__.__name__ == "Env"
+
+    def get_tag_values(self) -> dict[str, Any]:
+        """
+        Get all values from tag's parent nodes.
+
+        Returns:
+            dict[str, Any]:
+                Dictionary mapping parent node names to their values.
+
+        Raises:
+            ValueError:
+                If parent is not a Tag.
+        """
+        if not self.is_tag():
+            raise ValueError("Parent is not a Tag")
+        tag = cast("Tag", self.parent)
+        return {pn.name: pn.get_value() for pn in tag.parent_nodes}
+
 
 class ChildNode(Node, ABC):
     """The node used as a child node."""
 
     parent: "ParentNode"
-    types: list[type] = []
-    skip_none: bool | None = None
 
     def __init__(
         self,
@@ -96,39 +129,71 @@ class ChildNode(Node, ABC):
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
 
+    def get_supported_types(self) -> list[type]:
+        """
+        Get supported types from the `process()` method's value type hint.
+
+        Returns:
+            list[type]:
+                List of supported types. Empty list means all types accepted.
+        """
+        try:
+            hints = get_type_hints(self.process)
+            if "value" not in hints:
+                return []
+
+            value_hint = hints["value"]
+
+            if value_hint is Any:
+                return []
+
+            origin = get_origin(value_hint)
+
+            if origin is Union:
+                return [t for t in get_args(value_hint) if t is not type(None)]
+
+            args = get_args(value_hint)
+            if args:
+                return [t for t in args if t is not type(None)]
+
+            if value_hint is not type(None):
+                return [value_hint]
+
+            return []
+        except Exception:
+            return []
+
     def should_skip_none(self) -> bool:
         """
-        Determine if `None` values should be skipped for this child node.
+        Determine if `None` values should be skipped based on type hints.
 
         Returns:
             bool:
-                `True` if `None` values should be skipped, `False` otherwise.
+                `True` if `None` is not in the value
+                type hint, `False` otherwise.
         """
-        if self.skip_none is not None:
-            return self.skip_none
-
         try:
             hints = get_type_hints(self.process)
-            if "value" in hints:
-                value_hint = hints["value"]
+            if "value" not in hints:
+                return True
 
-                origin = get_origin(value_hint)
-                if origin is Union:
-                    args = get_args(value_hint)
-                    return type(None) not in args
+            value_hint = hints["value"]
+            origin = get_origin(value_hint)
 
-                return value_hint is not type(None)
+            if origin is Union:
+                args = get_args(value_hint)
+                return type(None) not in args
+
+            return value_hint is not type(None)
         except Exception:
-            pass
-
-        return True
+            return True
 
     def validate_type(self, parent: "ParentNode") -> None:
         """
         Validate that the parent's type is supported by this child node.
 
-        An empty types list means all types are supported.
-        If types list is not empty, the parent's type must be in the list.
+        Uses type hints from the `process()` method to
+        determine supported types. Empty list means all types are supported.
 
         Args:
             parent (ParentNode):
@@ -138,8 +203,9 @@ class ChildNode(Node, ABC):
             TypeMismatchError:
                 If the parent's type is not supported by this child node.
         """
+        supported_types = self.get_supported_types()
 
-        if not self.types:
+        if not supported_types:
             return
 
         parent_type = getattr(parent, "type", None)
@@ -147,12 +213,12 @@ class ChildNode(Node, ABC):
         if parent_type is None:
             return
 
-        if parent_type not in self.types:
+        if parent_type not in supported_types:
             raise TypeMismatchError(
-                child_name=self.__class__.__name__,
+                name=self.name,
                 parent_name=parent.name,
                 parent_type=parent_type,
-                supported_types=self.types,
+                supported_types=supported_types,
             )
 
     def get(self, name: str) -> None:

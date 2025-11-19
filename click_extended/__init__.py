@@ -1,6 +1,6 @@
 """Initialization file for the 'click_extended' module."""
 
-from click_extended.core._child_node import ChildNode
+from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core._global_node import GlobalNode
 from click_extended.core._parent_node import ParentNode
 from click_extended.core._root_node import RootNode
@@ -13,6 +13,7 @@ from click_extended.core.tag import tag
 
 __all__ = [
     "ChildNode",
+    "ProcessContext",
     "GlobalNode",
     "ParentNode",
     "RootNode",

@@ -341,7 +341,11 @@ class RootNode(Node):
 
                 for tag_name, tag in instance.tree.tags.items():
                     if tag.children:
-                        process_children(None, tag.children, tag, tags_dict)
+                        for parent_node in tag.parent_nodes:
+                            value = parent_node.get_value()
+                            process_children(
+                                value, tag.children, tag, tags_dict
+                            )
 
                 for global_node in instance.tree.globals:
                     if global_node.delay:
