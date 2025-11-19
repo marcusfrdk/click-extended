@@ -17,6 +17,9 @@
 - Added integration tests for type validation system.
 - Added sentinel value `_MISSING` to properly distinguish between no default and `default=None`.
 - Added comprehensive unit tests for required/optional argument behavior.
+- Added `skip_none` class attribute to `ChildNode` for controlling `None` value handling.
+- Added `_should_skip_none()` method to `ChildNode` with hybrid type hint inference.
+- Added automatic `None` value skipping based on type hints in `process()` method.
 
 ### Updated
 
@@ -28,6 +31,10 @@
 - Updated documentation for `Argument` with type inference section and examples.
 - Updated `Argument` class to automatically set `required=False` when `default` is provided (including `None`).
 - Updated `_root_node.py` to properly pass `required` parameter to Click's `argument()` function.
+- Updated `process_children()` to automatically skip `None` values based on child node's `_should_skip_none()` logic.
+- Updated `is_positive` validator to leverage automatic `None` skipping.
+- Updated `CHILD_NODE.md` documentation with a section about missing values.
+- Updated `ARGUMENT.md` and `OPTION.md` with type inference sections.
 
 ### Fixed
 

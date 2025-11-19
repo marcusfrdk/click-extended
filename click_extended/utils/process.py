@@ -1,5 +1,7 @@
 """Utility functions for processing child nodes."""
 
+# pylint: disable=broad-exception-caught
+
 from typing import TYPE_CHECKING, Any, Mapping, cast
 
 from click_extended.core._child_node import ProcessContext
@@ -59,6 +61,9 @@ def process_children(
             args=child.process_args,
             kwargs=child.process_kwargs,
         )
+
+        if value is None and child.should_skip_none():
+            continue
 
         result = child.process(value, context)
 

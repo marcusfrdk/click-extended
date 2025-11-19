@@ -3,9 +3,20 @@
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=too-few-public-methods
+# pylint: disable=broad-exception-caught
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ParamSpec,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from click_extended.core._node import Node
 from click_extended.core._tree import queue_child
@@ -61,6 +72,7 @@ class ChildNode(Node, ABC):
 
     parent: "ParentNode"
     types: list[type] = []
+    skip_none: bool | None = None
 
     def __init__(
         self,
@@ -83,6 +95,33 @@ class ChildNode(Node, ABC):
         self.children = None
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
+
+    def should_skip_none(self) -> bool:
+        """
+        Determine if `None` values should be skipped for this child node.
+
+        Returns:
+            bool:
+                `True` if `None` values should be skipped, `False` otherwise.
+        """
+        if self.skip_none is not None:
+            return self.skip_none
+
+        try:
+            hints = get_type_hints(self.process)
+            if "value" in hints:
+                value_hint = hints["value"]
+
+                origin = get_origin(value_hint)
+                if origin is Union:
+                    args = get_args(value_hint)
+                    return type(None) not in args
+
+                return value_hint is not type(None)
+        except Exception:
+            pass
+
+        return True
 
     def validate_type(self, parent: "ParentNode") -> None:
         """

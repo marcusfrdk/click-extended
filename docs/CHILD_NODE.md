@@ -21,7 +21,7 @@ A `ChildNode` represents a single processing step in a parameter's value chain. 
 Child nodes are attached to `ParentNode` instances and process values sequentially:
 
 ```text
-Raw Value → ChildNode 1 → ChildNode 2 → ChildNode 3 → Final Value
+Raw Value -> ChildNode 1 -> ChildNode 2 -> ChildNode 3 -> Final Value
 ```
 
 Each child node receives:
@@ -63,6 +63,49 @@ When creating a `ChildNode`:
 | `name`           | The name of the node.                                   | str   | Yes      | -       |
 | `process_args`   | Positional arguments to pass to the `process()` method. | tuple | No       | ()      |
 | `process_kwargs` | Keyword arguments to pass to the `process()` method.    | dict  | No       | {}      |
+
+## Class Attributes
+
+| Name        | Description                                      | Type       | Default |
+| ----------- | ------------------------------------------------ | ---------- | ------- |
+| `skip_none` | Whether to skip processing when value is `None`. | bool\|None | None    |
+| `types`     | List of supported parent types for validation.   | list[type] | []      |
+
+## Missing Values
+
+Command line interfaces are never predictable in terms of missing values. The child node handles this in several ways:
+
+1. **Explicitly**: Setting the attribute `skip_none` to `True` or `False`.
+
+   ```python
+   class MyValidator(ChildNode):
+       """ My custom validator. """
+       skip_none = True
+
+       def process(self, value: int | float, context: ProcessContext):
+           if value <= 0:
+               raise ValueError("Value must be positive")
+   ```
+
+2. **Implicitly**: If you add `None` as a type for the `value` parameter, you tell `click-extended` that you accept `None`, meaning you need to handle the case where the value is missing. If you omit `None`, the `process()` method is skipped.
+
+   ```python
+   # Process is not called if the value is None
+   class MyValidator(ChildNode):
+       """ My custom validator. """
+       def process(self, value: int | float, context: ProcessContext):
+           if value <= 0:
+               raise ValueError("Value must be provided")
+
+   # Process is called if the value is missing or None
+   class MyValidator(ChildNode):
+       """ My custom validator. """
+       def process(self, value: int | float | None, context: ProcessContext):
+           if value <= 0:
+               raise ValueError("Value must be provided")
+   ```
+
+3. **Default**: By default, the `process()` method is not called on missing values.
 
 ## Methods
 
@@ -259,7 +302,7 @@ def shout(text: str):
     print(text)
 
 # Usage: python script.py --text "  hello  "
-# Flow: "  hello  " → "hello" → "HELLO" → "HELLO!"
+# Flow: "  hello  " -> "hello" -> "HELLO" -> "HELLO!"
 # Output: HELLO!
 ```
 
@@ -434,12 +477,7 @@ class CustomTransform(ChildNode):
             value (Any):
                 Current value from previous node.
             context (ProcessContext):
-                Context object containing:
-                - parent: Parent node reference
-                - siblings: List of sibling node class names
-                - tags: Dictionary of tag instances
-                - args: Additional positional arguments
-                - kwargs: Additional keyword arguments
+                Context object.
 
         Returns:
             Any:

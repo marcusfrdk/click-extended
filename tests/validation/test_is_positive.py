@@ -107,10 +107,9 @@ class TestIsPositive:
         assert validator.name == "custom_name"
 
     def test_none_value_is_skipped(self) -> None:
-        """Test that None values are skipped without raising an error."""
+        """Test that None values are skipped via skip_none mechanism."""
         validator = IsPositive(name="test_validator")
-        context = make_context("optional_value")
-        validator.process(None, context)  # Should not raise
+        assert validator.should_skip_none() is True
 
 
 class TestIsPositiveDecorator:
