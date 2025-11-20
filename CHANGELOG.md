@@ -2,6 +2,14 @@
 
 # Changelog
 
+## v0.1.1
+
+### Added
+
+- **@as_path**: New decorator to transform and validate a string to a path.
+- **@to_lowercase**: Added decorator to transform a string to lowercase.
+- **@to_uppercase**: Added decorator to transform a string to uppercase.
+
 ## v0.1.0
 
 ### Added

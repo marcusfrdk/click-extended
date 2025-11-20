@@ -8,13 +8,10 @@
 import fnmatch
 import os
 from pathlib import Path
-from typing import Callable, ParamSpec, TypeVar
 
 from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.errors import ValidationError
-
-P = ParamSpec("P")
-T = TypeVar("T")
+from click_extended.types import Decorator
 
 
 class AsPath(ChildNode):
@@ -139,7 +136,7 @@ def as_path(
     is_readable: bool = False,
     is_writable: bool = False,
     is_executable: bool = False,
-) -> Callable[[Callable[P, T]], Callable[P, T]]:
+) -> Decorator:
     """
     Transform a string to a valid path.
 
@@ -220,7 +217,7 @@ def as_path(
             `execute` permissions. Defaults to `False`.
 
     Returns:
-        Callable:
+        Decorator:
             The decorated function.
     """
     return AsPath.as_decorator(
