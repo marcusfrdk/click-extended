@@ -1,6 +1,5 @@
 {
   "editor.rulers": [80],
-  "python.analysis.typeCheckingMode": "strict",
   "markdownlint.config": {
     "MD024": false, // No duplicate heading
     "MD041": false // First line heading

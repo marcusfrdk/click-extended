@@ -2,6 +2,24 @@
 
 # Changelog
 
+## v0.3.0
+
+### Added
+
+- **Type checking utilities**: Added `is_single_value()`, `is_tuple_value()`, and `is_nested_tuple_value()` utility functions with TypeGuard support for runtime type checking and compile-time type narrowing in ChildNode implementations.
+- **TypeGuard overloads**: Added overload signatures for individual primitive types (`str`, `int`, `float`, `bool`) and common union types (`int | float`, `str | Path`, `str | datetime`) to enable precise type narrowing with explicit type parameters.
+- **ChildNodeProcessError**: Added new base exception class for errors that must be raised within `ChildNode.process()` methods, with automatic child node name detection via frame inspection (walks up to 10 stack frames).
+- **UnhandledValueError**: Added specialized exception for unexpected values in `process()` methods with automatic type formatting and child node context.
+
+### Updated
+
+- **Error handling**: Enhanced error system with automatic context detection. Exceptions now automatically include the child node name without manual parameter passing using Python frame inspection.
+- **Error formatting**: `ChildNodeProcessError` now supports named string formatting with `{name}` placeholder and custom kwargs for flexible error messages in subclasses.
+- **Transformers**: Updated `to_lowercase()`, `to_uppercase()`, and `as_path()` transformers to use new type-checking utilities with TypeGuard for improved type safety and support for all three value structures (single, flat tuple, nested tuple).
+- **Validators**: Updated `is_positive()` validator to handle all three value structures using type-checking utilities with `(int, float)` union type support.
+- **Type checking API**: Simplified type-checking utilities to require explicit type parameters.
+- **Documentation**: Updated `CONTRIBUTING.md` with guidelines for creating validators/transformers, including the new type-checking utilities pattern and error handling best practices.
+
 ## v0.2.1
 
 ### Updated

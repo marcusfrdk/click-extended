@@ -3,7 +3,8 @@
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 
-import typing as t
+import inspect
+from typing import IO, Any
 
 import click
 from click import ClickException
@@ -17,6 +18,7 @@ class ClickExtendedError(Exception):
     """Base exception for exceptions defined in the `click_extended` library."""
 
 
+# Catchable errors
 class CatchableError(ClickExtendedError):
     """Base exception for exceptions raised inside a child node.
 
@@ -34,12 +36,85 @@ class CatchableError(ClickExtendedError):
         super().__init__(message)
 
 
+class ChildNodeProcessError(CatchableError):
+    """
+    Base class for exceptions which must be raised inside
+    the `process()` method of a `ChildNode`.
+    """
+
+    def __init__(self, message: str, **kwargs: str) -> None:
+        """
+        Initialize a new `ChildNodeProcessError` instance.
+
+        Args:
+            message (str):
+                The error message. If child_name is found, it will be
+                prefixed automatically. Subclasses can access child_name
+                via self.child_name to format custom messages.
+
+        Raises:
+            RuntimeError:
+                If raised outside a ChildNode context.
+        """
+        self.child_name: str | None = None
+        frame = inspect.currentframe()
+
+        if frame:
+            current_frame = frame.f_back
+            depth = 0
+            max_depth = 10
+
+            while current_frame and depth < max_depth:
+                caller_locals = current_frame.f_locals
+                if "self" in caller_locals:
+                    self_obj = caller_locals["self"]
+                    if hasattr(self_obj, "name") and hasattr(
+                        self_obj, "process"
+                    ):
+                        self.child_name = self_obj.name
+                        break
+                current_frame = current_frame.f_back
+                depth += 1
+
+        if not self.child_name:
+            raise RuntimeError(
+                f"{self.__class__.__name__} must be raised from within a "
+                f"ChildNode.process() method. The exception was raised outside "
+                f"a valid ChildNode context."
+            )
+
+        formatted_message = message.format(name=self.child_name, **kwargs)
+        super().__init__(formatted_message)
+
+
+class UnhandledValueError(ChildNodeProcessError):
+    """Exception raised when a value in the `process()` method is unexpected."""
+
+    def __init__(self, value: Any) -> None:
+        """
+        Initialize a new `UnhandledValueError` instance.
+
+        Args:
+            value (Any):
+                The unexpected value.
+        """
+        message = "Received unexpected value for '{name}' of type '{type}'"
+        super().__init__(message, type=type(value).__name__)
+
+
 class ValidationError(CatchableError):
     """Exception raised when validation fails in a child node."""
 
 
 class TransformError(CatchableError):
     """Exception raised when transformation fails in a child node."""
+
+
+class UnknownError(ChildNodeProcessError):
+    """
+    Exception raised when an unexpected error occurs or parts of code
+    which is unhandled.
+    """
 
 
 class ParameterError(ClickException):
@@ -78,7 +153,7 @@ class ParameterError(ClickException):
             return f"({self.param_hint}): {self.message}"
         return self.message
 
-    def show(self, file: t.IO[t.Any] | None = None) -> None:
+    def show(self, file: IO[Any] | None = None) -> None:
         """Display the error with usage information (like Click does)."""
         if file is None:
             file = get_text_stderr()
@@ -102,6 +177,7 @@ class ParameterError(ClickException):
         echo(f"Error {self.format_message()}", file=file, color=color)
 
 
+# Node errors
 class NoParentError(ClickExtendedError):
     """Exception raised when no `ParentNode` has been defined."""
 

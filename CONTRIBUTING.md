@@ -134,23 +134,86 @@ Follow these guidelines:
 
 - **Docstrings**: Use the project's docstring format (a custom version of the Google-style docstrings):
 
-  ```python
+  ````python
   def example(value: int) -> str:
       """
       Short description.
 
       Args:
-        value (int):
-            Description of value.
-        optional (str, optional):
-            This value is optional, or in other words, a
-            default value is set.
+          value (int):
+              Description of value.
+          optional (str, optional):
+              This value is optional, or in other words, a
+              default value is set.
 
       Returns:
           str:
               Description of return value.
+
+      Raises:
+          TypeError:
+              If the value is not a primitive.
+
+      Examples:
+          ```python
+          >>> example("Hello")
+          Hello
+          ```
+
+          ```python
+          def my_function():
+              pass
+          ```
       """
+      if not isinstance(value, (str, int, float, bool)):
+          raise TypeError("Value is not a primitive.")
       return str(value)
+  ````
+
+  ```python
+  from click_extended import ChildNode, ProcessContext
+  from click_extended.errors import UnhandledValueError
+  from click_extended.utils import (
+      is_single_value,
+      is_tuple_value,
+      is_nested_tuple_value,
+  )
+
+  class MyDecorator(ChildNode):
+      """This is my custom decorator that handles all three cases."""
+
+      def process(
+          self,
+          value: str | tuple[str] | tuple[tuple[str]],
+          context: ProcessContext,
+      ) -> str | tuple[str] | tuple[tuple[str]]:
+          if is_single_value(value, str):
+              return value + "!"
+          if is_tuple_value(value, str):
+              return (v + "!" for v in value)
+          if is_nested_tuple_value(value, str):
+              return ((v + "!" for v in t) for t in value)
+          raise UnhandledValueError(value)
+
+
+  def my_decorator(some_param: str]) -> Decorator:
+      """
+      This is my custom decorator that implements some `ChildNode`.
+      This docstring should include the "Supports" section to quickly
+      show the user where this decorator can be used. Invalid usage
+      will raise exceptions.
+
+      This decorator passes along a keyword argument called `some_param`,
+      but it can also be passed as a positional argument. Either can
+      be accessed through `context.args` or `context.kwargs`.
+
+      Supports `str`, `tuple[str]` and `tuple[tuple[str]]`.
+
+      Returns:
+          Decorator:
+              The decorated function.
+      """
+      return MyDecorator.as_decorator(some_param=some_param)
   ```
 
 - **Tests**: Add tests for new features or bug fixes
