@@ -7,6 +7,12 @@
 ### Removed
 
 - **types.py**: Removed unused import.
+- **core/\_aliased.py**: Removed unused import.
+
+### Fixed
+
+- **core/\_aliased.py**: Fixed type issues.
+- **core/\_child_node.py**: Fixed type issues.
 
 ## v0.3.1
 

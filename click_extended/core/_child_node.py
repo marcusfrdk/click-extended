@@ -263,7 +263,7 @@ class ChildNode(Node, ABC):
 
     def _expand_union_types(self, types: list[type]) -> list[type]:
         """Expand union types in a list of types."""
-        expanded = []
+        expanded: list[type] = []
         for t in types:
             t_origin = get_origin(t)
             if t_origin is Union or isinstance(t, UnionType):
@@ -281,7 +281,7 @@ class ChildNode(Node, ABC):
         parent_multiple: bool,
     ) -> list[type]:
         """Collect types relevant to the current structure."""
-        relevant_types = []
+        relevant_types: list[type] = []
         union_members = [t for t in get_args(value_hint) if t is not type(None)]
 
         for member in union_members:
@@ -336,8 +336,8 @@ class ChildNode(Node, ABC):
                                         self._expand_union_types(innermost)
                                     )
 
-        seen = set()
-        unique_types = []
+        seen: set[type] = set()
+        unique_types: list[type] = []
         for t in relevant_types:
             if t not in seen:
                 seen.add(t)
@@ -486,7 +486,7 @@ class ChildNode(Node, ABC):
                                     f"tuple[{parent_type.__name__}]' instead."
                                 )
 
-                        expanded_types = []
+                        expanded_types: list[type] = []
                         for inner_type in inner_types:
                             inner_origin = get_origin(inner_type)
                             if inner_origin is Union or isinstance(

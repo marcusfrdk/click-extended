@@ -3,14 +3,11 @@
 # pylint: disable=too-few-public-methods
 # pylint: disable=no-value-for-parameter
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import click
 
 from click_extended.errors import ParameterError
-
-if TYPE_CHECKING:
-    from click_extended.core._root_node import ExtendedCommand, ExtendedGroup
 
 
 class AliasedMixin:
