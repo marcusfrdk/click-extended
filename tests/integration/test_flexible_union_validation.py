@@ -304,18 +304,16 @@ class TestFlexibleUnionValidation:
         class NarrowNode(BaseNode):
             """Override with narrower type."""
 
-            def process(
-                self, value: str, context: ProcessContext  # type: ignore[override]
+            def process(  # type: ignore[override]
+                self, value: str, context: ProcessContext
             ) -> Any:
                 return value
 
         validator = NarrowNode("validator")
 
-        # Single should work (matches narrowed signature)
         option_single = Option("--value", type=str)
         validator.validate_type(option_single)
 
-        # Flat should fail (doesn't match narrowed signature)
         option_flat = Option("--value", nargs=2, type=str)
         with pytest.raises(ValidationError):
             validator.validate_type(option_flat)
@@ -346,7 +344,11 @@ class TestFlexibleUnionValidation:
         class NoValueNode(ChildNode):
             """Node with different parameter name."""
 
-            def process(self, data: str, context: ProcessContext) -> Any:
+            def process(  # type: ignore[override]
+                self,
+                data: str,
+                context: ProcessContext,
+            ) -> Any:
                 return data
 
         validator = NoValueNode("validator")

@@ -2,6 +2,24 @@
 
 # Changelog
 
+## v0.3.1
+
+### Added
+
+- **transform/to_case.py**: Added new factory class that creates to\_\*\_case decorators.
+- **New transform decorators**: Added `@to_camel_case`, `@to_dot_case`, `@to_flat_case`, `@to_kebab_case`, `@to_lower_case`, `@to_meme_case`, `@to_pascal_case`, `@to_path_case`, `@to_screaming_snake_case`, `@to_snake_case`, `@to_title_case`, `@to_train_case`, `@to_upper_case` decorators.
+
+### Updated
+
+- **utils/transform.py**: Added `to_upper_case`, `to_lower_case` and `to_meme_case` methods to the `Transform` class.
+
+### Removed
+
+- **transform/to_uppercase.py**: Removed since this is now included in `transform/to_case.py`.
+- **transform/to_lowercase.py**: Removed since this is now included in `transform/to_case.py`.
+- **tests/transform**: Removed tests for removed `to_uppercase.py` and `to_lowercase.py` files.
+- **tests/utils/transform.py**: Added test cases for upper case, lower case and meme case.
+
 ## v0.3.0
 
 ### Added

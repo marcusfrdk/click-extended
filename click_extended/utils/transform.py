@@ -2,6 +2,7 @@
 
 import re
 
+NON_ALPHABETIC_PATTERN = re.compile(r"[^A-Za-z]+")
 NON_ALPHANUMERIC_PATTERN = re.compile(r"[^A-Za-z0-9]+")
 LOWER_TO_UPPER_PATTERN = re.compile(r"([a-z])([A-Z])")
 UPPER_TO_UPPER_LOWER_PATTERN = re.compile(r"([A-Z]+)([A-Z][a-z])")
@@ -35,6 +36,26 @@ class Transform:
         value = NON_ALPHANUMERIC_PATTERN.sub(sep, value)
         value = re.sub(f"({re.escape(sep)})+", sep, value)
         return value.strip(sep)
+
+    def to_lower_case(self) -> str:
+        """Convert the value to lower case."""
+        return self.value.strip(" ").lower()
+
+    def to_upper_case(self) -> str:
+        """Convert the value to upper case."""
+        return self.value.strip(" ").upper()
+
+    def to_meme_case(self) -> str:
+        """Convert the value to mEmE cAsE."""
+        value = self._normalize_value(self.value, " ")
+        value = NON_ALPHABETIC_PATTERN.sub(" ", value)
+        return " ".join(
+            "".join(
+                v.upper() if i % 2 == 0 else v.lower()
+                for i, v in enumerate(word)
+            )
+            for word in value.strip().split(" ")
+        )
 
     def to_snake_case(self) -> str:
         """Convert the value to snake_case."""

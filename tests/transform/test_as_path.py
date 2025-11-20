@@ -151,7 +151,7 @@ class TestAsPathExistence:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.exists()
+            assert result.exists()  # type: ignore
 
     def test_exists_true_with_nonexistent_file(self) -> None:
         """Test that exists=True fails for non-existent files."""
@@ -231,7 +231,7 @@ class TestAsPathParents:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.parent.exists()
+            assert result.parent.exists()  # type: ignore
 
     def test_parents_true_with_nonexistent_parent(self) -> None:
         """Test that parents=True fails when parent doesn't exist."""
@@ -289,7 +289,7 @@ class TestAsPathFileDirectory:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.is_file()
+            assert result.is_file()  # type: ignore
 
     def test_allow_file_false_with_file(self) -> None:
         """Test that files are rejected when allow_file=False."""
@@ -344,7 +344,7 @@ class TestAsPathFileDirectory:
             }
 
             result = transformer.process(tmpdir, context)
-            assert result.is_dir()
+            assert result.is_dir()  # type: ignore
 
     def test_allow_directory_false_with_directory(self) -> None:
         """Test that directories are rejected when allow_directory=False."""
@@ -467,7 +467,7 @@ class TestAsPathExtensions:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.suffix == ".json"
+            assert result.suffix == ".json"  # type: ignore
 
     def test_extensions_not_matching(self) -> None:
         """Test that non-matching extensions fail validation."""
@@ -530,7 +530,7 @@ class TestAsPathPatterns:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.name == "config.toml"
+            assert result.name == "config.toml"  # type: ignore
 
     def test_include_pattern_not_matching(self) -> None:
         """Test that non-matching include patterns fail."""
@@ -618,7 +618,7 @@ class TestAsPathPatterns:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.name == "config.txt"
+            assert result.name == "config.txt"  # type: ignore
 
     def test_include_takes_precedence_over_exclude(self) -> None:
         """Test that include pattern overrides exclude pattern."""
@@ -645,9 +645,8 @@ class TestAsPathPatterns:
                 "is_executable": False,
             }
 
-            # Should pass because include takes precedence
             result = transformer.process(str(test_file), context)
-            assert result.name == "config.toml"
+            assert result.name == "config.toml"  # type: ignore
 
 
 class TestAsPathPermissions:
@@ -679,8 +678,8 @@ class TestAsPathPermissions:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.exists()
-            assert os.access(result, os.R_OK)
+            assert result.exists()  # type: ignore
+            assert os.access(result, os.R_OK)  # type: ignore
 
     def test_writable_permission(self) -> None:
         """Test writable permission check."""
@@ -708,8 +707,8 @@ class TestAsPathPermissions:
             }
 
             result = transformer.process(str(test_file), context)
-            assert result.exists()
-            assert os.access(result, os.W_OK)
+            assert result.exists()  # type: ignore
+            assert os.access(result, os.W_OK)  # type: ignore
 
 
 class TestAsPathDecorator:
