@@ -2,11 +2,17 @@
 
 # Changelog
 
+## v0.2.1
+
+### Removed
+
+- **CI/CD**: Removed "View Full Release" section of the release notes.
+
 ## v0.2.0
 
 ### Added
 
-- **@option**: Added `nargs` parameter to control number of arguments per occurrence (defaults to `1`).
+- **`@option`**: Added `nargs` parameter to control number of arguments per occurrence (defaults to `1`).
 - **Union type support**: ChildNode validators/transformers now support union types (e.g., `str | int | tuple[str, ...]`) for flexible type validation across different parent configurations.
 - **Flexible validation**: Single ChildNode can now handle multiple value structures (single, flat tuple, nested tuple) using union type hints.
 - **format_list()**: Added utility function for formatting lists with natural language conjunctions and optional prefixes.
@@ -14,8 +20,8 @@
 
 ### Updated
 
-- **@option**: Updated to support `nargs` parameter alongside `multiple` for fine-grained control over value structure.
-- **@argument**: Both `@option` and `@argument` now support the same `nargs` API.
+- **`@option`**: Updated to support `nargs` parameter alongside `multiple` for fine-grained control over value structure.
+- **`@argument`**: Both `@option` and `@argument` now support the same `nargs` API.
 - **Type validation**: Improved ChildNode type validation to support union types (both `|` and `typing.Union` syntax).
 - **Type validation**: Validation now checks if any union member matches the parent's configuration (single, flat tuple, or nested tuple).
 - **Type validation**: Added detailed error messages explaining value structure mismatches with suggestions for correct type hints.
@@ -35,16 +41,16 @@
 
 ### Added
 
-- **@as_path**: New decorator to transform and validate a string to a path.
-- **@to_lowercase**: Added decorator to transform a string to lowercase.
-- **@to_uppercase**: Added decorator to transform a string to uppercase.
+- **`@as_path`**: New decorator to transform and validate a string to a path.
+- **`@to_lowercase`**: Added decorator to transform a string to lowercase.
+- **`@to_uppercase`**: Added decorator to transform a string to uppercase.
 
 ## v0.1.0
 
 ### Added
 
-- **@argument**: Added automatic type inference for `Argument` class.
-- **@argument**: Added sentinel value `_MISSING` to properly distinguish between no default and `default=None`.
+- **`@argument`**: Added automatic type inference for `Argument` class.
+- **`@argument`**: Added sentinel value `_MISSING` to properly distinguish between no default and `default=None`.
 - **ChildNode**: Added new `context` parameter for the `ChildNode.process()` method.
 - **ChildNode**: Added new `ProcessMethod` data class.
 - **ChildNode**: Added `ProcessContext` helper methods: `is_tag()`, `is_option()`, `is_argument()`, `is_env()`, `get_tag_values()`.
@@ -52,8 +58,8 @@
 - **ChildNode**: Added `get_supported_types()` method to `ChildNode` for inspecting inferred types.
 - **ChildNode**: Added `should_skip_none()` method to `ChildNode` with automatic inference from type hints.
 - **ChildNode**: Added `TypeMismatchError` exception for type validation failures.
-- **@option**: Added automatic type inference for `Option` class.
-- **@option**: Made `is_flag` and `type` parameters exclusive for `option` decorator.
+- **`@option`**: Added automatic type inference for `Option` class.
+- **`@option`**: Made `is_flag` and `type` parameters exclusive for `option` decorator.
 - **Testing**: Added unit tests for type inference.
 - **Testing**: Added unit tests for required/optional argument behavior.
 - **Testing**: Added integration tests for type validation system.
@@ -68,10 +74,10 @@
 - **ChildNode**: Updated `process_children()` to automatically skip `None` values based on child node's `should_skip_none()` logic.
 - **ChildNode**: Updated `is_positive` validator to use type hints instead of `types` class attribute.
 - **ChildNode**: Updated `TypeMismatchError` to use decorator name instead of child node name and handle UnionType.
-- **@option**: Updated `Option` class to infer type from default value when not explicitly specified.
-- **@argument**: Updated `Argument` class to infer type from default value when not explicitly specified.
-- **@argument**: Updated `Argument` class to automatically set `required=False` when `default` is provided (including `None`).
-- **@argument**: Updated `_root_node.py` to properly pass `required` parameter to Click's `argument()` function.
+- **`@option`**: Updated `Option` class to infer type from default value when not explicitly specified.
+- **`@argument`**: Updated `Argument` class to infer type from default value when not explicitly specified.
+- **`@argument`**: Updated `Argument` class to automatically set `required=False` when `default` is provided (including `None`).
+- **`@argument`**: Updated `_root_node.py` to properly pass `required` parameter to Click's `argument()` function.
 - **Docs**: Updated documentation for `Option` with type inference section and examples.
 - **Docs**: Updated documentation for `Argument` with type inference section and examples.
 - **Docs**: Updated `CHILD_NODE.md` documentation with type-hint-first approach and ProcessContext helpers.
@@ -79,14 +85,14 @@
 - **Docs**: Updated all code examples in `CHILD_NODE.md`, `README.md`, `TREE.md`, and `GLOBAL_NODE.md` to use `ValidationError` instead of `ValueError`.
 - **Docs**: Updated `ARGUMENT.md` and `OPTION.md` with type inference sections.
 - **Docs**: Updated structure of `CHANGELOG.md`.
-- **@tag**: Updated tag processing to iterate through each parent node value individually.
+- **`@tag`**: Updated tag processing to iterate through each parent node value individually.
 - **Testing**: Updated unit tests for new process context parameter.
 - **Testing**: Updated all validator and transformer tests to use `ValidationError` and `TransformError`.
 - **pyproject.toml**: Disabled the pyright error `reportUnnecessaryIsInstance` (Disabled the warning for unnecessary isinstance checks).
 
 ### Fixed
 
-- **@argument**: Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
+- **`@argument`**: Fixed required/optional argument behavior to match Click's semantics (arguments with defaults are optional).
 - **ChildNode**: Fixed issue where a `sentinel` object would be passed as a value to the `process()` method.
 - **RootNode**: Fixed issue where the type-hinting system would not raise exception when types mismatch.
 - **Typing**: Disabled `unidiomatic-typecheck` rule for pylint.
@@ -141,18 +147,18 @@
 
 ### Fixed
 
-- **@env**: Fixed error output for one or more missing environment variables.
+- **`@env`**: Fixed error output for one or more missing environment variables.
 
 ## v0.0.1
 
 ### Added
 
-- **@tag**: Added `tag` decorator with unit tests.
-- **@option**: Added `option` decorator with unit tests.
-- **@group**: Added `group` decorator with unit tests.
-- **@env**: Added `env` decorator with unit tests.
-- **@command**: Added `command` decorator with unit tests.
-- **@argument**: Added `argument` decorator with unit tests.
+- **`@tag`**: Added `tag` decorator with unit tests.
+- **`@option`**: Added `option` decorator with unit tests.
+- **`@group`**: Added `group` decorator with unit tests.
+- **`@env`**: Added `env` decorator with unit tests.
+- **`@command`**: Added `command` decorator with unit tests.
+- **`@argument`**: Added `argument` decorator with unit tests.
 - **Aliasing**: Added aliasing classes with unit tests.
 - **Node**: Created `Node` class with unit tests.
 - **RootNode**: Created `RootNode` class with unit tests.

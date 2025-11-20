@@ -505,12 +505,10 @@ class RootNode(Node):
                         **parent_node.extra_kwargs,
                     }
 
-                    # Handle nargs and multiple
                     if parent_node.multiple:
                         option_kwargs["multiple"] = True
                     if parent_node.nargs > 1:
                         option_kwargs["nargs"] = parent_node.nargs
-                    # nargs=1 is default, no need to specify
 
                     func = click.option(*params, **option_kwargs)(func)
 

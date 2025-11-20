@@ -33,11 +33,6 @@ jobs:
             echo "Release $VERSION" > release_notes.md
           fi
 
-          echo "" >> release_notes.md
-          echo "---" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "**[View Full Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)**" >> release_notes.md
-
           cat release_notes.md
 
       - name: Create GitHub Release
