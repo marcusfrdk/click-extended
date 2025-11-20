@@ -8,6 +8,7 @@
 
 - **Changelog**: Wrapped all `@` with backticks to avoid Github user mentions.
 - **format_list**: Now supports asymmetric wrapping by providing a tuple of two strings `str` or `tuple[str, str]`.
+- **TypeMismatchError**: Now uses the asymmetric wrapping in `format_list` to show types as `<str>`, etc.
 
 ### Removed
 
