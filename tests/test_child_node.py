@@ -523,6 +523,8 @@ class TestChildNodeTypeValidation:
         parent = MagicMock()
         parent.name = "count"
         parent.type = int
+        parent.nargs = 1
+        parent.multiple = False
 
         # Should not raise
         node.validate_type(parent)
@@ -540,6 +542,8 @@ class TestChildNodeTypeValidation:
         parent = MagicMock()
         parent.name = "name"
         parent.type = str
+        parent.nargs = 1
+        parent.multiple = False
 
         with pytest.raises(TypeMismatchError) as exc_info:
             node.validate_type(parent)
@@ -581,10 +585,14 @@ class TestChildNodeTypeValidation:
         parent_int = MagicMock()
         parent_int.name = "count"
         parent_int.type = int
+        parent_int.nargs = 1
+        parent_int.multiple = False
 
         parent_float = MagicMock()
         parent_float.name = "ratio"
         parent_float.type = float
+        parent_float.nargs = 1
+        parent_float.multiple = False
 
         # Both should pass
         node.validate_type(parent_int)
@@ -605,6 +613,8 @@ class TestChildNodeTypeValidation:
         parent = MagicMock()
         parent.name = "username"
         parent.type = str
+        parent.nargs = 1  # Add nargs attribute
+        parent.multiple = False
 
         with pytest.raises(TypeMismatchError) as exc_info:
             node.validate_type(parent)

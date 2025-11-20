@@ -3,6 +3,7 @@
 # pylint: disable=protected-access
 # pylint: disable=redefined-builtin
 # pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
 
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
@@ -116,16 +117,23 @@ class Group(RootNode):
                         params.append(parent_node.short)
                     params.append(parent_node.long)
 
-                    func = click.option(
-                        *params,
-                        type=parent_node.type,
-                        default=parent_node.default,
-                        required=parent_node.required,
-                        is_flag=parent_node.is_flag,
-                        multiple=parent_node.multiple,
-                        help=parent_node.help,
+                    option_kwargs: dict[str, Any] = {
+                        "type": parent_node.type,
+                        "default": parent_node.default,
+                        "required": parent_node.required,
+                        "is_flag": parent_node.is_flag,
+                        "help": parent_node.help,
                         **parent_node.extra_kwargs,
-                    )(func)
+                    }
+
+                    # Handle nargs and multiple
+                    if parent_node.multiple:
+                        option_kwargs["multiple"] = True
+                    if parent_node.nargs > 1:
+                        option_kwargs["nargs"] = parent_node.nargs
+                    # nargs=1 is default, no need to specify
+
+                    func = click.option(*params, **option_kwargs)(func)
 
                 elif isinstance(parent_node, Argument):
                     func = click.argument(

@@ -17,7 +17,7 @@ class TestOptionInitialization:
         assert opt.short is None
         assert opt.is_flag is False
         assert opt.type == str  # Inferred as str when no type/default
-        assert opt.multiple is False
+        assert opt.nargs == 1
         assert opt.help is None
         assert opt.required is False
         assert opt.default is None
@@ -29,7 +29,7 @@ class TestOptionInitialization:
             short="-p",
             is_flag=False,
             type=int,
-            multiple=False,
+            nargs=1,
             help="Port number",
             required=True,
             default=8080,
@@ -38,7 +38,7 @@ class TestOptionInitialization:
         assert opt.short == "-p"
         assert opt.is_flag is False
         assert opt.type == int
-        assert opt.multiple is False
+        assert opt.nargs == 1
         assert opt.help == "Port number"
         assert opt.required is True
         assert opt.default == 8080
@@ -65,9 +65,9 @@ class TestOptionInitialization:
         assert opt.type == int
 
     def test_init_with_multiple_true(self) -> None:
-        """Test initializing with multiple=True."""
-        opt = Option(long="--tag", multiple=True)
-        assert opt.multiple is True
+        """Test initializing with nargs=-1 for unlimited values."""
+        opt = Option(long="--tag", nargs=-1)
+        assert opt.nargs == -1
 
     def test_init_with_extra_kwargs(self) -> None:
         """Test initializing with extra kwargs."""
@@ -412,16 +412,16 @@ class TestOptionDecoratorFunction:
     def test_option_decorator_with_multiple(
         self, mock_queue: MagicMock
     ) -> None:
-        """Test option decorator with multiple parameter."""
+        """Test option decorator with nargs=-1 parameter."""
 
-        @option("--tag", multiple=True)
+        @option("--tag", nargs=-1)
         def test_func() -> str:  # type: ignore
             return "test"
 
         mock_queue.assert_called_once()
         args, _ = mock_queue.call_args
         opt_instance = args[0]
-        assert opt_instance.multiple is True
+        assert opt_instance.nargs == -1
 
     @patch("click_extended.core._parent_node.queue_parent")
     def test_option_decorator_with_help(self, mock_queue: MagicMock) -> None:
@@ -473,7 +473,7 @@ class TestOptionDecoratorFunction:
             short="-p",
             is_flag=False,
             type=int,
-            multiple=False,
+            nargs=1,
             help="Port number",
             required=True,
             default=8080,
@@ -666,17 +666,17 @@ class TestOptionMultiple:
     def test_multiple_false_by_default(self) -> None:
         """Test multiple defaults to False."""
         opt = Option(long="--tag")
-        assert opt.multiple is False
+        assert opt.nargs == 1
 
     def test_multiple_true(self) -> None:
         """Test multiple can be set to True."""
-        opt = Option(long="--tag", multiple=True)
-        assert opt.multiple is True
+        opt = Option(long="--tag", nargs=-1)
+        assert opt.nargs == -1
 
     def test_multiple_with_type(self) -> None:
         """Test multiple with type parameter."""
-        opt = Option(long="--tag", multiple=True, type=str)
-        assert opt.multiple is True
+        opt = Option(long="--tag", nargs=-1, type=str)
+        assert opt.nargs == -1
         assert opt.type == str
 
 
@@ -845,7 +845,7 @@ class TestOptionIntegration:
             short="-p",
             is_flag=False,
             type=int,
-            multiple=False,
+            nargs=1,
             help="Port number",
             required=False,
             default=8080,
@@ -855,7 +855,7 @@ class TestOptionIntegration:
         assert opt.short == "-p"
         assert opt.is_flag is False
         assert opt.type == int
-        assert opt.multiple is False
+        assert opt.nargs == 1
         assert opt.help == "Port number"
         assert opt.required is False
         assert opt.default == 8080
@@ -873,10 +873,10 @@ class TestOptionIntegration:
         opt = Option(
             long="--tag",
             short="-t",
-            multiple=True,
+            nargs=-1,
             help="Add tags (can be used multiple times)",
         )
-        assert opt.multiple is True
+        assert opt.nargs == -1
         assert opt.name == "tag"
 
     def test_typed_option_typical_usage(self) -> None:

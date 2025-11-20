@@ -27,6 +27,7 @@ class Option(ParentNode):
         short: str | None = None,
         is_flag: bool = False,
         type: Any = None,
+        nargs: int = 1,
         multiple: bool = False,
         help: str | None = None,
         required: bool = False,
@@ -46,15 +47,18 @@ class Option(ParentNode):
                 The short flag for the option (e.g., "-p").
             is_flag (bool):
                 Whether this is a boolean flag (no value needed).
-                Defaults to False.
+                Defaults to `False`.
             type (Any, optional):
                 The type to convert the value to (int, str, float, etc.).
+            nargs (int):
+                Number of arguments each occurrence accepts. Defaults to `1`.
             multiple (bool):
-                Whether to allow multiple values. Defaults to False.
+                Whether the option can be provided multiple times.
+                Defaults to `False`.
             help (str, optional):
                 Help text for this option.
             required (bool):
-                Whether this option is required. Defaults to False.
+                Whether this option is required. Defaults to `False`.
             default (Any):
                 Default value if not provided. Defaults to None.
             tags (str | list[str], optional):
@@ -100,6 +104,7 @@ class Option(ParentNode):
         self.short = short
         self.is_flag = is_flag
         self.type = type
+        self.nargs = nargs
         self.multiple = multiple
         self.extra_kwargs = kwargs
 
@@ -109,6 +114,7 @@ def option(
     short: str | None = None,
     is_flag: bool = False,
     type: Any = None,
+    nargs: int = 1,
     multiple: bool = False,
     help: str | None = None,
     required: bool = False,
@@ -128,15 +134,18 @@ def option(
             The short flag for the option (e.g., "-p", "-c").
         is_flag (bool):
             Whether this is a boolean flag (no value needed).
-            Defaults to False.
+            Defaults to `False`.
         type (Any, optional):
             The type to convert the value to (int, str, float, etc.).
+        nargs (int):
+            Number of arguments each occurrence accepts. Defaults to `1`.
         multiple (bool):
-            Whether to allow multiple values. Defaults to False.
+            Whether the option can be provided multiple times.
+            Defaults to `False`.
         help (str, optional):
             Help text for this option.
         required (bool):
-            Whether this option is required. Defaults to False.
+            Whether this option is required. Defaults to `False`.
         default (Any):
             Default value if not provided. Defaults to None.
         tags (str | list[str], optional):
@@ -174,6 +183,7 @@ def option(
         short=short,
         is_flag=is_flag,
         type=type,
+        nargs=nargs,
         multiple=multiple,
         help=help,
         required=required,

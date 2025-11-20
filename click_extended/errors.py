@@ -10,6 +10,8 @@ from click import ClickException
 from click._compat import get_text_stderr
 from click.utils import echo
 
+from click_extended.utils.format import format_list
+
 
 class ClickExtendedError(Exception):
     """Base exception for exceptions defined in the `click_extended` library."""
@@ -47,7 +49,7 @@ class ParameterError(ClickException):
     and adding parameter context information.
     """
 
-    exit_code = 2  # Match Click's UsageError exit code
+    exit_code = 2
 
     def __init__(
         self,
@@ -59,9 +61,12 @@ class ParameterError(ClickException):
         Initialize a ParameterError.
 
         Args:
-            message: The error message from the validator/transformer.
-            param_hint: The parameter name (e.g., '--config', 'PATH').
-            ctx: The Click context for displaying usage information.
+            message (str):
+                The error message from the validator/transformer.
+            param_hint (str, optional):
+                The parameter name (e.g., '--config', 'PATH').
+            ctx (click.Context, optional):
+                The Click context for displaying usage information.
         """
         super().__init__(message)
         self.param_hint = param_hint
@@ -235,12 +240,18 @@ class TypeMismatchError(ClickExtendedError):
             """Get type name, handling both regular types and UnionType."""
             return getattr(type_obj, "__name__", str(type_obj))
 
-        type_names = ", ".join(get_type_name(t) for t in supported_types)
         parent_type_name = get_type_name(parent_type) if parent_type else "None"
+
+        type_names = [get_type_name(t) for t in supported_types]
+        formatted_types = format_list(
+            type_names,
+            prefix_singular="Supported type is ",
+            prefix_plural="Supported types are ",
+        )
 
         message = (
             f"Decorator '{name}' does not support "
             f"parent '{parent_name}' with type '{parent_type_name}'. "
-            f"Supported types: {type_names}"
+            f"{formatted_types}"
         )
         super().__init__(message)

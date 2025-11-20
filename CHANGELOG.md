@@ -2,6 +2,35 @@
 
 # Changelog
 
+## v0.2.0
+
+### Added
+
+- **@option**: Added `nargs` parameter to control number of arguments per occurrence (defaults to `1`).
+- **Union type support**: ChildNode validators/transformers now support union types (e.g., `str | int | tuple[str, ...]`) for flexible type validation across different parent configurations.
+- **Flexible validation**: Single ChildNode can now handle multiple value structures (single, flat tuple, nested tuple) using union type hints.
+- **format_list()**: Added utility function for formatting lists with natural language conjunctions and optional prefixes.
+- **Integration tests**: Added tests for union type validation, nargs/multiple combinations, and flexible type support.
+
+### Updated
+
+- **@option**: Updated to support `nargs` parameter alongside `multiple` for fine-grained control over value structure.
+- **@argument**: Both `@option` and `@argument` now support the same `nargs` API.
+- **Type validation**: Improved ChildNode type validation to support union types (both `|` and `typing.Union` syntax).
+- **Type validation**: Validation now checks if any union member matches the parent's configuration (single, flat tuple, or nested tuple).
+- **Type validation**: Added detailed error messages explaining value structure mismatches with suggestions for correct type hints.
+- **TypeMismatchError**: Updated to use `format_list()` for human-readable type lists.
+- **Docs**: Updated `OPTION.md` with `nargs` and `multiple` behavior table and union type validation examples.
+- **Docs**: Updated `ARGUMENT.md` with `nargs` behavior table and union type validation examples.
+- **Docs**: Condensed documentation to focus on core concepts rather than exhaustive examples.
+
+### Fixed
+
+- **Type validation**: Fixed union type handling to properly expand `UnionType` (Python 3.10+ `|` syntax) in addition to `typing.Union`.
+- **Type validation**: Fixed validation to correctly handle union types with different type support per structure.
+- **Code quality**: Extracted `_expand_union_types()` helper method to eliminate code duplication in ChildNode.
+- **Code quality**: Removed unused `parent_type` parameter from `_collect_relevant_types()` method.
+
 ## v0.1.1
 
 ### Added

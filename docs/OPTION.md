@@ -12,7 +12,8 @@ An option in the command line interface is a named parameter that can be specifi
 | `short`    | The short flag for the option (e.g., `-p`, `-c`). Single letter with hyphen prefix.                                                            | str              | No       | None     |
 | `is_flag`  | Whether this is a boolean flag (no value needed). When `True`, defaults to `False` if not provided.                                            | bool             | No       | False    |
 | `type`     | Type to convert input to. If not specified, defaults to `str` or is inferred from `default`. Supports primitives and Click types.              | type             | No       | Inferred |
-| `multiple` | Whether to allow multiple values for this option. Can be specified multiple times on command line.                                             | bool             | No       | False    |
+| `nargs`    | Number of arguments each occurrence accepts. `1` for single value, `>1` for multiple values per occurrence.                                    | int              | No       | 1        |
+| `multiple` | Whether the option can appear multiple times on command line. When `True`, value is ALWAYS `tuple[tuple[T, ...], ...]`.                        | bool             | No       | False    |
 | `help`     | Help text displayed in CLI help output.                                                                                                        | str              | No       | None     |
 | `required` | Whether the option is required. Defaults to `False` (options are typically optional by nature).                                                | bool             | No       | False    |
 | `default`  | Default value if option not provided.                                                                                                          | Any              | No       | None     |
@@ -34,6 +35,80 @@ The `type` parameter is automatically inferred:
 @option("--name")  # type = str
 @option("--value", type=str, default=42)  # type = str (explicit overrides)
 ```
+
+## Understanding `nargs` and `multiple`
+
+The `nargs` and `multiple` parameters control how option values are structured:
+
+| `nargs`       | `multiple`        | Value Type                  | Example CLI               | Result                 |
+| ------------- | ----------------- | --------------------------- | ------------------------- | ---------------------- |
+| `1` (default) | `False` (default) | `T`                         | `--name John`             | `"John"`               |
+| `2+`          | `False`           | `tuple[T, ...]`             | `--coords 10 20`          | `(10, 20)`             |
+| `1`           | `True`            | `tuple[tuple[T, ...], ...]` | `--tag foo --tag bar`     | `(("foo",), ("bar",))` |
+| `2+`          | `True`            | `tuple[tuple[T, ...], ...]` | `--point 1 2 --point 3 4` | `((1, 2), (3, 4))`     |
+
+### Type Validation
+
+Validators/transformers must have type hints matching the value structure. Use union types for flexibility:
+
+```python
+from click_extended import ChildNode, ProcessContext
+
+class UpperCase(ChildNode):
+    def process(
+        self,
+        value: str | tuple[str, ...] | tuple[tuple[str, ...], ...],
+        context: ProcessContext,
+    ):
+        if not isinstance(value, tuple):
+            return value.upper()
+        if value and isinstance(value[0], tuple):
+            return tuple(tuple(v.upper() for v in group) for group in value)
+        return tuple(v.upper() for v in value)
+```
+
+Union types can specify different types per structure:
+
+```python
+class FlexibleType(ChildNode):
+    # Single: str only. Tuples: str|int|float
+    def process(
+        self,
+        value: str | tuple[str | int | float, ...] | tuple[tuple[str | int | float, ...], ...],
+        context: ProcessContext,
+    ):
+        return value
+```
+
+**Understanding union type validation:**
+
+The validator checks if any union member matches the parent's configuration:
+
+- **Single value** (`str`): Matches `nargs=1, multiple=False`
+- **Flat tuple** (`tuple[T, ...]`): Matches `nargs>1, multiple=False`
+- **Nested tuple** (`tuple[tuple[T, ...], ...]`): Matches `multiple=True`
+
+Combine them to support multiple configurations:
+
+```python
+# Supports single OR flat tuple
+value: str | tuple[str, ...]
+
+# Supports single OR nested tuple
+value: str | tuple[tuple[str, ...], ...]
+
+# Supports all three
+value: str | tuple[str, ...] | tuple[tuple[str, ...], ...]
+```
+
+Each structure can have different type support:
+
+```python
+# Single: str only. Tuples: str|int|float
+value: str | tuple[str | int | float, ...] | tuple[tuple[str | int | float, ...], ...]
+```
+
+Validation occurs at tree construction (before `process()` is executed) and provides clear error messages when types don't match.
 
 ## Examples
 
@@ -90,9 +165,14 @@ from click_extended import command, option
 
 @command()
 @option("--tag", multiple=True)
-def build(tag: tuple[str, ...]):
-    for t in tag:
+def build(tag: tuple[tuple[str, ...], ...]):
+    for (t,) in tag:
         print(f"Adding tag: {t}")
+```
+
+```bash
+mycli --tag python --tag cli
+# tag = (("python",), ("cli",))
 ```
 
 ### With Type Conversion
@@ -170,11 +250,17 @@ import click
 @option("--format", "-f", type=click.Choice(["json", "yaml"]), default="json")
 @option("--verbose", "-v", is_flag=True)
 @option("--tag", multiple=True, help="Add tags to the output")
-def export(source: str, output: str, format: str, verbose: bool, tag: tuple[str, ...]):
+def export(
+    source: str,
+    output: str,
+    format: str,
+    verbose: bool,
+    tag: tuple[tuple[str, ...], ...]
+):
     """Export data from source to output directory."""
     if verbose:
         print(f"Exporting {source} to {output} as {format}")
-        for t in tag:
+        for (t,) in tag:
             print(f"Tag: {t}")
     print("Export complete!")
 

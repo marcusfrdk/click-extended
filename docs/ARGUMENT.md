@@ -33,6 +33,69 @@ The `type` parameter is automatically inferred:
 @argument("value", type=str, default=42)  # type = str (explicit overrides)
 ```
 
+## Understanding `nargs`
+
+The `nargs` parameter controls how many values the argument accepts:
+
+| `nargs`       | Value Type      | Example CLI       | Result                       |
+| ------------- | --------------- | ----------------- | ---------------------------- |
+| `1` (default) | `T`             | `mycli data.json` | `"data.json"`                |
+| `2+`          | `tuple[T, ...]` | `mycli 10 20 30`  | `(10, 20, 30)`               |
+| `-1`          | `tuple[T, ...]` | `mycli a b c`     | `("a", "b", "c")` (variadic) |
+
+### Type Validation
+
+Validators/transformers must have type hints matching the value structure. Use union types for flexibility:
+
+```python
+from click_extended import ChildNode, ProcessContext
+
+class UpperCase(ChildNode):
+    def process(
+        self,
+        value: str | tuple[str, ...],
+        context: ProcessContext,
+    ):
+        if not isinstance(value, tuple):
+            return value.upper()
+        return tuple(v.upper() for v in value)
+```
+
+Union types can specify different types per structure:
+
+```python
+class FlexibleType(ChildNode):
+    def process(
+        self,
+        value: str | tuple[str | int, ...],
+        context: ProcessContext,
+    ):
+        return value
+```
+
+#### Understanding union type validation
+
+The validator checks if any union member matches the parent's configuration:
+
+- **Single value** (`str`): Matches `nargs=1`
+- **Flat tuple** (`tuple[T, ...]`): Matches `nargs>1` or `nargs=-1`
+
+Combine them to support multiple configurations:
+
+```python
+# Supports single OR tuple
+value: str | tuple[str, ...]
+```
+
+Each structure can have different type support:
+
+```python
+# Single: str only. Tuple: str|int|float
+value: str | tuple[str | int | float, ...]
+```
+
+Validation occurs at tree construction and provides clear error messages when types don't match.
+
 ## Examples
 
 ### Basic Usage
