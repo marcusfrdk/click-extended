@@ -57,6 +57,7 @@
 - **Typing**: Fixed Pylance type errors by adding proper type annotations with `cast()`.
 - **Typing**: Fixed error formatting to handle Python 3.10+ union types (`int | float`).
 - **Validation**: Fixed `is_positive` validator to handle `None` values.
+- **Error handling**: Fixed error handling so custom handler overrides Click's default.
 
 ## v0.0.4
 

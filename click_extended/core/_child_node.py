@@ -28,6 +28,7 @@ from click_extended.utils.transform import Transform
 if TYPE_CHECKING:
     from click_extended.core._parent_node import ParentNode
     from click_extended.core.tag import Tag
+    from click_extended.types import Decorator
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -245,9 +246,7 @@ class ChildNode(Node, ABC):
         raise KeyError("A ChildNode instance has no children.")
 
     @classmethod
-    def as_decorator(
-        cls, *args: Any, **kwargs: Any
-    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def as_decorator(cls, *args: Any, **kwargs: Any) -> "Decorator":
         """
         Return a decorator representation of the child node.
 
@@ -291,3 +290,6 @@ class ChildNode(Node, ABC):
                 The processed value, or None to leave the value unchanged.
         """
         raise NotImplementedError
+
+
+__all__ = ["ChildNode", "ProcessContext"]

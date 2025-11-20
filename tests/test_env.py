@@ -4,11 +4,10 @@ import os
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from click_extended.core._child_node import ChildNode
+from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core._parent_node import ParentNode
 from click_extended.core.env import Env, env
 from click_extended.core.tag import Tag
-from click_extended.types import ProcessContext
 
 
 class TestEnvInitialization:

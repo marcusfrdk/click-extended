@@ -110,7 +110,7 @@ def _get_param_hint(parent: "ParentNode | Tag") -> str | None:
 
     if hasattr(parent, "opts") and getattr(parent, "opts", None):
         opts = getattr(parent, "opts")
-        return next((opt for opt in opts if opt.startswith("--")), opts[0])
+        return str(next((opt for opt in opts if opt.startswith("--")), opts[0]))
 
     if hasattr(parent, "name") and getattr(parent, "name", None):
         return str(getattr(parent, "name")).upper()

@@ -19,7 +19,11 @@ from click_extended.core.argument import Argument
 from click_extended.core.env import Env
 from click_extended.core.option import Option
 from click_extended.core.tag import Tag
-from click_extended.errors import DuplicateNameError, NoRootError
+from click_extended.errors import (
+    DuplicateNameError,
+    NoRootError,
+    ParameterError,
+)
 from click_extended.utils.process import process_children
 from click_extended.utils.visualize import visualize_tree
 
@@ -28,6 +32,58 @@ T = TypeVar("T")
 
 WrapperType = TypeVar("WrapperType")
 ClickType = TypeVar("ClickType", bound=click.Command)
+
+
+class ExtendedCommand(click.Command):
+    """
+    Custom Click Command that reformats Click errors with the error system.
+    """
+
+    def invoke(self, ctx: click.Context) -> Any:
+        """Override invoke to catch and reformat Click parameter errors."""
+        try:
+            return super().invoke(ctx)
+        except click.BadParameter as e:
+            param_hint = None
+            if e.param:
+                param_hint = (
+                    e.param.human_readable_name
+                    if hasattr(e.param, "human_readable_name")
+                    else e.param.name
+                )
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+
+            raise ParameterError(
+                message=e.message if hasattr(e, "message") else str(e),
+                param_hint=param_hint,
+                ctx=ctx,
+            ) from e
+
+
+class ExtendedGroup(click.Group):
+    """Custom Click Group that reformats Click errors with our error system."""
+
+    def invoke(self, ctx: click.Context) -> Any:
+        """Override invoke to catch and reformat Click parameter errors."""
+        try:
+            return super().invoke(ctx)
+        except click.BadParameter as e:
+            param_hint = None
+            if e.param:
+                param_hint = (
+                    e.param.human_readable_name
+                    if hasattr(e.param, "human_readable_name")
+                    else e.param.name
+                )
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+
+            raise ParameterError(
+                message=e.message if hasattr(e, "message") else str(e),
+                param_hint=param_hint,
+                ctx=ctx,
+            ) from e
 
 
 class RootNodeWrapper(Generic[ClickType]):

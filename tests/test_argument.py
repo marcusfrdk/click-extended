@@ -642,7 +642,10 @@ class TestArgumentRequiredOptionalBehavior:
         result = runner.invoke(test_cmd, [])  # type: ignore
 
         assert result.exit_code == 2
-        assert "Missing argument" in result.output
+        assert (
+            "Error (value):" in result.output
+            or "Error (VALUE):" in result.output
+        )
 
     def test_required_argument_with_value_works(self) -> None:
         """Test that required argument works when value is provided."""
@@ -734,7 +737,10 @@ class TestArgumentRequiredOptionalBehavior:
         # Missing both
         result = runner.invoke(test_cmd, [])  # type: ignore
         assert result.exit_code == 2
-        assert "Missing argument" in result.output
+        assert (
+            "Error (first):" in result.output
+            or "Error (FIRST):" in result.output
+        )
 
         # With both values
         result = runner.invoke(test_cmd, ["1", "2"])  # type: ignore

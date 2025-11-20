@@ -3,9 +3,14 @@
 # pylint: disable=too-few-public-methods
 # pylint: disable=no-value-for-parameter
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
+
+from click_extended.errors import ParameterError
+
+if TYPE_CHECKING:
+    from click_extended.core._root_node import ExtendedCommand, ExtendedGroup
 
 
 class AliasedMixin:
@@ -61,7 +66,11 @@ class AliasedMixin:
 
 
 class AliasedCommand(AliasedMixin, click.Command):
-    """A Click command that supports aliasing."""
+    """
+    A Click command that supports aliasing and custom error formatting.
+
+    Note: Will use ExtendedCommand at runtime for custom error handling.
+    """
 
     name: str | None
 
@@ -75,9 +84,92 @@ class AliasedCommand(AliasedMixin, click.Command):
             click.Command.format_help.__get__(self, type(self)),
         )
 
+    def invoke(self, ctx: click.Context) -> Any:
+        """Override invoke to catch and reformat Click parameter errors."""
+
+        try:
+            return super().invoke(ctx)
+        except click.BadParameter as e:
+            param_hint = None
+            if e.param:
+                param_hint = (
+                    e.param.human_readable_name
+                    if hasattr(e.param, "human_readable_name")
+                    else e.param.name
+                )
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+
+            message = str(e).split(": ", 1)[-1] if ": " in str(e) else str(e)
+
+            raise ParameterError(
+                message=message, param_hint=param_hint, ctx=ctx
+            ) from e
+
+    def make_context(
+        self,
+        info_name: str | None,
+        args: list[str],
+        parent: click.Context | None = None,
+        **extra: Any,
+    ) -> click.Context:
+        """Override make_context to catch Click parameter errors."""
+        try:
+            return super().make_context(info_name, args, parent, **extra)
+        except click.BadParameter as e:
+            for key in [
+                "allow_extra_args",
+                "allow_interspersed_args",
+                "ignore_unknown_options",
+                "help_option_names",
+                "token_normalize_func",
+                "color",
+            ]:
+                extra.setdefault(key, None)
+            ctx = click.Context(
+                self, info_name=info_name, parent=parent, **extra
+            )
+
+            param_hint = None
+            if e.param:
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+                elif hasattr(e.param, "name"):
+                    param_hint = str(e.param.name).upper()
+
+            message = str(e).split(": ", 1)[-1] if ": " in str(e) else str(e)
+
+            raise ParameterError(
+                message=message, param_hint=param_hint, ctx=ctx
+            ) from e
+
+    def main(self, *args: Any, **kwargs: Any) -> Any:
+        """Override main to catch Click exceptions during parameter parsing."""
+        try:
+            return super().main(*args, **kwargs)
+        except click.BadParameter as e:
+            ctx = click.get_current_context(silent=True)
+
+            param_hint = None
+            if e.param:
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+                elif hasattr(e.param, "name"):
+                    param_hint = str(e.param.name).upper()
+
+            message = str(e).split(": ", 1)[-1] if ": " in str(e) else str(e)
+
+            raise ParameterError(
+                message=message, param_hint=param_hint, ctx=ctx
+            ) from e
+
 
 class AliasedGroup(AliasedMixin, click.Group):
-    """A Click group that supports aliasing."""
+    """
+    A Click group that supports aliasing and custom error formatting.
+
+    Note: Will use ExtendedGroup at runtime for custom error handling.
+    """
 
     name: str | None
 
@@ -90,6 +182,85 @@ class AliasedGroup(AliasedMixin, click.Group):
             formatter,
             click.Group.format_help.__get__(self, type(self)),
         )
+
+    def invoke(self, ctx: click.Context) -> Any:
+        """Override invoke to catch and reformat Click parameter errors."""
+        try:
+            return super().invoke(ctx)
+        except click.BadParameter as e:
+            param_hint = None
+            if e.param:
+                param_hint = (
+                    e.param.human_readable_name
+                    if hasattr(e.param, "human_readable_name")
+                    else e.param.name
+                )
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+
+            message = str(e).split(": ", 1)[-1] if ": " in str(e) else str(e)
+
+            raise ParameterError(
+                message=message, param_hint=param_hint, ctx=ctx
+            ) from e
+
+    def make_context(
+        self,
+        info_name: str | None,
+        args: list[str],
+        parent: click.Context | None = None,
+        **extra: Any,
+    ) -> click.Context:
+        """Override make_context to catch Click parameter errors."""
+
+        try:
+            return super().make_context(info_name, args, parent, **extra)
+        except click.BadParameter as e:
+            for key in [
+                "allow_extra_args",
+                "allow_interspersed_args",
+                "ignore_unknown_options",
+                "help_option_names",
+                "token_normalize_func",
+                "color",
+            ]:
+                extra.setdefault(key, None)
+            ctx = click.Context(
+                self, info_name=info_name, parent=parent, **extra
+            )
+
+            param_hint = None
+            if e.param:
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+                elif hasattr(e.param, "name"):
+                    param_hint = str(e.param.name).upper()
+
+            message = str(e).split(": ", 1)[-1] if ": " in str(e) else str(e)
+
+            raise ParameterError(
+                message=message, param_hint=param_hint, ctx=ctx
+            ) from e
+
+    def main(self, *args: Any, **kwargs: Any) -> Any:
+        """Override main to catch Click exceptions during parameter parsing."""
+        try:
+            return super().main(*args, **kwargs)
+        except click.BadParameter as e:
+            ctx = click.get_current_context(silent=True)
+
+            param_hint = None
+            if e.param:
+                if hasattr(e.param, "opts") and e.param.opts:
+                    param_hint = e.param.opts[0]
+                elif hasattr(e.param, "name"):
+                    param_hint = str(e.param.name).upper()
+
+            message = str(e).split(": ", 1)[-1] if ": " in str(e) else str(e)
+
+            raise ParameterError(
+                message=message, param_hint=param_hint, ctx=ctx
+            ) from e
 
     def add_command(self, cmd: click.Command, name: str | None = None) -> None:
         """
