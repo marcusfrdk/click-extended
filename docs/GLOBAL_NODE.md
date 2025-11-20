@@ -325,6 +325,7 @@ def app(metadata: dict, verbose: bool):
 ```python
 from click_extended import command, option
 from click_extended.core import GlobalNode
+from click_extended.errors import ValidationError
 
 class ValidateMutuallyExclusive(GlobalNode):
     """Validate that mutually exclusive options aren't both provided."""
@@ -339,7 +340,7 @@ class ValidateMutuallyExclusive(GlobalNode):
             ]
 
             if len(provided) > 1:
-                raise ValueError(
+                raise ValidationError(
                     f"Options {', '.join(provided)} are mutually exclusive"
                 )
 
@@ -371,6 +372,7 @@ def export(json: bool, yaml: bool, xml: bool):
 ```python
 from click_extended import command, option
 from click_extended.core import GlobalNode
+from click_extended.errors import ValidationError
 
 class ValidateAuth(GlobalNode):
     """Validate authentication parameters."""
@@ -385,10 +387,10 @@ class ValidateAuth(GlobalNode):
 
         # Ensure both username and password are provided
         if "username" in provided and "password" not in provided:
-            raise ValueError("Password required when username is provided")
+            raise ValidationError("Password required when username is provided")
 
         if "password" in provided and "username" not in provided:
-            raise ValueError("Username required when password is provided")
+            raise ValidationError("Username required when password is provided")
 
         return None
 

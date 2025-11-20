@@ -249,15 +249,16 @@ def greet(name: str):
 
 ```python
 from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class ValidatePassword(ChildNode):
-    def process(self, value, context: ProcessContext):
+    def process(self, value: str, context: ProcessContext):
         auth_tag = context.tags.get("auth")
         if auth_tag:
             provided = auth_tag.get_provided_values()
             username = provided.get("username")
             if username and value == username:
-                raise ValueError("Password cannot match username")
+                raise ValidationError("Password cannot match username")
         return None
 
 def validate_password(*args, **kwargs):

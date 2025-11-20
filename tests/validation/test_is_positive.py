@@ -6,7 +6,7 @@ from click.testing import CliRunner
 from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core.command import command
 from click_extended.core.option import option
-from click_extended.errors import TypeMismatchError
+from click_extended.errors import TypeMismatchError, ValidationError
 from click_extended.validation.is_positive import IsPositive, is_positive
 
 
@@ -44,43 +44,39 @@ class TestIsPositive:
         """Test that zero fails validation."""
         validator = IsPositive(name="test_validator")
         context = make_context("count")
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             validator.process(0, context)
-        assert "Value of 'count' must be positive, got 0" in str(exc_info.value)
+        assert "0 is not positive" in str(exc_info.value)
 
     def test_negative_integer_fails(self) -> None:
         """Test that negative integers fail validation."""
         validator = IsPositive(name="test_validator")
         context = make_context("amount")
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             validator.process(-5, context)
-        assert "Value of 'amount' must be positive, got -5" in str(
-            exc_info.value
-        )
+        assert "-5 is not positive" in str(exc_info.value)
 
     def test_negative_float_fails(self) -> None:
         """Test that negative floats fail validation."""
         validator = IsPositive(name="test_validator")
         context = make_context("value")
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             validator.process(-2.5, context)
-        assert "Value of 'value' must be positive, got -2.5" in str(
-            exc_info.value
-        )
+        assert "-2.5 is not positive" in str(exc_info.value)
 
     def test_error_message_includes_parent_name(self) -> None:
-        """Test that error message includes parent parameter name."""
+        """Test that error message includes the invalid value."""
         validator = IsPositive(name="test_validator")
         context = make_context("port")
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             validator.process(-1, context)
-        assert "port" in str(exc_info.value)
+        assert "-1 is not positive" in str(exc_info.value)
 
     def test_error_message_includes_value(self) -> None:
         """Test that error message includes the invalid value."""
         validator = IsPositive(name="test_validator")
         context = make_context("count")
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             validator.process(-100, context)
         assert "-100" in str(exc_info.value)
 
@@ -145,10 +141,7 @@ class TestIsPositiveDecorator:
         result = runner.invoke(test_cmd, ["--count", "0"])  # type: ignore
 
         assert result.exit_code != 0
-        assert result.exception is not None
-        assert isinstance(result.exception, ValueError)
-        assert "must be positive" in str(result.exception)
-        assert "got 0" in str(result.exception)
+        assert "0 is not positive" in result.output
 
     def test_decorator_with_negative_value(self) -> None:
         """Test decorator rejects negative values in CLI."""
@@ -164,10 +157,7 @@ class TestIsPositiveDecorator:
         result = runner.invoke(test_cmd, ["--amount", "-5"])  # type: ignore
 
         assert result.exit_code != 0
-        assert result.exception is not None
-        assert isinstance(result.exception, ValueError)
-        assert "must be positive" in str(result.exception)
-        assert "got -5" in str(result.exception)
+        assert "-5 is not positive" in result.output
 
     def test_decorator_with_float_value(self) -> None:
         """Test decorator with positive float values."""
@@ -199,9 +189,7 @@ class TestIsPositiveDecorator:
         result = runner.invoke(test_cmd, ["--ratio", "-1.5"])  # type: ignore
 
         assert result.exit_code != 0
-        assert result.exception is not None
-        assert isinstance(result.exception, ValueError)
-        assert "must be positive" in str(result.exception)
+        assert "-1.5 is not positive" in result.output
 
     def test_decorator_error_includes_option_name(self) -> None:
         """Test that validation error includes the option name."""
@@ -217,8 +205,8 @@ class TestIsPositiveDecorator:
         result = runner.invoke(test_cmd, ["--port", "-1"])  # type: ignore
 
         assert result.exit_code != 0
-        assert result.exception is not None
-        assert "port" in str(result.exception).lower()
+        assert "--port" in result.output
+        assert "-1 is not positive" in result.output
 
     def test_decorator_with_default_positive_value(self) -> None:
         """Test decorator works with default positive value."""

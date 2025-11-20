@@ -46,12 +46,13 @@ class Uppercase(ChildNode):
 **Validation Nodes**: Return `None` or nothing to preserve the value, or raise exceptions
 
 ```python
-from click_extended.types import ProcessContext
+from click_extended import ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class ValidateLength(ChildNode):
-    def process(self, value, context: ProcessContext):
+    def process(self, value: str, context: ProcessContext):
         if len(value) < 3:
-            raise ValueError("Too short")
+            raise ValidationError("Must be at least 3 characters")
 ```
 
 ## Parameters
@@ -64,6 +65,103 @@ When creating a `ChildNode`:
 | `process_args`   | Positional arguments to pass to the `process()` method. | tuple | No       | ()      |
 | `process_kwargs` | Keyword arguments to pass to the `process()` method.    | dict  | No       | {}      |
 
+## Error Handling
+
+Child nodes can raise exceptions to indicate validation or transformation failures. The framework provides an error handling system with user-friendly error messages in a developer-friendly way.
+
+### Exception Types
+
+Use the appropriate exception type based on your child node's purpose:
+
+#### ValidationError
+
+For validation failures that indicate invalid input.
+
+```python
+from click_extended import ChildNode, ProcessContext
+from click_extended.errors import ValidationError
+
+class IsPositive(ChildNode):
+    """Validate that a number is positive."""
+
+    def process(self, value: int | float, context: ProcessContext):
+        if value <= 0:
+            raise ValidationError(f"{value} is not positive")
+```
+
+#### TransformError
+
+For transformation failures that cannot complete.
+
+```python
+from click_extended import ChildNode, ProcessContext
+from click_extended.errors import TransformError
+
+class ParseJson(ChildNode):
+    """Parse JSON string."""
+
+    def process(self, value: str, context: ProcessContext):
+        import json
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError as e:
+            raise TransformError(f"Invalid JSON: {e}")
+```
+
+### Error Message Format
+
+The framework automatically formats exceptions with parameter context:
+
+```text
+Usage: script.py [OPTIONS]
+Try 'script.py --help' for help.
+
+Error (--port): Must be between 1024 and 65535
+```
+
+Your exception message should focus on the problem as the framework automatically adds:
+
+- The parameter name (`--port`, `PATH`, etc.)
+- Usage information
+- Help hint
+
+### Complete Example
+
+```python
+from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
+
+class ValidatePort(ChildNode):
+    """Validate port number."""
+
+    def process(self, value: int, context: ProcessContext):
+        min_port = context.kwargs.get("min_port", 1024)
+        max_port = context.kwargs.get("max_port", 65535)
+
+        if not (min_port <= value <= max_port):
+            raise ValidationError(
+                f"Must be between {min_port} and {max_port}, got {value}"
+            )
+
+def validate_port(*args, **kwargs):
+    """Validate port number."""
+    return ValidatePort.as_decorator(*args, **kwargs)
+
+@command()
+@option("--port", type=int, default=8000)
+@validate_port(min_port=1024, max_port=65535)
+def start_server(port: int):
+    print(f"Starting server on port {port}")
+```
+
+```bash
+$ python script.py --port 80
+Usage: script.py [OPTIONS]
+Try 'script.py --help' for help.
+
+Error (--port): Must be between 1024 and 65535, got 80
+```
+
 ## Type Hints and Type Safety
 
 click-extended uses type hints from the `process()` method to provide type safety:
@@ -71,12 +169,14 @@ click-extended uses type hints from the `process()` method to provide type safet
 1. **Automatic Type Validation**: The type hint on the `value` parameter determines which parent types are supported:
 
    ```python
+   from click_extended.errors import ValidationError
+
    class IsPositive(ChildNode):
        """Validator for positive numbers."""
 
        def process(self, value: int | float, context: ProcessContext):
            if value <= 0:
-               raise ValueError("Value must be positive")
+               raise ValidationError("Value must be positive")
    ```
 
    This validator automatically rejects non-numeric types at registration time.
@@ -108,25 +208,29 @@ Command line interfaces are never predictable in terms of missing values. The ch
 1. **Skip None by Default**: If `None` is not in the type hint, the `process()` method is skipped for `None` values:
 
    ```python
+   from click_extended.errors import ValidationError
+
    class MyValidator(ChildNode):
        """My custom validator."""
 
        def process(self, value: int | float, context: ProcessContext):
            if value <= 0:
-               raise ValueError("Value must be positive")
+               raise ValidationError("Value must be positive")
    ```
 
 2. **Accept None**: Add `None` to the type hint to handle missing values explicitly:
 
    ```python
+   from click_extended.errors import ValidationError
+
    class MyValidator(ChildNode):
        """My custom validator."""
 
        def process(self, value: int | float | None, context: ProcessContext):
            if value is None:
-               raise ValueError("Value must be provided")
+               raise ValidationError("Value must be provided")
            if value <= 0:
-               raise ValueError("Value must be positive")
+               raise ValidationError("Value must be positive")
    ```
 
 3. **Accept All**: Use `typing.Any` type hint to accept all types including `None`:
@@ -239,13 +343,14 @@ def greet(name: str):
 
 ```python
 from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class ValidateLength(ChildNode):
     """Validate value length."""
 
-    def process(self, value, context: ProcessContext):
+    def process(self, value: str, context: ProcessContext):
         if len(value) < 3:
-            raise ValueError("Value must be at least 3 characters")
+            raise ValidationError("Value must be at least 3 characters")
         return None
 
 def validate_length(*args, **kwargs):
@@ -364,13 +469,14 @@ def shout(text: str):
 
 ```python
 from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class ValidatePositive(ChildNode):
     """Validate number is positive."""
 
-    def process(self, value, context: ProcessContext):
+    def process(self, value: int | float, context: ProcessContext):
         if value <= 0:
-            raise ValueError("Number must be positive")
+            raise ValidationError("Number must be positive")
         return None  # Preserve value
 
 def validate_positive(*args, **kwargs):
@@ -439,6 +545,7 @@ def test(name: str):
 
 ```python
 from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class ValidatePassword(ChildNode):
     """Validate password requirements."""
@@ -450,10 +557,10 @@ class ValidatePassword(ChildNode):
             username = provided.get("username")
 
             if username and value == username:
-                raise ValueError("Password cannot be same as username")
+                raise ValidationError("Password cannot be same as username")
 
         if len(value) < 8:
-            raise ValueError("Password must be at least 8 characters")
+            raise ValidationError("Password must be at least 8 characters")
 
 def validate_password(*args, **kwargs):
     """Validate password requirements."""
@@ -579,34 +686,30 @@ def process(text: str):
 ### Complete Example: Port Validator
 
 ```python
-from typing import Any
 from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class ValidatePort(ChildNode):
     """Validate port number range."""
 
     def process(
         self,
-        value: Any,
+        value: int,
         context: ProcessContext
-    ) -> Any:
+    ) -> None:
         """
         Validate port is in valid range.
 
         Raises:
-            ValueError:
+            ValidationError:
                 If port is outside valid range (1024-65535).
         """
-        if not isinstance(value, int):
-            raise TypeError(f"Port must be an integer, got {type(value)}")
-
         min_port = context.kwargs.get("min_port", 1024)
         max_port = context.kwargs.get("max_port", 65535)
 
         if not (min_port <= value <= max_port):
-            raise ValueError(
-                f"Port must be between {min_port} and {max_port}, "
-                f"got {value}"
+            raise ValidationError(
+                f"Port must be between {min_port} and {max_port}, got {value}"
             )
 
 def validate_port(*args, **kwargs):

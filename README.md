@@ -132,13 +132,14 @@ Using token: secret12...
 
 ```python
 from click_extended import command, option, ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 class IsPositive(ChildNode):
     """Validate that a number is positive."""
 
     def process(self, value: float | int, context: ProcessContext):
         if value <= 0:
-            raise ValueError(f"Value must be positive, got {value}")
+            raise ValidationError(f"{value} is not positive")
 
 def is_positive(*args, **kwargs):
     """Validate positive numbers."""
@@ -159,7 +160,10 @@ if __name__ == "__main__":
 $ python app.py --count 5
 Processing 5 items
 $ python app.py --count -1
-Error: Value must be positive, got -1
+Usage: app.py [OPTIONS]
+Try 'app.py --help' for help.
+
+Error (--count): -1 is not positive
 ```
 
 ## Documentation

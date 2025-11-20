@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from click_extended.core._child_node import ChildNode, ProcessContext
 from click_extended.core.command import command
 from click_extended.core.option import option
+from click_extended.errors import ValidationError
 from click_extended.transform.as_path import AsPath, as_path
 
 
@@ -173,10 +174,9 @@ class TestAsPathExistence:
             "is_executable": False,
         }
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             transformer.process("/nonexistent/file.txt", context)
         assert "does not exist" in str(exc_info.value)
-        assert "config" in str(exc_info.value)
 
     def test_exists_false_with_nonexistent_file(self) -> None:
         """Test that exists=False allows non-existent files."""
@@ -254,7 +254,7 @@ class TestAsPathParents:
             "is_executable": False,
         }
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             transformer.process("/nonexistent/dir/file.txt", context)
         assert "Parent directory" in str(exc_info.value)
         assert "does not exist" in str(exc_info.value)
@@ -316,7 +316,7 @@ class TestAsPathFileDirectory:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(str(test_file), context)
             assert "is a file" in str(exc_info.value)
             assert "files are not allowed" in str(exc_info.value)
@@ -368,7 +368,7 @@ class TestAsPathFileDirectory:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(tmpdir, context)
             assert "is a directory" in str(exc_info.value)
             assert "directories are not allowed" in str(exc_info.value)
@@ -402,7 +402,7 @@ class TestAsPathEmpty:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(str(test_file), context)
             assert "empty" in str(exc_info.value).lower()
             assert "file" in str(exc_info.value).lower()
@@ -432,7 +432,7 @@ class TestAsPathEmpty:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(str(empty_dir), context)
             assert "empty" in str(exc_info.value).lower()
             assert "director" in str(exc_info.value).lower()
@@ -494,7 +494,7 @@ class TestAsPathExtensions:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(str(test_file), context)
             assert "extension" in str(exc_info.value).lower()
             assert ".json" in str(exc_info.value)
@@ -557,7 +557,7 @@ class TestAsPathPatterns:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(str(test_file), context)
             assert "does not match include pattern" in str(exc_info.value)
             assert "*.toml" in str(exc_info.value)
@@ -587,7 +587,7 @@ class TestAsPathPatterns:
                 "is_executable": False,
             }
 
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ValidationError) as exc_info:
                 transformer.process(str(test_file), context)
             assert "matches exclude pattern" in str(exc_info.value)
             assert "test_*" in str(exc_info.value)
@@ -750,9 +750,7 @@ class TestAsPathDecorator:
         result = runner.invoke(test_cmd, ["--config", "/nonexistent/file.txt"])  # type: ignore
 
         assert result.exit_code != 0
-        assert result.exception is not None
-        assert isinstance(result.exception, ValueError)
-        assert "does not exist" in str(result.exception)
+        assert "does not exist" in result.output
 
     def test_decorator_with_extension_filter(self) -> None:
         """Test decorator with extension filtering."""
@@ -790,8 +788,7 @@ class TestAsPathDecorator:
             result = runner.invoke(test_cmd, ["--config", str(test_file)])  # type: ignore
 
             assert result.exit_code != 0
-            assert result.exception is not None
-            assert "extension" in str(result.exception).lower()
+            assert "extension" in result.output.lower()
 
     def test_decorator_with_include_pattern(self) -> None:
         """Test decorator with include pattern."""
@@ -829,8 +826,7 @@ class TestAsPathDecorator:
             result = runner.invoke(test_cmd, ["--config", str(test_file)])  # type: ignore
 
             assert result.exit_code != 0
-            assert result.exception is not None
-            assert "exclude pattern" in str(result.exception)
+            assert "exclude pattern" in result.output
 
     def test_decorator_only_files(self) -> None:
         """Test decorator that only allows files."""
@@ -847,8 +843,7 @@ class TestAsPathDecorator:
             result = runner.invoke(test_cmd, ["--config", tmpdir])  # type: ignore
 
             assert result.exit_code != 0
-            assert result.exception is not None
-            assert "director" in str(result.exception).lower()
+            assert "director" in result.output.lower()
 
     def test_decorator_only_directories(self) -> None:
         """Test decorator that only allows directories."""
@@ -867,8 +862,7 @@ class TestAsPathDecorator:
             result = runner.invoke(test_cmd, ["--dir", str(test_file)])  # type: ignore
 
             assert result.exit_code != 0
-            assert result.exception is not None
-            assert "file" in str(result.exception).lower()
+            assert "file" in result.output.lower()
 
     def test_decorator_returns_callable(self) -> None:
         """Test that as_path decorator returns a callable."""

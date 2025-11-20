@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Callable, ParamSpec, TypeVar
 
 from click_extended.core._child_node import ChildNode, ProcessContext
+from click_extended.errors import ValidationError
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -20,7 +21,6 @@ class AsPath(ChildNode):
     """Transformer decorator to convert a string to a Path."""
 
     def process(self, value: str | Path, context: ProcessContext) -> Path:
-        name = context.parent.name
         exists = context.kwargs["exists"]
         parents = context.kwargs["parents"]
         extensions = context.kwargs["extensions"]
@@ -42,20 +42,18 @@ class AsPath(ChildNode):
 
         # Symlinks
         if not allow_symlink and path.is_symlink():
-            raise ValueError(
-                f"Path '{path}' is a symlink, but symlinks are not allowed "
-                f"for '{name}'"
+            raise ValidationError(
+                f"Path '{path}' is a symlink, but symlinks are not allowed."
             )
 
         # Existence
         if exists and not path.exists():
-            raise ValueError(f"Path '{path}' does not exist for '{name}'")
+            raise ValidationError(f"Path '{path}' does not exist.")
 
         # Parents
         if parents and not path.parent.exists():
-            raise ValueError(
-                f"Parent directory '{path.parent}' does not exist "
-                f"for '{name}'"
+            raise ValidationError(
+                f"Parent directory '{path.parent}' does not exist."
             )
 
         if path.exists():
@@ -64,66 +62,62 @@ class AsPath(ChildNode):
 
             # File disallowed
             if is_file and not allow_file:
-                raise ValueError(
-                    f"Path '{path}' is a file, but files are not allowed "
-                    f"for '{name}'"
+                raise ValidationError(
+                    f"Path '{path}' is a file, but files are not allowed."
                 )
 
             # Directory disallowed
             if is_dir and not allow_directory:
-                raise ValueError(
-                    f"Path '{path}' is a directory, but directories are not "
-                    f"allowed for '{name}'"
+                raise ValidationError(
+                    f"Path '{path}' is a directory, "
+                    "but directories are not allowed."
                 )
 
             # Check empty directory
             if is_dir and not allow_empty_directory:
                 if not any(path.iterdir()):
-                    raise ValueError(
+                    raise ValidationError(
                         f"Directory '{path}' is empty, but empty directories "
-                        f"are not allowed for '{name}'"
+                        f"are not allowed."
                     )
 
             # Check empty file
             if is_file and not allow_empty_file:
                 if path.stat().st_size == 0:
-                    raise ValueError(
+                    raise ValidationError(
                         f"File '{path}' is empty, but empty files are not "
-                        f"allowed for '{name}'"
+                        f"allowed."
                     )
 
             # Check permissions
             if is_readable and not os.access(path, os.R_OK):
-                raise ValueError(f"Path '{path}' is not readable for '{name}'")
+                raise ValidationError(f"Path '{path}' is not readable.")
 
             if is_writable and not os.access(path, os.W_OK):
-                raise ValueError(f"Path '{path}' is not writable for '{name}'")
+                raise ValidationError(f"Path '{path}' is not writable.")
 
             if is_executable and not os.access(path, os.X_OK):
-                raise ValueError(
-                    f"Path '{path}' is not executable for '{name}'"
-                )
+                raise ValidationError(f"Path '{path}' is not executable.")
 
         # Check extensions
         if extensions and (not path.exists() or path.is_file()):
             if not any(path.name.endswith(ext) for ext in extensions):
-                raise ValueError(
+                raise ValidationError(
                     f"Path '{path}' does not have an allowed extension. "
-                    f"Allowed extensions: {', '.join(extensions)} "
-                    f"for '{name}'"
+                    f"Allowed extensions: {', '.join(extensions)}"
                 )
 
         # Patterns
         if include_pattern:
             if not fnmatch.fnmatch(path.name, include_pattern):
-                raise ValueError(
+                raise ValidationError(
                     f"Path '{path}' does not match include pattern "
-                    f"'{include_pattern}' for '{name}'"
+                    f"'{include_pattern}'."
                 )
         elif exclude_pattern and fnmatch.fnmatch(path.name, exclude_pattern):
-            raise ValueError(
+            raise ValidationError(
                 f"Path '{path}' matches exclude pattern "
-                f"'{exclude_pattern}' for '{name}'"
+                f"'{exclude_pattern}'."
             )
 
         return path

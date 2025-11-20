@@ -193,7 +193,7 @@ class ParentNode(Node, ABC):
 
             assert self.children is not None
             self._cached_value = process_children(
-                raw_value, self.children, self
+                raw_value, self.children, self, None, None
             )
             self._value_computed = True
         return self._cached_value

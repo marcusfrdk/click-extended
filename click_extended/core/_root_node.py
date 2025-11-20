@@ -173,6 +173,11 @@ class RootNode(Node):
             @wraps(func)
             def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
                 """Wrapper that collects parent values and injects them."""
+                try:
+                    ctx = click.get_current_context()
+                except RuntimeError:
+                    ctx = None
+
                 parent_values: dict[str, Any] = {}
 
                 if instance.tree.root is None:
@@ -333,6 +338,7 @@ class RootNode(Node):
                                     parent_node.children,
                                     parent_node,
                                     tags_dict,
+                                    ctx,
                                 )
                             else:
                                 parent_values[parent_name] = raw_value
@@ -347,7 +353,7 @@ class RootNode(Node):
 
                             value = parent_node.get_value()
                             process_children(
-                                value, tag.children, tag, tags_dict
+                                value, tag.children, tag, tags_dict, ctx
                             )
 
                 for global_node in instance.tree.globals:

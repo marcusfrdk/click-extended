@@ -3,8 +3,7 @@
 from typing import Any, Callable, ParamSpec, TypeVar
 
 from click_extended.core._child_node import ChildNode, ProcessContext
-
-ERROR_MESSAGE = "Value of '{}' must be positive, got {}"
+from click_extended.errors import ValidationError
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -15,7 +14,7 @@ class IsPositive(ChildNode):
 
     def process(self, value: int | float, context: ProcessContext) -> None:
         if value <= 0:
-            raise ValueError(ERROR_MESSAGE.format(context.parent.name, value))
+            raise ValidationError(f"{value} is not positive")
 
 
 def is_positive(

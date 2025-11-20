@@ -12,7 +12,7 @@ from click_extended.core.argument import argument
 from click_extended.core.command import command
 from click_extended.core.option import option
 from click_extended.core.tag import Tag
-from click_extended.errors import TypeMismatchError
+from click_extended.errors import TypeMismatchError, ValidationError
 from click_extended.validation.is_positive import is_positive
 
 
@@ -737,8 +737,8 @@ class TestTypeValidationIntegration:
         """Test that type defaults to str when neither type nor default specified."""
 
         @command()
-        @option("--name")  # Type inferred as str (no default, no type)
-        @is_positive()  # Should fail as str is not supported
+        @option("--name")
+        @is_positive()
         def test_cmd(name: str) -> None:
             """Test command."""
             print(f"Name: {name}")
@@ -759,7 +759,7 @@ class TestTypeValidationIntegration:
 
             def process(self, value: str, context: ProcessContext) -> None:
                 if len(value) < 3:
-                    raise ValueError(
+                    raise ValidationError(
                         f"String must be at least 3 characters, got {len(value)}"
                     )
 
@@ -786,14 +786,14 @@ class TestTypeValidationIntegration:
             test_cmd, ["--count", "-5", "--name", "alice"]  # type: ignore
         )
         assert result.exit_code != 0
-        assert "must be positive" in str(result.exception).lower()
+        assert "-5 is not positive" in result.output
 
         # Invalid name
         result = runner.invoke(
             test_cmd, ["--count", "10", "--name", "ab"]  # type: ignore
         )
         assert result.exit_code != 0
-        assert "at least 3 characters" in str(result.exception).lower()
+        assert "at least 3 characters" in result.output
 
     def test_type_validation_error_provides_clear_message(self) -> None:
         """Test that type validation errors provide helpful messages."""
@@ -846,7 +846,7 @@ class TestTypeValidationIntegration:
         # Overriding with invalid value
         result = runner.invoke(test_cmd, ["--count", "-1"])  # type: ignore
         assert result.exit_code != 0
-        assert "must be positive" in str(result.exception).lower()
+        assert "-1 is not positive" in result.output
 
     def test_type_validation_fails_before_processing(self) -> None:
         """Test that type validation happens before value processing."""

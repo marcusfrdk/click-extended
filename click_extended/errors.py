@@ -3,19 +3,98 @@
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 
+import typing as t
+
+import click
+from click import ClickException
+from click._compat import get_text_stderr
+from click.utils import echo
+
 
 class ClickExtendedError(Exception):
     """Base exception for exceptions defined in the `click_extended` library."""
 
+
+class CatchableError(ClickExtendedError):
+    """Base exception for exceptions raised inside a child node.
+
+    These exceptions are caught by the framework and reformatted with
+    parameter context before being displayed to the user.
+    """
+
     def __init__(self, message: str) -> None:
         """
-        Initialize a new `ClickExtendedError` instance.
+        Initialize a CatchableError.
 
         Args:
-            message (str):
-                The message to show.
+            message: The error message describing what went wrong.
         """
         super().__init__(message)
+
+
+class ValidationError(CatchableError):
+    """Exception raised when validation fails in a child node."""
+
+
+class TransformError(CatchableError):
+    """Exception raised when transformation fails in a child node."""
+
+
+class ParameterError(ClickException):
+    """Exception raised when parameter validation or transformation fails.
+
+    This exception is raised by the framework after catching a CatchableError
+    and adding parameter context information.
+    """
+
+    exit_code = 2  # Match Click's UsageError exit code
+
+    def __init__(
+        self,
+        message: str,
+        param_hint: str | None = None,
+        ctx: click.Context | None = None,
+    ) -> None:
+        """
+        Initialize a ParameterError.
+
+        Args:
+            message: The error message from the validator/transformer.
+            param_hint: The parameter name (e.g., '--config', 'PATH').
+            ctx: The Click context for displaying usage information.
+        """
+        super().__init__(message)
+        self.param_hint = param_hint
+        self.ctx = ctx
+
+    def format_message(self) -> str:
+        """Format the error message with parameter context."""
+        if self.param_hint:
+            return f"({self.param_hint}): {self.message}"
+        return self.message
+
+    def show(self, file: t.IO[t.Any] | None = None) -> None:
+        """Display the error with usage information (like Click does)."""
+        if file is None:
+            file = get_text_stderr()
+
+        color = None
+
+        if self.ctx is not None:
+            color = self.ctx.color
+
+            echo(self.ctx.get_usage(), file=file, color=color)
+
+            if self.ctx.command.get_help_option(self.ctx) is not None:
+                hint = (
+                    f"Try '{self.ctx.command_path} "
+                    f"{self.ctx.help_option_names[0]}' for help."
+                )
+                echo(hint, file=file, color=color)
+
+            echo("", file=file)
+
+        echo(f"Error {self.format_message()}", file=file, color=color)
 
 
 class NoParentError(ClickExtendedError):
@@ -152,9 +231,9 @@ class TypeMismatchError(ClickExtendedError):
                 List of types supported by the child node.
         """
 
-        def get_type_name(t: type) -> str:
+        def get_type_name(type_obj: type) -> str:
             """Get type name, handling both regular types and UnionType."""
-            return getattr(t, "__name__", str(t))
+            return getattr(type_obj, "__name__", str(type_obj))
 
         type_names = ", ".join(get_type_name(t) for t in supported_types)
         parent_type_name = get_type_name(parent_type) if parent_type else "None"

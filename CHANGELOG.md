@@ -20,9 +20,10 @@
 - **Testing**: Added unit tests for type inference.
 - **Testing**: Added unit tests for required/optional argument behavior.
 - **Testing**: Added integration tests for type validation system.
-- **Validation**: Added `validation` module.
-- **@is_positive**: Added `validation.is_positive` decorator with unit tests.
-- **@as_path**: Added `@as_path` child decorator for validating and transforming a path.
+- **Validation**: Added `validation` module with `@is_positive` validator decorator.
+- **Transform**: Added `transform` module with `@as_path` transformer decorator for comprehensive path validation (14 parameters: existence, parents, file/directory type, empty checks, extensions, include/exclude patterns, permissions).
+- **Error handling**: Added exception hierarchy (`CatchableError`, `ValidationError`, `TransformError`, `ParameterError`) with Click-style error formatting that displays parameter context, usage information, and help hints.
+- **Click Context**: Updated framework to pass Click context through wrappers to `process_children()` for enhanced error reporting.
 
 ### Updated
 
@@ -37,10 +38,13 @@
 - **Docs**: Updated documentation for `Option` with type inference section and examples.
 - **Docs**: Updated documentation for `Argument` with type inference section and examples.
 - **Docs**: Updated `CHILD_NODE.md` documentation with type-hint-first approach and ProcessContext helpers.
+- **Docs**: Updated `CHILD_NODE.md` with comprehensive "Error Handling" section explaining `ValidationError`, `TransformError`.
+- **Docs**: Updated all code examples in `CHILD_NODE.md`, `README.md`, `TREE.md`, and `GLOBAL_NODE.md` to use `ValidationError` instead of `ValueError`.
 - **Docs**: Updated `ARGUMENT.md` and `OPTION.md` with type inference sections.
 - **Docs**: Updated structure of `CHANGELOG.md`.
 - **@tag**: Updated tag processing to iterate through each parent node value individually.
 - **Testing**: Updated unit tests for new process context parameter.
+- **Testing**: Updated all validator and transformer tests to use `ValidationError` and `TransformError`.
 - **pyproject.toml**: Disabled the pyright error `reportUnnecessaryIsInstance` (Disabled the warning for unnecessary isinstance checks).
 
 ### Fixed
