@@ -196,3 +196,64 @@ class TestFormatList:
         """Test wrap with special characters in items."""
         result = format_list(["hello-world", "foo_bar"], wrap='"')
         assert result == '"hello-world" and "foo_bar"'
+
+    def test_wrap_tuple_single_item(self) -> None:
+        """Test wrapping a single item with tuple (left, right)."""
+        assert format_list(["str"], wrap=("<", ">")) == "<str>"
+        assert format_list(["x"], wrap=("[", "]")) == "[x]"
+        assert format_list(["foo"], wrap=("(", ")")) == "(foo)"
+
+    def test_wrap_tuple_two_items(self) -> None:
+        """Test wrapping two items with tuple."""
+        assert format_list(["str", "int"], wrap=("<", ">")) == "<str> and <int>"
+        assert format_list(["x", "y"], wrap=("[", "]")) == "[x] and [y]"
+
+    def test_wrap_tuple_three_items(self) -> None:
+        """Test wrapping three items with tuple."""
+        result = format_list(["str", "int", "float"], wrap=("<", ">"))
+        assert result == "<str>, <int> and <float>"
+
+    def test_wrap_tuple_many_items(self) -> None:
+        """Test wrapping many items with tuple."""
+        result = format_list(["a", "b", "c", "d", "e"], wrap=("{", "}"))
+        assert result == "{a}, {b}, {c}, {d} and {e}"
+
+    def test_wrap_tuple_with_prefix(self) -> None:
+        """Test tuple wrap with prefix."""
+        result = format_list(
+            ["Alice", "Bob", "Charlie"],
+            prefix_singular="Person: ",
+            prefix_plural="People: ",
+            wrap=("<", ">"),
+        )
+        assert result == "People: <Alice>, <Bob> and <Charlie>"
+
+    def test_wrap_tuple_single_with_prefix(self) -> None:
+        """Test tuple wrap single item with prefix."""
+        result = format_list(
+            ["Alice"],
+            prefix_singular="Person: ",
+            prefix_plural="People: ",
+            wrap=("[", "]"),
+        )
+        assert result == "Person: [Alice]"
+
+    def test_wrap_tuple_asymmetric(self) -> None:
+        """Test asymmetric tuple wrapping."""
+        result = format_list(["a", "b", "c"], wrap=("<< ", " >>"))
+        assert result == "<< a >>, << b >> and << c >>"
+
+    def test_wrap_tuple_with_numbers(self) -> None:
+        """Test tuple wrap with numeric types."""
+        result = format_list([1, 2, 3], wrap=("(", ")"))
+        assert result == "(1), (2) and (3)"
+
+    def test_wrap_tuple_html_tags(self) -> None:
+        """Test wrapping with HTML-like tags."""
+        result = format_list(["bold", "italic"], wrap=("<b>", "</b>"))
+        assert result == "<b>bold</b> and <b>italic</b>"
+
+    def test_wrap_tuple_empty_strings(self) -> None:
+        """Test tuple wrap with empty strings (same as no wrap)."""
+        result = format_list(["str", "int"], wrap=("", ""))
+        assert result == "str and int"

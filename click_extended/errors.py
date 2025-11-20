@@ -247,6 +247,7 @@ class TypeMismatchError(ClickExtendedError):
             type_names,
             prefix_singular="Supported type is ",
             prefix_plural="Supported types are ",
+            wrap="'",
         )
 
         message = (

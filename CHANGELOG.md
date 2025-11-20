@@ -4,6 +4,11 @@
 
 ## v0.2.1
 
+### Updated
+
+- **Changelog**: Wrapped all `@` with backticks to avoid Github user mentions.
+- **format_list**: Now supports asymmetric wrapping by providing a tuple of two strings `str` or `tuple[str, str]`.
+
 ### Removed
 
 - **CI/CD**: Removed "View Full Release" section of the release notes.
