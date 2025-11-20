@@ -4,6 +4,17 @@
 
 ## v0.3.2
 
+### Added
+
+- **docs/TRANSFORMERS.md**: Added documentation for available transformation nodes.
+
+### Updated
+
+- **types.py**: `ProcessContext` is now exported from the `click_extended.types` module instead of the `click_extended` module.
+- **docs/ARGUMENT.md**: Rewrote documentation for the `@argument` decorator.
+- **docs/CHILD_NODE.md**: Rewrote documentation for the `ChildNode` class.
+- **docs/COMMAND.md**: Rewrote documentation for the `@command` decorator.
+
 ### Removed
 
 - **types.py**: Removed unused import.

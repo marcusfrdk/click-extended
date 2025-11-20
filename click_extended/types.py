@@ -4,6 +4,7 @@
 
 from typing import Any, Callable
 
+from click_extended.core._child_node import ProcessContext
 from click_extended.core.argument import Argument
 from click_extended.core.command import Command
 from click_extended.core.env import Env
@@ -17,6 +18,7 @@ Parent = "ParentNode | Tag"
 Decorator = Callable[[Callable[..., Any]], Callable[..., Any]]
 
 __all__ = [
+    "ProcessContext",
     "Decorator",
     "Parent",
     "Argument",

@@ -2,7 +2,7 @@
 
 # Command
 
-A command is the entry point for a CLI application. For this library, a command is an extension of the `RootNode`, which serves as the foundation for building CLI commands with automatic value injection from decorators like `@option` and `@argument`.
+A command is the entry point for all functions in a command line interface. The command is a subclass of the [root node](./ROOT_NODE.md) and handles the tree and context of the entire function lifecycle.
 
 ## Parameters
 
@@ -13,11 +13,11 @@ A command is the entry point for a CLI application. For this library, a command 
 | `help`     | Help text displayed in CLI help output. If not provided, uses the first line of the function's docstring.              | str              | No       | None          |
 | `**kwargs` | Additional arguments to pass to `click.Command` (e.g., `context_settings`, `epilog`, `short_help`, `add_help_option`). | Any              | No       | None          |
 
-> **Note:** The `@command` decorator must be the outermost decorator (furthest from the `def` statement) when stacking with `@option`, `@argument`, and other decorators.
-
 ## Examples
 
 ### Basic Usage
+
+Here is a basic example of how to get a simple command line interface working. This example is equivalent to just calling the function directly.
 
 ```python
 from click_extended import command
@@ -33,6 +33,8 @@ if __name__ == "__main__":
 
 ### Named Command
 
+By default, if a name is not set, the name of the function (`my_function`) is used as the name of the command. However, in this example, we have overridden the name with our own name (`greet`). The name of the command matters when adding one or more commands to a [group](./GROUP.md).
+
 ```python
 from click_extended import command
 
@@ -47,85 +49,81 @@ if __name__ == "__main__":
 
 ### With Help Text
 
+Help messages are important for creating a well-documented command line interfaces.
+
 ```python
 from click_extended import command
 
-@command(help="Display a greeting message")
+@command(help="This help message overwrites the default help message.")
 def greet():
+    """This is the default help message."""
     print("Hello!")
 
 if __name__ == "__main__":
     greet()
 ```
 
+### With Multi-Line Help Text
+
+Sometimes, you might want to provide proper multi-line docstrings for your function. In this case, the help message is just the first line of the docstring (`This is a function that pongs your ping.`).
+
+```python
+from click_extended import command
+
+@command()
+def ping():
+    """
+    This is a function that pongs your ping.
+
+    Returns:
+        None:
+            It literally returns nothing.
+    """
+    print("Pong")
+
+if __name__ == "__main__":
+    ping()
+```
+
 ### With Aliases
 
-```python
-from click_extended import command
-
-@command("server", aliases=["srv", "s"])
-def start_server():
-    """Start the development server."""
-    print("Server starting...")
-
-if __name__ == "__main__":
-    start_server()
-```
-
-### Single Alias
+Aliasing is a powerful way of allowing users to add shortcuts or other names in the command line interface.
 
 ```python
 from click_extended import command
 
-@command("build", aliases="b")
-def build_project():
-    """Build the project."""
-    print("Building...")
+@command("database", aliases=["db"])
+def start_database():
+    """Start the database container."""
+    print("Starting container...")
 
 if __name__ == "__main__":
-    build_project()
+    start_database()
 ```
 
-### With Options and Arguments
+In the help message, this command will show up as:
+
+```txt
+database (db)  Start the database container.
+```
+
+### With Parents
+
+A command is just the foundation, but a foundation is nothing without the building blocks. In this example, three [parent nodes](./PARENT_NODE.md) are used.
 
 ```python
-from click_extended import command, option, argument
+from click_extended import command, option, argument, env
 
 @command()
 @argument("filename")
 @option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def process(filename: str, verbose: bool):
+@env("API_KEY")
+def process(filename: str, verbose: bool, api_key: str):
     """Process a file."""
-    if verbose:
-        print(f"Processing {filename} in verbose mode")
-    else:
-        print(f"Processing {filename}")
 
 if __name__ == "__main__":
     process()
 ```
-
-### Using Docstring as Help
-
-```python
-from click_extended import command, argument
-
-@command()
-@argument("name")
-def greet(name: str):
-    """Greet a person by name.
-
-    This command displays a personalized greeting message.
-    The help text shown in the command list will only show
-    the first line of this docstring.
-    """
-    print(f"Hello, {name}!")
-
-if __name__ == "__main__":
-    greet()
-```
-
-> **Note:** When using a multiline docstring, only the first line is used as the short help text in command listings. The full docstring is still available when viewing detailed help (e.g., `--help`).
 
 ### Complete Example
 
@@ -168,6 +166,8 @@ if __name__ == "__main__":
 ```
 
 ### With Custom Click Settings (Advanced)
+
+If you need to change things like the help menu formatting or the context of the underlying Click context, you can override the configuration by passing the regular keyword arguments provided by the underlying Click object (`click.Command`, `click.Argument`, `click.pass_context`, etc.).
 
 ```python
 from click_extended import command, option

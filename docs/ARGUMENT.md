@@ -2,7 +2,7 @@
 
 # Argument
 
-An argument in the command line interface is a positional argument. For this library, an argument is an extension of the `ParentNode`, meaning it injects values into the context.
+An argument in the command line interface is a positional argument and is an extension of the `ParentNode`, meaning it injects values into the context.
 
 ## Parameters
 
@@ -16,89 +16,41 @@ An argument in the command line interface is a positional argument. For this lib
 | `default`  | Default value if argument not provided. When explicitly set, automatically makes the argument optional.                                | Any              | No       | None     |
 | `tags`     | Tag(s) to associate with this argument for validation or grouping. Used with the `@tag` decorator.                                     | str or list[str] | No       | None     |
 
-> [!NOTE]
-> Providing a `default` (including `None`) automatically makes the argument optional.
-
 ## Type Inference
 
-The `type` parameter is automatically inferred:
-
-- **Explicit type**: `type=int` uses `int`
-- **From default**: `default=8080` infers `int`
-- **Neither**: defaults to `str`
+The type of the argument can be set in several ways. By default, the type of an argument is `str`.
 
 ```python
-@argument("port", default=8080)  # type = int
-@argument("filename")  # type = str
-@argument("value", type=str, default=42)  # type = str (explicit overrides)
+@argument("filename") # Defaults to type=str
 ```
 
-## Understanding `nargs`
+However, if the `type` parameter is not set and default is, the type of the `default` parameter if inferred. In this case, it's an `int`.
+
+```python
+@argument("port", default=8080)
+```
+
+If the `type` parameter is set, that takes precedence over both.
+
+```python
+@argument("value", type=str, default=42)
+```
+
+## Number of Arguments
 
 The `nargs` parameter controls how many values the argument accepts:
 
-| `nargs`       | Value Type      | Example CLI       | Result                       |
-| ------------- | --------------- | ----------------- | ---------------------------- |
-| `1` (default) | `T`             | `mycli data.json` | `"data.json"`                |
-| `2+`          | `tuple[T, ...]` | `mycli 10 20 30`  | `(10, 20, 30)`               |
-| `-1`          | `tuple[T, ...]` | `mycli a b c`     | `("a", "b", "c")` (variadic) |
-
-### Type Validation
-
-Validators/transformers must have type hints matching the value structure. Use union types for flexibility:
-
-```python
-from click_extended import ChildNode, ProcessContext
-
-class UpperCase(ChildNode):
-    def process(
-        self,
-        value: str | tuple[str, ...],
-        context: ProcessContext,
-    ):
-        if not isinstance(value, tuple):
-            return value.upper()
-        return tuple(v.upper() for v in value)
-```
-
-Union types can specify different types per structure:
-
-```python
-class FlexibleType(ChildNode):
-    def process(
-        self,
-        value: str | tuple[str | int, ...],
-        context: ProcessContext,
-    ):
-        return value
-```
-
-#### Understanding union type validation
-
-The validator checks if any union member matches the parent's configuration:
-
-- **Single value** (`str`): Matches `nargs=1`
-- **Flat tuple** (`tuple[T, ...]`): Matches `nargs>1` or `nargs=-1`
-
-Combine them to support multiple configurations:
-
-```python
-# Supports single OR tuple
-value: str | tuple[str, ...]
-```
-
-Each structure can have different type support:
-
-```python
-# Single: str only. Tuple: str|int|float
-value: str | tuple[str | int | float, ...]
-```
-
-Validation occurs at tree construction and provides clear error messages when types don't match.
+| `nargs`     | Type          | Input                   | Output                |
+| ----------- | ------------- | ----------------------- | --------------------- |
+| 1 (default) | T             | cli 1                   | 1                     |
+| n           | tuple[T, ...] | cli 1, 2, ..., n        | (1, 2, ..., n)        |
+| -1          | tuple[T, ...] | cli 1, 2, ..., $\infty$ | (1, 2, ..., $\infty$) |
 
 ## Examples
 
 ### Basic Usage
+
+This is the most basic example. In this example, `filename` is a required string (defualt type) and will be injected into the `**kwargs` parameter as `filename: str`.
 
 ```python
 from click_extended import command, argument
@@ -111,6 +63,8 @@ def process(filename: str):
 
 ### With Type Conversion
 
+When setting a type, `Click` will automatically convert the type as arguments are required by default, so you can safely assume the type for the parameter. If `required=False`, the type should be `int | None` as `None` is a possible value.
+
 ```python
 from click_extended import command, argument
 
@@ -122,6 +76,8 @@ def start_server(port: int):
 
 ### Optional Argument
 
+There are two ways of marking an argument optional, either by setting `required=False` or by setting a default value as is done in this example. As the type is not set, the type of the `output` parameter is a `str`.
+
 ```python
 from click_extended import command, argument
 
@@ -132,6 +88,8 @@ def save(output: str):
 ```
 
 ### Multiple Values
+
+As mentioned in the [number of arguments](#number-of-arguments) section, the `nargs` parameter accepts and positive number (or `-1` for any number). In this example, we accept any number of positional arguments, which get injected as a tuple of strings (as the type is `str`).
 
 ```python
 from click_extended import command, argument
@@ -145,6 +103,8 @@ def batch_process(files: tuple[str, ...]):
 
 ### Fixed Number of Values
 
+If `nargs` is set to a fixed scalar, the argument requires that number of arguments to be provided. As for the type, it's preferred to type if as `tuple[float, float, float]`, but Python would also accept either `tuple[float]` or `tuple[float, ...]` as well.
+
 ```python
 from click_extended import command, argument
 
@@ -157,6 +117,8 @@ def plot(coords: tuple[float, float, float]):
 
 ### With Tags
 
+Tags are a way of grouping multiple [parent nodes](./PARENT_NODE.md) together to perform various operations in bulk, such as transformation, validation or even exclusivity checks. You can read mode about tags in the [tag documentation](./TAG.md).
+
 ```python
 from click_extended import command, argument
 
@@ -167,6 +129,10 @@ def read(input_file: str):
 ```
 
 ### Name Transformation
+
+The name of an argument can be anything, but under the hood, it is converted to `snake_case` to conform to a more pythonic format. So in this example, the argument is injected as `input_file` even though the name is `input-file`.
+
+Arguments can be named in whatever format you want, but it is stored and injected as `snake_case`, and `click` uses `SCREAMING_SNAKE_CASE` in the help menu.
 
 ```python
 from click_extended import command, argument
@@ -179,6 +145,8 @@ def process(input_file: str):
 
 ### Using Click Types
 
+Out of the box, the types `click` provide are supported in `click-extended`.
+
 ```python
 from click_extended import command, argument
 import click
@@ -190,22 +158,4 @@ def convert(input: str, output):
     with open(input, "r", encoding="utf-8") as f:
         content = f.read()
     output.write(content.upper())
-```
-
-## Complete Example
-
-```python
-from click_extended import command, argument, option
-
-@command()
-@argument("source", type=click.Path(exists=True))
-@argument("dest", default="./output")
-@option("--verbose", "-v", is_flag=True)
-def copy(source: str, dest: str, verbose: bool):
-    """Copy a file to a destination."""
-    if verbose:
-        print(f"Copying {source} to {dest}")
-
-if __name__ == "__main__":
-    copy()
 ```
