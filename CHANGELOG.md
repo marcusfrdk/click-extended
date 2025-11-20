@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v0.3.2
+
+### Removed
+
+- **types.py**: Removed unused import.
+
 ## v0.3.1
 
 ### Added
