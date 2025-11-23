@@ -433,7 +433,19 @@ class RootNode(Node):
                                 parent_node,
                             ) in root.tree.root.children.items():
                                 if isinstance(parent_name, str):
-                                    if isinstance(
+                                    inject_name = parent_name
+                                    raw_value = None
+
+                                    if isinstance(parent_node, Env):
+                                        raw_value = parent_node.get_raw_value()
+                                        was_provided = (
+                                            parent_node.was_provided()
+                                        )
+                                        parent_node.set_raw_value(
+                                            raw_value, was_provided
+                                        )
+                                        inject_name = parent_node.param
+                                    elif isinstance(
                                         parent_node, (Option, Argument)
                                     ):
                                         raw_value = call_kwargs.get(parent_name)
@@ -444,7 +456,11 @@ class RootNode(Node):
                                         parent_node.set_raw_value(
                                             raw_value, was_provided
                                         )
+                                        inject_name = parent_name
 
+                                    if isinstance(
+                                        parent_node, (Option, Argument, Env)
+                                    ):
                                         if parent_node.children:
                                             Tree.update_scope(
                                                 context,
@@ -452,7 +468,7 @@ class RootNode(Node):
                                                 parent_node=parent_node,
                                             )
 
-                                            async_parent_values[parent_name] = (
+                                            async_parent_values[inject_name] = (
                                                 await process_children_async(
                                                     raw_value,
                                                     parent_node.children,
@@ -462,35 +478,11 @@ class RootNode(Node):
                                                 )
                                             )
                                         else:
-                                            async_parent_values[parent_name] = (
-                                                raw_value
-                                            )
-                                    elif isinstance(parent_node, Env):
-                                        raw_value = parent_node.get_raw_value()
-
-                                        if parent_node.children:
-                                            Tree.update_scope(
-                                                context,
-                                                "parent",
-                                                parent_node=parent_node,
-                                            )
-
-                                            async_parent_values[parent_name] = (
-                                                await process_children_async(
-                                                    raw_value,
-                                                    parent_node.children,
-                                                    parent_node,
-                                                    tags_dict,
-                                                    context,
-                                                )
-                                            )
-                                        else:
-                                            async_parent_values[parent_name] = (
+                                            async_parent_values[inject_name] = (
                                                 raw_value
                                             )
                                     else:
-                                        pn = cast("ParentNode", parent_node)
-                                        v = pn.get_value()
+                                        v = parent_node.get_value()  # type: ignore  # pylint: disable=line-too-long
                                         async_parent_values[parent_name] = v
 
                             for tag in root.tree.tags.values():
@@ -527,7 +519,19 @@ class RootNode(Node):
                             parent_node,
                         ) in root.tree.root.children.items():
                             if isinstance(parent_name, str):
-                                if isinstance(parent_node, (Option, Argument)):
+                                inject_name = parent_name
+                                raw_value = None
+
+                                if isinstance(parent_node, Env):
+                                    raw_value = parent_node.get_raw_value()
+                                    was_provided = parent_node.was_provided()
+                                    parent_node.set_raw_value(
+                                        raw_value, was_provided
+                                    )
+                                    inject_name = parent_node.param
+                                elif isinstance(
+                                    parent_node, (Option, Argument)
+                                ):
                                     raw_value = call_kwargs.get(parent_name)
                                     was_provided = (
                                         parent_name in call_kwargs
@@ -536,7 +540,11 @@ class RootNode(Node):
                                     parent_node.set_raw_value(
                                         raw_value, was_provided
                                     )
+                                    inject_name = parent_name
 
+                                if isinstance(
+                                    parent_node, (Option, Argument, Env)
+                                ):
                                     if parent_node.children:
                                         Tree.update_scope(
                                             context,
@@ -544,7 +552,7 @@ class RootNode(Node):
                                             parent_node=parent_node,
                                         )
 
-                                        parent_values[parent_name] = (
+                                        parent_values[inject_name] = (
                                             process_children(
                                                 raw_value,
                                                 parent_node.children,
@@ -554,28 +562,7 @@ class RootNode(Node):
                                             )
                                         )
                                     else:
-                                        parent_values[parent_name] = raw_value
-                                elif isinstance(parent_node, Env):
-                                    raw_value = parent_node.get_raw_value()
-
-                                    if parent_node.children:
-                                        Tree.update_scope(
-                                            context,
-                                            "parent",
-                                            parent_node=parent_node,
-                                        )
-
-                                        parent_values[parent_name] = (
-                                            process_children(
-                                                raw_value,
-                                                parent_node.children,
-                                                parent_node,
-                                                tags_dict,
-                                                context,
-                                            )
-                                        )
-                                    else:
-                                        parent_values[parent_name] = raw_value
+                                        parent_values[inject_name] = raw_value
                                 else:
                                     parent_node = cast(
                                         "ParentNode", parent_node

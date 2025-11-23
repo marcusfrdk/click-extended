@@ -25,6 +25,7 @@ class Env(ParentNode):
         self,
         name: str,
         env_name: str,
+        param: str | None = None,
         help: str | None = None,
         required: bool = False,
         default: Any = None,
@@ -36,10 +37,12 @@ class Env(ParentNode):
 
         Args:
             name (str):
-                The parameter name to inject into the function.
-                Should already be in snake_case.
+                The internal name for this node (derived from env_name).
             env_name (str):
                 The name of the environment variable to read from.
+            param (str, optional):
+                The parameter name to inject into the function.
+                If not provided, uses name.
             help (str, optional):
                 Help text for this parameter.
             required (bool):
@@ -51,6 +54,8 @@ class Env(ParentNode):
             **kwargs (Any):
                 Additional keyword arguments.
         """
+        param_name = param if param is not None else name
+
         super().__init__(
             name=name,
             help=help,
@@ -59,6 +64,7 @@ class Env(ParentNode):
             tags=tags,
         )
         self.env_name = env_name
+        self.param = param_name
         self.extra_kwargs = kwargs
 
     def get_raw_value(self) -> Any:
@@ -107,6 +113,7 @@ class Env(ParentNode):
 def env(
     env_name: str,
     name: str | None = None,
+    param: str | None = None,
     help: str | None = None,
     required: bool = False,
     default: Any = None,
@@ -122,8 +129,11 @@ def env(
         env_name (str):
             The name of the environment variable to read.
         name (str, optional):
-            The name of the parameter to inject. If not provided,
+            Internal node name. If not provided,
             uses env_name converted to snake_case.
+        param (str, optional):
+            The parameter name to inject into the function.
+            If not provided, uses name (or derived name).
         help (str, optional):
             Help text for this parameter.
         required (bool):
@@ -148,14 +158,19 @@ def env(
         ... def my_func(api_key):
         ...     print(api_key)
 
-        >>> @env("DATABASE_URL", name="db", required=True)
+        >>> @env("DATABASE_URL", param="db", required=True)
         ... def my_func(db):
         ...     print(db)
+
+        >>> @env("MY_ENV", param="api_key")
+        ... def my_func(api_key):
+        ...     print(api_key)
     """
-    param_name = name if name is not None else Casing.to_snake_case(env_name)
+    node_name = name if name is not None else Casing.to_snake_case(env_name)
     return Env.as_decorator(
-        name=param_name,
+        name=node_name,
         env_name=env_name,
+        param=param,
         help=help,
         required=required,
         default=default,
