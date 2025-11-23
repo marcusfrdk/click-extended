@@ -5,9 +5,9 @@
 ## Concepts
 
 - [Root Node](./concepts/ROOT.md): A node that initializes a context and orchestrates the full lifecycle of the application.
-- [Parent Node](./concepts/PARENTS.md): A node that works like a data source and can have attached children.
-- [Global Node](./concepts/PARENTS.md): A node that works like a data source but can not have attached children.
-- [Child Node](./concepts/PARENTS.md): A node that processes data through validation and transformation of the data from a data source.
+- [Parent Node](./concepts/PARENT_NODE.md): A node that works like a data source and can have attached children.
+- [Global Node](./concepts/GLOBAL_NODE.md): A node that works like a data source but can not have attached children.
+- [Child Node](./concepts/CHILD_NODE.md): A node that processes data through validation and transformation of the data from a data source.
 - [Context](./concepts/CONTEXT.md): The context used across an application for data sharing, orchestration and synchronization of nodes.
 - [Tree](./concepts/TREE.md): The structure used for storing the nodes of the current context.
 
