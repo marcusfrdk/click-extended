@@ -12,6 +12,29 @@ A child node is one of the core features of `click-extended` and adds the abilit
 
 ## Usage
 
+A child node must come after a parent node in the chain, such as `@argument`, `@option`, or `@env`.
+
+```python
+# Valid
+@argument("my_argument")
+@my_child()
+
+# Invalid
+@my_child()
+@argument("my_argument")
+```
+
+Child nodes are processed sequentially, so the `value` passed to the handler it the value returned from the previous node in the chain (which would be the `return` of the previous child or the `raw_value` of a parent node).
+
+```python
+@argument("my_argument") # output: "Hello World"
+@to_lower_case() # output: "hello world"
+@is_valid() # output: None (skipped transforming value)
+@add_prefix("!") # output: "hello world!"
+def my_function(my_argument: str):
+    print(my_argument) # prints: "hello world!"
+```
+
 ## Examples
 
 ### Basic Example
@@ -120,6 +143,8 @@ async def handle_<type>(
 
 This library supports mixed environments for running the methods, so even if your function is not asynchronous, the handler can still run asynchronously.
 
+Inside the handler, you have full freedom or validating it the way you want, in other words, you can return whatever you want (modify the chain) and raise whatever exception you want (caught and displayed with the exception of `SystemExit`, `KeyboardInterrupt`, and `GeneratorExit`). However, the context is immutable but does expose helper methods as well as an internal data store for nodes to share state, [read more about the context](./CONTEXT.md).
+
 #### Decorator
 
 There are two ways of using your new shiny child node, either by directly- or indirectly (recommended) using it.
@@ -173,6 +198,6 @@ class MyChild(ChildNode):
     ...
 
 @command()
-@MyChild.as_decorator()
+@MyChild.as_decorator("Bob") # "Bob" is now available as the first value in *args for all handlers
 ...
 ```
