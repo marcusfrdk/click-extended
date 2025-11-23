@@ -1,29 +1,44 @@
 """Utility functions for processing child nodes."""
 
+# pylint: disable=too-many-locals
 # pylint: disable=broad-exception-caught
 
 from typing import TYPE_CHECKING, Any, Mapping, cast
 
 import click
 
-from click_extended.core._child_node import ProcessContext
-from click_extended.errors import CatchableError, ParameterError
+from click_extended.core._tree import Tree
+from click_extended.core.context import Context
+from click_extended.errors import ContextAwareError
+from click_extended.utils.dispatch import (
+    dispatch_to_child,
+    dispatch_to_child_async,
+    has_async_handlers,
+)
 
 if TYPE_CHECKING:
-    from click_extended.core._child_node import ChildNode
-    from click_extended.core._parent_node import ParentNode
+    from click_extended.core._root_node import RootNode
+    from click_extended.core.child_node import ChildNode
+    from click_extended.core.parent_node import ParentNode
     from click_extended.core.tag import Tag
 
 
+# pylint: disable=too-many-locals
 def process_children(
     value: Any,
     children: Mapping[Any, Any],
     parent: "ParentNode | Tag",
     tags: dict[str, "Tag"] | None = None,
-    ctx: click.Context | None = None,
+    click_context: click.Context | None = None,
 ) -> Any:
     """
     Process a value through a chain of child nodes.
+    This is a `phase 4` function and does the following:
+
+    1. Updates scope tracking for each child
+    2. Dispatches value to appropriate handler
+    3. Wraps handler execution to catch exceptions
+    4. Converts user exceptions to ProcessError with context
 
     Args:
         value (Any):
@@ -32,87 +47,217 @@ def process_children(
             Mapping of child nodes to process the value through.
         parent (ParentNode | Tag):
             The parent node that owns these children.
-        tags (dict[str, Tag], optional):
+        tags (dict[str, Tag]):
             Dictionary mapping tag names to Tag instances.
-            Passed to each child's process method.
-        ctx (click.Context, optional):
-            The Click context for error reporting.
+        context (click.Context):
+            The Click context for scope tracking and error reporting.
 
     Returns:
-        Any:
-            The processed value after passing through all children.
+        The processed value after passing through all children.
 
     Raises:
-        TypeMismatchError:
-            If a child node doesn't support the parent's type.
-        ParameterError:
-            If validation or transformation fails in a child node.
+        UnhandledTypeError: If a child node doesn't implement a handler
+            for the value type.
+        ProcessError: If validation or transformation fails in a child node.
     """
-    all_children = [cast("ChildNode", child) for child in children.values()]
+    child_nodes = [cast("ChildNode", child) for child in children.values()]
 
     if tags is None:
         tags = {}
 
-    if parent.__class__.__name__ not in ("Tag",):
-        for child in all_children:
-            child.validate_type(cast("ParentNode", parent))
-
-    try:
-        for child in all_children:
-            siblings = list(
-                {
-                    c.__class__.__name__
-                    for c in all_children
-                    if id(c) != id(child)
-                }
+    for child in child_nodes:
+        if click_context is not None:
+            Tree.update_scope(
+                click_context,
+                "child",
+                parent_node=(
+                    cast("ParentNode", parent)
+                    if parent.__class__.__name__ != "Tag"
+                    else None
+                ),
+                child_node=child,
             )
 
-            context = ProcessContext(
-                parent=parent,
-                siblings=siblings,
-                tags=tags,
-                args=child.process_args,
-                kwargs=child.process_kwargs,
-            )
+            if "click_extended" in click_context.meta:
+                click_context.meta["click_extended"]["handler_value"] = value
 
-            if value is None and child.should_skip_none():
-                continue
+        root_node: "RootNode | None" = None
+        all_nodes: dict[str, Any] = {}
+        all_parents: dict[str, Any] = {}
+        all_tags: dict[str, Any] = {}
+        all_children: dict[str, Any] = {}
+        all_globals: dict[str, Any] = {}
+        meta: dict[str, Any] = {}
 
-            result = child.process(value, context)
+        if click_context is not None and "click_extended" in click_context.meta:
+            meta = click_context.meta["click_extended"]
+            root_node = meta.get("root_node")
 
-            if result is not None:
-                value = result
+            if "parents" in meta:
+                all_parents = meta["parents"]
+                all_nodes.update(all_parents)
 
-    except CatchableError as e:
-        param_hint = _get_param_hint(parent)
+            if "tags" in meta:
+                all_tags = meta["tags"]
+                all_nodes.update(all_tags)
 
-        raise ParameterError(
-            message=str(e),
-            param_hint=param_hint,
-            ctx=ctx,
-        ) from e
+            if "children" in meta:
+                all_children = meta["children"]
+                all_nodes.update(all_children)
+
+            if "globals" in meta:
+                all_globals = meta["globals"]
+                all_nodes.update(all_globals)
+
+            if root_node:
+                all_nodes[root_node.name] = root_node
+
+        context = Context(
+            root=cast("RootNode", root_node),
+            parent=parent,
+            child=child,
+            click_context=cast(click.Context, click_context),
+            nodes=all_nodes,
+            parents=all_parents,
+            tags=all_tags,
+            children=all_children,
+            globals=all_globals,
+            data=meta.get("data", {}),
+            debug=meta.get("debug", False),
+        )
+
+        if isinstance(child, type(ContextAwareError)):
+            raise child
+
+        value = dispatch_to_child(child, value, context)
 
     return value
 
 
-def _get_param_hint(parent: "ParentNode | Tag") -> str | None:
+async def process_children_async(
+    value: Any,
+    children: Mapping[Any, Any],
+    parent: "ParentNode | Tag",
+    tags: dict[str, "Tag"] | None = None,
+    click_context: click.Context | None = None,
+) -> Any:
     """
-    Extract parameter name for error messages.
+    Async version of process_children for async handler support.
+
+    Process a value through a chain of child nodes (async).
+    This is a `phase 4` function and does the following:
+
+    1. Updates scope tracking for each child
+    2. Dispatches value to appropriate handler (with async support)
+    3. Wraps handler execution to catch exceptions
+    4. Converts user exceptions to ProcessError with context
 
     Args:
-        parent: The parent node (Option, Argument, or Tag).
+        value (Any):
+            The initial value to process.
+        children (Mapping[Any, Any]):
+            Mapping of child nodes to process the value through.
+        parent (ParentNode | Tag):
+            The parent node that owns these children.
+        tags (dict[str, Tag]):
+            Dictionary mapping tag names to Tag instances.
+        context (click.Context):
+            The Click context for scope tracking and error reporting.
 
     Returns:
-        str | None: The parameter hint (e.g., '--config', 'PATH'), or None.
+        The processed value after passing through all children.
+
+    Raises:
+        UnhandledTypeError:
+            If a child node doesn't implement a handler for the value type.
+        ProcessError:
+            If validation or transformation fails in a child node.
     """
-    if hasattr(parent, "long") and getattr(parent, "long", None):
-        return str(getattr(parent, "long"))
+    child_nodes = [cast("ChildNode", child) for child in children.values()]
 
-    if hasattr(parent, "opts") and getattr(parent, "opts", None):
-        opts = getattr(parent, "opts")
-        return str(next((opt for opt in opts if opt.startswith("--")), opts[0]))
+    if tags is None:
+        tags = {}
 
-    if hasattr(parent, "name") and getattr(parent, "name", None):
-        return str(getattr(parent, "name")).upper()
+    for child in child_nodes:
+        if click_context is not None:
+            Tree.update_scope(
+                click_context,
+                "child",
+                parent_node=(
+                    cast("ParentNode", parent)
+                    if parent.__class__.__name__ != "Tag"
+                    else None
+                ),
+                child_node=child,
+            )
 
-    return None
+            if "click_extended" in click_context.meta:
+                click_context.meta["click_extended"]["handler_value"] = value
+
+        root_node: "RootNode | None" = None
+        all_nodes: dict[str, Any] = {}
+        all_parents: dict[str, Any] = {}
+        all_tags: dict[str, Any] = {}
+        all_children: dict[str, Any] = {}
+        all_globals: dict[str, Any] = {}
+        meta: dict[str, Any] = {}
+
+        if click_context is not None and "click_extended" in click_context.meta:
+            meta = click_context.meta["click_extended"]
+            root_node = meta.get("root_node")
+
+            if "parents" in meta:
+                all_parents = meta["parents"]
+                all_nodes.update(all_parents)
+
+            if "tags" in meta:
+                all_tags = meta["tags"]
+                all_nodes.update(all_tags)
+
+            if "children" in meta:
+                all_children = meta["children"]
+                all_nodes.update(all_children)
+
+            if "globals" in meta:
+                all_globals = meta["globals"]
+                all_nodes.update(all_globals)
+
+            if root_node:
+                all_nodes[root_node.name] = root_node
+
+        context = Context(
+            root=cast("RootNode", root_node),
+            parent=parent,
+            child=child,
+            click_context=cast(click.Context, click_context),
+            nodes=all_nodes,
+            parents=all_parents,
+            tags=all_tags,
+            children=all_children,
+            globals=all_globals,
+            data=meta.get("data", {}),
+            debug=meta.get("debug", False),
+        )
+
+        if isinstance(child, type(ContextAwareError)):
+            raise child
+
+        value = await dispatch_to_child_async(child, value, context)
+
+    return value
+
+
+def check_has_async_handlers(children: Mapping[Any, Any]) -> bool:
+    """
+    Check if any child in the collection has async handlers.
+
+    Args:
+        children (Mapping[Any, Any]):
+            Mapping of child nodes to check.
+
+    Returns:
+        bool:
+            `True` if any child has async handlers, `False` otherwise.
+    """
+    child_nodes = [cast("ChildNode", child) for child in children.values()]
+    return any(has_async_handlers(child) for child in child_nodes)

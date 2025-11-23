@@ -1,334 +1,450 @@
-"""Exceptions used in the `click_extended` library."""
+"""Error module for the `click_extended` library."""
 
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-positional-arguments
-
-import inspect
-from typing import IO, Any
+import sys
+from typing import Any
 
 import click
-from click import ClickException
-from click._compat import get_text_stderr
 from click.utils import echo
 
-from click_extended.utils.format import format_list
+from click_extended.utils.humanize import humanize_iterable
 
 
 class ClickExtendedError(Exception):
-    """Base exception for exceptions defined in the `click_extended` library."""
+    """Base exception for all click-extended errors."""
 
-
-# Catchable errors
-class CatchableError(ClickExtendedError):
-    """Base exception for exceptions raised inside a child node.
-
-    These exceptions are caught by the framework and reformatted with
-    parameter context before being displayed to the user.
-    """
-
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str, tip: str | None = None) -> None:
         """
-        Initialize a CatchableError.
-
-        Args:
-            message: The error message describing what went wrong.
-        """
-        super().__init__(message)
-
-
-class ChildNodeProcessError(CatchableError):
-    """
-    Base class for exceptions which must be raised inside
-    the `process()` method of a `ChildNode`.
-    """
-
-    def __init__(self, message: str, **kwargs: str) -> None:
-        """
-        Initialize a new `ChildNodeProcessError` instance.
+        Initialize a ClickExtendedError.
 
         Args:
             message (str):
-                The error message. If child_name is found, it will be
-                prefixed automatically. Subclasses can access child_name
-                via self.child_name to format custom messages.
-
-        Raises:
-            RuntimeError:
-                If raised outside a ChildNode context.
+                The error message describing what went wrong.
+            tip (str):
+                Optional helpful guidance for resolving the error.
         """
-        self.child_name: str | None = None
-        frame = inspect.currentframe()
-
-        if frame:
-            current_frame = frame.f_back
-            depth = 0
-            max_depth = 10
-
-            while current_frame and depth < max_depth:
-                caller_locals = current_frame.f_locals
-                if "self" in caller_locals:
-                    self_obj = caller_locals["self"]
-                    if hasattr(self_obj, "name") and hasattr(
-                        self_obj, "process"
-                    ):
-                        self.child_name = self_obj.name
-                        break
-                current_frame = current_frame.f_back
-                depth += 1
-
-        if not self.child_name:
-            raise RuntimeError(
-                f"{self.__class__.__name__} must be raised from within a "
-                f"ChildNode.process() method. The exception was raised outside "
-                f"a valid ChildNode context."
-            )
-
-        formatted_message = message.format(name=self.child_name, **kwargs)
-        super().__init__(formatted_message)
-
-
-class UnhandledValueError(ChildNodeProcessError):
-    """Exception raised when a value in the `process()` method is unexpected."""
-
-    def __init__(self, value: Any) -> None:
-        """
-        Initialize a new `UnhandledValueError` instance.
-
-        Args:
-            value (Any):
-                The unexpected value.
-        """
-        message = "Received unexpected value for '{name}' of type '{type}'"
-        super().__init__(message, type=type(value).__name__)
-
-
-class ValidationError(CatchableError):
-    """Exception raised when validation fails in a child node."""
-
-
-class TransformError(CatchableError):
-    """Exception raised when transformation fails in a child node."""
-
-
-class UnknownError(ChildNodeProcessError):
-    """
-    Exception raised when an unexpected error occurs or parts of code
-    which is unhandled.
-    """
-
-
-class ParameterError(ClickException):
-    """Exception raised when parameter validation or transformation fails.
-
-    This exception is raised by the framework after catching a CatchableError
-    and adding parameter context information.
-    """
-
-    exit_code = 2
-
-    def __init__(
-        self,
-        message: str,
-        param_hint: str | None = None,
-        ctx: click.Context | None = None,
-    ) -> None:
-        """
-        Initialize a ParameterError.
-
-        Args:
-            message (str):
-                The error message from the validator/transformer.
-            param_hint (str, optional):
-                The parameter name (e.g., '--config', 'PATH').
-            ctx (click.Context, optional):
-                The Click context for displaying usage information.
-        """
+        self.message = message
+        self.tip = tip
         super().__init__(message)
-        self.param_hint = param_hint
-        self.ctx = ctx
 
-    def format_message(self) -> str:
-        """Format the error message with parameter context."""
-        if self.param_hint:
-            return f"({self.param_hint}): {self.message}"
-        return self.message
+    def show(self, file: Any = None) -> None:
+        """
+        Display the error message.
 
-    def show(self, file: IO[Any] | None = None) -> None:
-        """Display the error with usage information (like Click does)."""
+        Subclasses should override this to provide custom formatting.
+
+        Args:
+            file (Any, optional):
+                The file to write to (defaults to sys.stderr).
+        """
         if file is None:
-            file = get_text_stderr()
+            file = sys.stderr
 
-        color = None
+        echo(f"Error: {self.message}", file=file)
 
-        if self.ctx is not None:
-            color = self.ctx.color
-
-            echo(self.ctx.get_usage(), file=file, color=color)
-
-            if self.ctx.command.get_help_option(self.ctx) is not None:
-                hint = (
-                    f"Try '{self.ctx.command_path} "
-                    f"{self.ctx.help_option_names[0]}' for help."
-                )
-                echo(hint, file=file, color=color)
-
-            echo("", file=file)
-
-        echo(f"Error {self.format_message()}", file=file, color=color)
+        if self.tip:
+            echo(f"\nTip: {self.tip}", file=file)
 
 
-# Node errors
-class NoParentError(ClickExtendedError):
-    """Exception raised when no `ParentNode` has been defined."""
+class ContextAwareError(ClickExtendedError):
+    """
+    Base exception for errors that occur within Click context.
 
-    def __init__(self, name: str) -> None:
+    These errors have access to the full node hierarchy and are formatted
+    with Click-style usage information and node context.
+
+    It can only be raised during `phase 3` or `phase 4`.
+    """
+
+    context: click.Context | None
+
+    def __init__(self, message: str, tip: str | None = None) -> None:
+        """
+        Initialize a new `ContextAwareError` instance.
+
+        Args:
+            message (str):
+                The error message describing what went wrong.
+            tip (str):
+                Optional helpful guidance for resolving the error.
+        """
+        super().__init__(message, tip)
+        try:
+            self.context = click.get_current_context()
+            self._node_name = self._resolve_node_name()
+        except RuntimeError:
+            self.context = None
+            self._node_name = "unknown"
+
+    def _resolve_node_name(self) -> str:
+        """
+        Get the most specific node name from context.
+
+        If inside a child node, that will be used, otherwise it checks if a
+        parent is defined, and if not that, the root node will be used.
+
+        Returns:
+            str:
+                The name of the most specific node in the current scope.
+        """
+        if self.context is None:
+            return "unknown"
+
+        meta = self.context.meta.get("click_extended", {})
+
+        if meta.get("child_node"):
+            return str(meta["child_node"].name)
+        if meta.get("parent_node"):
+            return str(meta["parent_node"].name)
+        if meta.get("root_node"):
+            return str(meta["root_node"].name)
+
+        return "unknown"
+
+    def show(self, file: Any = None) -> None:
+        """
+        Display the error with Click-style formatting.
+
+        Format:
+            Usage: cli [OPTIONS] COMMAND [ARGS]...
+            Try 'cli --help' for help.
+
+            Error (node_name): message
+            Tip: helpful guidance
+
+        Args:
+            file (Any, optional):
+                The file to write to (defaults to `sys.stderr`).
+        """
+        if file is None:
+            file = sys.stderr
+
+        if self.context is None:
+            super().show(file)
+            return
+
+        echo(self.context.get_usage(), file=file, color=self.context.color)
+
+        if self.context.command.get_help_option(self.context) is not None:
+            hint = f"Try '{self.context.command_path} --help' for help."
+            echo(hint, file=file, color=self.context.color)
+
+        echo("", file=file)
+
+        exception_name = self.__class__.__name__
+        echo(
+            f"{exception_name} ({self._node_name}): {self.message}",
+            file=file,
+            color=self.context.color,
+        )
+
+        if self.tip:
+            echo(f"Tip: {self.tip}", file=file, color=self.context.color)
+
+
+class MissingValueError(ContextAwareError):
+    """
+    Exception raised when a value is missing.
+
+    This exception is context-aware and can only be raised during `phase 3` or
+    `phase 4`.
+    """
+
+    def __init__(self) -> None:
+        """Initialize a new `MissingValueError` instance."""
+        super().__init__(
+            message="Value not provided.", tip=self._generate_tip()
+        )
+
+    def _generate_tip(self) -> str:
+        """Generate a context-aware tip based on the parent node type."""
+        try:
+            ctx = click.get_current_context()
+            meta = ctx.meta.get("click_extended", {})
+
+            parent = meta.get("parent_node")
+
+            if parent is not None:
+                return self._tip_for_parent(parent)
+        except (RuntimeError, AttributeError):
+            pass
+
+        return (
+            "Provide a value or set the default parameter to make it optional."
+        )
+
+    # pylint: disable=too-many-return-statements
+    def _tip_for_parent(self, parent: Any) -> str:
+        """Generate tip based on parent type."""
+        parent_type = parent.__class__.__name__
+        parent_name = parent.name
+
+        if parent_type == "Option":
+            return "".join(
+                f"Use --{parent_name.replace('_', '-')} to specify a value, "
+                "or set the default parameter to make it optional."
+            )
+        if parent_type == "Argument":
+            return "".join(
+                f"Provide the {parent_name} argument, or set the default "
+                "parameter to make it optional."
+            )
+        if parent_type == "Env":
+            env_var = getattr(parent, "env_name", parent_name.upper())
+            return "".join(
+                f"Set the {env_var} environment variable, or set the "
+                f"default parameter to make it optional."
+            )
+        return "".join(
+            "Provide a value or set the default parameter to "
+            "make it optional."
+        )
+
+
+class NoRootError(ContextAwareError):
+    """Exception raised when no root node has been defined."""
+
+    def __init__(self, tip: str | None = None) -> None:
+        """
+        Initialize a new `NoRootError` instance.
+
+        Args:
+            tip (str):
+                Optional helpful guidance (defaults to standard tip).
+        """
+        super().__init__(
+            "No root node has been defined",
+            tip=tip or "Use @click_extended.root() decorator first",
+        )
+
+
+class NoParentError(ContextAwareError):
+    """Exception raised when a child node has no parent to attach to."""
+
+    def __init__(self, child_name: str, tip: str | None = None) -> None:
         """
         Initialize a new `NoParentError` instance.
 
         Args:
-            name (str):
-                The name of the child node.
-        """
-
-        message = (
-            f"Failed to register the child node '{name}' as no parent is "
-            "defined. Ensure a parent node is registered before registering a "
-            "child node."
-        )
-        super().__init__(message)
-
-
-class NoRootError(ClickExtendedError):
-    """Exception raised when there is no `RootNode` defined."""
-
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new `NoRootError` instance."""
-        super().__init__(message or "No root node is defined in the tree.")
-
-
-class ParentNodeExistsError(ClickExtendedError):
-    """Exception raised when a parent node already exists with the same name."""
-
-    def __init__(self, name: str) -> None:
-        """
-        Initialize a new `ParentNodeExistsError` instance.
-
-        Args:
-            name (str):
-                The name of the parent node.
-        """
-        message = (
-            f"Cannot register parent node '{name}' as a parent node with this "
-            "name already exists. "
-            f"Parent node names must be unique within the tree."
-        )
-        super().__init__(message)
-
-
-class RootNodeExistsError(ClickExtendedError):
-    """Exception raised when a root node already exists for the tree."""
-
-    def __init__(self) -> None:
-        """Initialize a new `RootNodeExistsError` instance."""
-        message = (
-            "Cannot register root node as a root node has already been "
-            "defined. Only one root node is allowed per tree instance."
-        )
-        super().__init__(message)
-
-
-class InvalidChildOnTagError(ClickExtendedError):
-    """Exception raised when a transformation child is attached to a tag."""
-
-    def __init__(self, child_name: str, tag_name: str) -> None:
-        """
-        Initialize a new `InvalidChildOnTagError` instance.
-
-        Args:
             child_name (str):
                 The name of the child node.
-            tag_name (str):
-                The name of the tag.
+            tip (str):
+                Optional helpful guidance (defaults to standard tip).
         """
-        message = (
-            f"Cannot attach transformation child '{child_name}' to tag "
-            f"'{tag_name}'. Tags can only have validation-only children "
-            "(no return statement or return None)."
+        tip_msg = (
+            tip
+            or "Ensure a parent node (option/argument) is defined "
+            "before child nodes"
         )
-        super().__init__(message)
+        super().__init__(
+            f"Cannot register child node '{child_name}' "
+            f"as no parent is defined",
+            tip=tip_msg,
+        )
 
 
-class DuplicateNameError(ClickExtendedError):
-    """Exception raised when a name collision is detected."""
+class RootExistsError(ContextAwareError):
+    """Exception raised when attempting to define multiple root nodes."""
 
-    def __init__(
-        self, name: str, type1: str, type2: str, location1: str, location2: str
-    ) -> None:
+    def __init__(self, tip: str | None = None) -> None:
         """
-        Initialize a new `DuplicateNameError` instance.
+        Initialize a new `RootExistsError` instance.
+
+        Args:
+            tip (str, optional):
+                Optional helpful guidance (defaults to standard tip).
+        """
+        super().__init__(
+            "A root node has already been defined",
+            tip=tip or "Only one @root() decorator is allowed per command",
+        )
+
+
+class ParentExistsError(ContextAwareError):
+    """Exception raised when attempting to register duplicate parent names."""
+
+    def __init__(self, name: str, tip: str | None = None) -> None:
+        """
+        Initialize a new `ParentExistsError` instance.
 
         Args:
             name (str):
-                The conflicting name.
-            type1 (str):
-                The type of the first node (e.g., "option", "tag").
-            type2 (str):
-                The type of the second node.
-            location1 (str):
-                Description of where the first node is defined.
-            location2 (str):
-                Description of where the second node is defined.
+                The name of the duplicate parent node.
+            tip (str | None, optional):
+                Optional helpful guidance (defaults to standard tip).
         """
-        message = (
-            f"The name '{name}' is used by both "
-            f"{type1} {location1} and {type2} {location2}. "
-            f"All names (options, arguments, environment variables, and tags) "
-            f"must be unique within a command."
+        super().__init__(
+            f"Parent node '{name}' already exists",
+            tip=tip or "Parent node names must be unique within a command",
         )
-        super().__init__(message)
 
 
-class TypeMismatchError(ClickExtendedError):
-    """Exception raised when a child node doesn't support the parent's type."""
+class TypeMismatchError(ContextAwareError):
+    """
+    Exception raised when a child's process() signature is incompatible
+    with the parent's type.
+    """
 
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
-        name: str,
+        child_name: str,
         parent_name: str,
-        parent_type: type | None,
-        supported_types: list[type],
+        parent_type: str,
+        supported_types: list[str],
+        tip: str | None = None,
     ) -> None:
         """
         Initialize a new `TypeMismatchError` instance.
 
         Args:
-            name (str):
-                The name of the decorator.
+            child_name (str):
+                The name of the child node.
             parent_name (str):
                 The name of the parent node.
-            parent_type (type | None):
-                The actual type of the parent.
-            supported_types (list[type]):
-                List of types supported by the child node.
+            parent_type (str):
+                The type of the parent (as string).
+            supported_types (list[str]):
+                List of supported type names.
+            tip (str | None, optional):
+                Optional helpful guidance (defaults to supported types).
         """
-
-        def get_type_name(type_obj: type) -> str:
-            """Get type name, handling both regular types and UnionType."""
-            return getattr(type_obj, "__name__", str(type_obj))
-
-        parent_type_name = get_type_name(parent_type) if parent_type else "None"
-
-        type_names = [get_type_name(t) for t in supported_types]
-        formatted_types = format_list(
-            type_names,
-            prefix_singular="Supported type is ",
-            prefix_plural="Supported types are ",
-            wrap=("<", ">"),
-        )
-
         message = (
-            f"Decorator '{name}' does not support "
-            f"parent '{parent_name}' with type '{parent_type_name}'. "
-            f"{formatted_types}"
+            f"Child '{child_name}' does not support parent '{parent_name}' "
+            f"with type '{parent_type}'"
         )
-        super().__init__(message)
+
+        if tip is None:
+            types_str = ", ".join(f"<{t}>" for t in supported_types)
+            tip = f"Supported types: {types_str}"
+
+        super().__init__(message, tip=tip)
+
+
+class NameExistsError(ContextAwareError):
+    """Exception raised when a name collision is detected."""
+
+    def __init__(self, name: str, tip: str | None = None) -> None:
+        """
+        Initialize a new `NameExistsError` instance.
+
+        Args:
+            name (str):
+                The conflicting name.
+            tip (str | None, optional):
+                Optional helpful guidance (defaults to standard tip).
+        """
+        super().__init__(
+            f"The name '{name}' is already used",
+            tip=tip or "All names must be unique within a command",
+        )
+
+
+class UnhandledTypeError(ContextAwareError):
+    """
+    Exception raised when a child node doesn't implement a handler
+    for the value type.
+    """
+
+    def __init__(
+        self,
+        child_name: str,
+        value_type: str,
+        implemented_handlers: list[str],
+        tip: str | None = None,
+    ) -> None:
+        """
+        Initialize a new `UnhandledTypeError` instance.
+
+        Args:
+            child_name (str):
+                The name of the child node.
+            value_type (str):
+                The type of value that couldn't be handled.
+            implemented_handlers (list[str]):
+                List of handler names that are implemented.
+            tip (str, optional):
+                Optional helpful guidance (defaults to list of handlers).
+        """
+        message = "Child '{}' does not handle values of type '{}'."
+        message = message.format(child_name, value_type)
+
+        if tip is None:
+            if implemented_handlers:
+                tip = (
+                    f"Missing handler for '{value_type}', only "
+                    + humanize_iterable(
+                        implemented_handlers,
+                        wrap="'",
+                        suffix_singular=" is supported.",
+                        suffix_plural=" are supported.",
+                    )
+                )
+            else:
+                tip = "".join(
+                    "No handlers are implemented. Override handle_all() "
+                    "or a specific handler method."
+                )
+
+        super().__init__(message, tip=tip)
+
+
+class ProcessError(ContextAwareError):
+    """
+    Exception raised when user code in `child.process()` raises an exception.
+
+    This error wraps standard Python exceptions (ValueError, TypeError, etc.)
+    raised by user code and adds node context for better error messages.
+    """
+
+    def __init__(self, message: str, tip: str | None = None) -> None:
+        """
+        Initialize a new `ProcessError` instance.
+
+        Args:
+            message (str):
+                The error message from the wrapped exception.
+            tip (str | None, optional):
+                Optional helpful guidance for resolving the error.
+        """
+        super().__init__(message, tip=tip)
+
+
+class InvalidHandlerError(ContextAwareError):
+    """Exception raised when a handler returns an invalid value."""
+
+    def __init__(self, message: str, tip: str | None = None) -> None:
+        """
+        Initialize an new `InvalidHandlerError` instance.
+
+        Args:
+            message (str):
+                Description of the invalid handler behavior.
+            tip (str | None, optional):
+                Optional helpful guidance for correcting the handler.
+        """
+        super().__init__(message, tip=tip)
+
+
+class InternalError(ContextAwareError):
+    """
+    Exception raised for unexpected errors in framework code.
+
+    This indicates a bug in `click-extended` or an unreachable code path.
+    """
+
+    def __init__(self, message: str, tip: str | None = None) -> None:
+        """
+        Initialize a new `InternalError` instance.
+
+        Args:
+            message (str):
+                Description of the internal error.
+            tip (str | None, optional):
+                Optional helpful guidance (defaults to bug report message).
+        """
+        super().__init__(
+            message,
+            tip=tip
+            or "This is likely a bug in click-extended. Please report it.",
+        )

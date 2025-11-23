@@ -1,6 +1,6 @@
 [project]
 name = "click_extended"
-version = "0.3.2"
+version = "0.4.0"
 description = "An extension to Click with additional features like automatic async support, aliasing and a modular decorator system."
 authors = [
     { name = "Marcus Fredriksson", email = "marcus@marcusfredriksson.com" },
@@ -81,7 +81,11 @@ ignore-paths = ["^tests/.*$", "^docs/.*$", "^\\..*$"]
 persistent = true
 
 [tool.pylint.messages_control]
-disable = ["duplicate-code", "unidiomatic-typecheck"]
+disable = [
+    "duplicate-code",
+    "unidiomatic-typecheck",
+    "import-outside-toplevel",
+]
 
 [tool.pylint.format]
 max-line-length = 80

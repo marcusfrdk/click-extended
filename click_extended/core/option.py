@@ -4,27 +4,32 @@
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
 
-import re
 from builtins import type as builtins_type
 from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
-from click_extended.core._parent_node import ParentNode
-from click_extended.utils.transform import Transform
+from click_extended.core.parent_node import ParentNode
+from click_extended.utils.casing import Casing
+from click_extended.utils.naming import (
+    is_long_flag,
+    is_short_flag,
+    validate_name,
+)
 
 P = ParamSpec("P")
 T = TypeVar("T")
-
-LONG_FLAG_PATTERN = re.compile(r"^--[a-z][a-z0-9-]*$")
-SHORT_FLAG_PATTERN = re.compile(r"^-[a-zA-Z]$")
 
 
 class Option(ParentNode):
     """`ParentNode` that represents a Click option."""
 
+    # pylint: disable=too-many-locals
     def __init__(
         self,
-        long: str,
+        name: str,
+        *,
         short: str | None = None,
+        long: str | None = None,
+        param: str | None = None,
         is_flag: bool = False,
         type: Any = None,
         nargs: int = 1,
@@ -39,12 +44,22 @@ class Option(ParentNode):
         Initialize a new `Option` instance.
 
         Args:
-            long (str):
-                The long flag for the option (e.g., "--port").
-                The parameter name is extracted from this by removing
-                the -- prefix and replacing hyphens with underscores.
+            name (str):
+                The option name in snake_case, SCREAMING_SNAKE_CASE,
+                or kebab-case. Examples: "config_file", "CONFIG_FILE",
+                "config-file"
+
+                Can also be a long flag directly
+                (e.g., "--config-file"). If a long flag is provided,
+                the parameter name is derived from it.
             short (str, optional):
                 The short flag for the option (e.g., "-p").
+            long (str, optional):
+                Explicit long flag override (e.g., "--cfg").
+                If not provided, auto-generated from name as "--kebab-case".
+            param (str, optional):
+                Custom parameter name for the function.
+                If not provided, derived from name as `snake_case`.
             is_flag (bool):
                 Whether this is a boolean flag (no value needed).
                 Defaults to `False`.
@@ -66,19 +81,37 @@ class Option(ParentNode):
             **kwargs (Any):
                 Additional Click option parameters.
         """
-        if not re.match(LONG_FLAG_PATTERN, long):
-            raise ValueError(
-                f"Invalid long flag '{long}'. "
-                "Must be format: --word "
-                "(lowercase, hyphens allowed, e.g., --port, "
-                "--config-file)"
+        # When @option("--my-option")
+        if is_long_flag(name):
+            derived_name = name[2:]  # Remove "--" prefix
+            long_flag = name if long is None else long
+
+        # When @option("my_option") or @option("my-option")
+        else:
+            validate_name(name, "option name")
+            derived_name = name
+            long_flag = (
+                long if long is not None else f"--{Casing.to_kebab_case(name)}"
             )
 
-        if short is not None and not re.match(SHORT_FLAG_PATTERN, short):
+        if not is_long_flag(long_flag):
+            raise ValueError(
+                f"Invalid long flag '{long_flag}'. "
+                "Must be format: --word "
+                "(lowercase, hyphens allowed, e.g., --port, --config-file)"
+            )
+
+        if short is not None and not is_short_flag(short):
             raise ValueError(
                 f"Invalid short flag '{short}'. Must be format: -X "
                 f"(e.g., -p, -v, -h)"
             )
+
+        param_name = (
+            param if param is not None else Casing.to_snake_case(derived_name)
+        )
+
+        validate_name(param_name, "parameter name")
 
         if is_flag and type is not None and type != bool:
             raise ValueError(
@@ -96,11 +129,15 @@ class Option(ParentNode):
             else:
                 type = str
 
-        name = Transform(long).to_snake_case()
         super().__init__(
-            name=name, help=help, required=required, default=default, tags=tags
+            name=param_name,
+            help=help,
+            required=required,
+            default=default,
+            tags=tags,
         )
-        self.long = long
+
+        self.long = long_flag
         self.short = short
         self.is_flag = is_flag
         self.type = type
@@ -110,8 +147,10 @@ class Option(ParentNode):
 
 
 def option(
-    long: str,
+    name: str,
     short: str | None = None,
+    long: str | None = None,
+    param: str | None = None,
     is_flag: bool = False,
     type: Any = None,
     nargs: int = 1,
@@ -125,13 +164,18 @@ def option(
     """
     Decorator to create a Click option with value injection.
 
-    The parameter name is automatically extracted from the long flag.
-
     Args:
-        long (str):
-            The long flag for the option (e.g., "--port", "--config-file").
+        name (str):
+            The option name in snake_case, SCREAMING_SNAKE_CASE, or kebab-case.
+            Can also be a long flag (e.g., "--config-file").
         short (str, optional):
             The short flag for the option (e.g., "-p", "-c").
+        long (str, optional):
+            Explicit long flag override (e.g., "--cfg").
+            If not provided, auto-generated from name as "--kebab-case".
+        param (str, optional):
+            Custom parameter name for the function.
+            If not provided, derived from name as snake_case.
         is_flag (bool):
             Whether this is a boolean flag (no value needed).
             Defaults to `False`.
@@ -160,27 +204,33 @@ def option(
     Examples:
 
         ```python
-        @option("--port", short="-p", type=int, default=8080)
-        def my_func(port):
+        # Simple: name derives everything
+        @option("port", short="-p", type=int, default=8080)
+        def my_func(port):  # param: port, CLI: --port
             print(f"Port: {port}")
-        ```
 
-        ```python
+        # Using long flag directly
         @option("--verbose", short="-v", is_flag=True)
-        def my_func(verbose):
+        def my_func(verbose):  # param: verbose, CLI: --verbose
             if verbose:
                 print("Verbose mode enabled")
-        ```
 
-        ```python
-        @option("--config-file", help="Path to configuration file")
-        def my_func(config_file):
+        # Custom long flag
+        @option("config_file", long="--cfg", help="Config file")
+        def my_func(config_file):  # param: config_file, CLI: --cfg
             print(f"Config: {config_file}")
+
+        # Custom parameter name
+        @option("configuration_file", param="cfg")
+        def my_func(cfg):  # param: cfg, CLI: --configuration-file
+            print(f"Config: {cfg}")
         ```
     """
     return Option.as_decorator(
-        long=long,
+        name=name,
         short=short,
+        long=long,
+        param=param,
         is_flag=is_flag,
         type=type,
         nargs=nargs,

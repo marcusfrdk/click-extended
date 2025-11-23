@@ -2,6 +2,56 @@
 
 # Changelog
 
+## v0.4.0
+
+### Added
+
+- **Handler-based processing system**: Introduced new type-specific handler methods for `ChildNode` (`handle_primitive`, `handle_flat_tuple`, `handle_nested_tuple`, `handle_tuple`, `handle_list`, `handle_dict`, `handle_datetime`, `handle_uuid`, `handle_path`, `handle_bytes`, `handle_decimal`, `handle_tag`, `handle_none`, `handle_all`) replacing the single `process()` method for cleaner and more maintainable code.
+- **Dispatcher system**: Added `utils/dispatch.py` with intelligent handler routing based on value types, automatic type validation against handler type hints, and detailed error messages with suggestions for common type mismatches.
+- **Unified Context system**: Added `core/context.py` providing a unified `Context` object with access to Click context, root node, parent node, sibling nodes, tag values, and many useful helper methods which replaces the previous fragmented `ProcessContext` approach.
+- **Phase-based initialization**: Implemented a four-phase execution model (registration, initialization, validation, and value processing) for more predictable decorator ordering and execution flow.
+- **First-party tag support**: Tags are now fully integrated with dedicated `handle_tag()` handler, validation-only processing (no transformations), and access to all parent node values through the context.
+- **Enhanced error system**: Added context-aware exceptions with automatic node name detection, Click-style formatting with usage information, and helpful tips for resolution.
+- **Debug system**: Added a new debugging system which improves output of exceptions in debug mode.
+- **New exception types**: Added `ClickExtendedError` (base), `ContextAwareError` (base for runtime errors), `MissingValueError`, `NoRootError`, `NoParentError`, `RootExistsError`, `ParentExistsError`, `NameExistsError`, `UnhandledTypeError`, `ProcessError`, `InvalidHandlerError`, and `InternalError`.
+- **Naming utilities**: Added `utils/naming.py` with validation for `snake_case`, `SCREAMING_SNAKE_CASE`, and `kebab-case` naming conventions, plus intelligent parsing of option decorator arguments (`@option("name")`, `@option("--flag")`, `@option("-f", "--flag")`).
+- **Humanize utilities**: Added `utils/humanize.py` for natural language formatting of lists and collections in error messages.
+- **Separated Click integration**: Split Click command and group implementations into dedicated files (`core/_click_command.py` and `core/_click_group.py`) for better separation of concerns.
+- **Classes module**: Added `click_extended/classes.py` exporting all core classes (`Node`, `ChildNode`, `ParentNode`, `GlobalNode`, `Argument`, `Option`, `Env`, `Command`, `Group`, `Tag`, `Context`) for easier imports.
+- **Global nodes restructure**: Moved debug functionality to `globals/debug.py` and tree visualization to `globals/visualize.py` with improved organization.
+
+### Updated
+
+- **Logo**: Updated the logo of `click-extended`.
+- **Banners**: Updated banners of project to use new logo.
+- **Async handler support**: All 14 child handler methods (`handle_none`, `handle_primitive`, `handle_list`, `handle_tuple`, `handle_flat_tuple`, `handle_nested_tuple`, `handle_dict`, `handle_bytes`, `handle_decimal`, `handle_datetime`, `handle_uuid`, `handle_path`, `handle_tag`, `handle_all`) now support both synchronous and asynchronous implementations with automatic runtime detection via `asyncio.iscoroutinefunction()`.
+- **Hybrid async execution**: Implemented intelligent async/sync routing and automatic `asyncio.run()` wrapping when async handlers are detected, supporting mixed sync/async handlers within the same application.
+- **Declarative API**: Updated the way the command line is built by directly calling the tree (`@my_group.my_command()`) instead of adding to it (`my_group.add(my_command)`).
+- **Project architecture**: Complete refactoring of the codebase with improved organization, cleaner separation between internal core modules and public-facing APIs, and removal of unnecessary complexity.
+- **Module structure**: Reorganized modules from single-file approach to proper submodules (`debug/`, `globals/`, etc.).
+- **Core module visibility**: Made core classes public by removing underscore prefixes (`_child_node.py` -> `child_node.py`, `_parent_node.py` -> `parent_node.py`, `_global_node.py` -> `global_node.py`, `_node.py` -> `node.py`), while keeping implementation details private (`_tree.py`, `_root_node.py`, `_click_command.py`, `_click_group.py`).
+- **Error handling**: Completely redesigned error system with automatic context detection, node hierarchy awareness, and improved error messages with actionable tips.
+- **Casing utilities**: Renamed `utils/transform.py` to `utils/casing.py` to better reflect its purpose as a casing conversion utility.
+- **Type system**: Enhanced type validation with automatic extraction of inner types from complex type hints, union type support, and validation of nested structures against handler type hints.
+- **Import paths**: Simplified imports by making core classes available through `click_extended.classes` module and consolidating global nodes under `click_extended.globals`.
+- **Tree management**: Refactored queue functions into `Tree` class as static methods for better encapsulation.
+- **Context management**: Replaced multiple context objects with single unified `Context` class accessible throughout all processing phases.
+- **pylint configuration**: Disabled `import-outside-toplevel` rule to support lazy imports for circular dependency resolution.
+
+### Removed
+
+- **Children**: Removed the `process()` method and `ProcessContext` in favor of handlers and the unified `Context`.
+- **Value hierarchy**: Removed `utils/is_single_value.py`, `utils/is_tuple_value.py`, and `utils/is_nested_tuple_value.py` as type checking is now handled internally by the dispatcher and specific handler methods.
+- **Tests**: Due to the nature of this update, all tests were outdated and therefore removed.
+- **Old exception types**: Removed `CatchableError`, `ValidationError`, `TransformError`, `ParameterError`, `ChildNodeProcessError`, and `UnhandledValueError` in favor of new exception hierarchy.
+- **Aliasing module**: Removed `core/_aliased.py` as aliasing functionality was integrated into Click command/group implementations.
+- **Visualization utilities**: Removed `utils/visualize.py` with functionality moved to `Tree.visualize()` method.
+- **ProcessContext**: Removed in favor of unified `Context` class with cleaner API and better integration with Click context.
+
+### Fixed
+
+- **Tags**: Tags are now properly implemented and use the new context.
+
 ## v0.3.2
 
 ### Added

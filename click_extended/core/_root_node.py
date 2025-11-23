@@ -1,130 +1,53 @@
 """The node used as a root node."""
 
-# pylint: disable=invalid-name
+# pylint: disable=too-many-locals
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
-# pylint: disable=too-many-locals
-# pylint: disable=protected-access
+# pylint: disable=broad-exception-caught
 
 import asyncio
+import sys
+import traceback
 from functools import wraps
-from typing import Any, Callable, Generic, Mapping, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, cast, get_type_hints
 
 import click
+from click.utils import echo
 
-from click_extended.core._node import Node
-from click_extended.core._parent_node import ParentNode
 from click_extended.core._tree import Tree
 from click_extended.core.argument import Argument
+from click_extended.core.child_node import ChildNode
+from click_extended.core.context import Context
 from click_extended.core.env import Env
+from click_extended.core.global_node import GlobalNode
+from click_extended.core.node import Node
 from click_extended.core.option import Option
+from click_extended.core.parent_node import ParentNode
 from click_extended.core.tag import Tag
 from click_extended.errors import (
-    DuplicateNameError,
+    ContextAwareError,
+    NameExistsError,
     NoRootError,
-    ParameterError,
+    ProcessError,
 )
-from click_extended.utils.process import process_children
-from click_extended.utils.visualize import visualize_tree
+from click_extended.utils.humanize import humanize_type
+from click_extended.utils.process import (
+    check_has_async_handlers,
+    process_children,
+    process_children_async,
+)
 
-P = ParamSpec("P")
-T = TypeVar("T")
-
-WrapperType = TypeVar("WrapperType")
-ClickType = TypeVar("ClickType", bound=click.Command)
-
-
-class ExtendedCommand(click.Command):
-    """
-    Custom Click Command that reformats Click errors with the error system.
-    """
-
-    def invoke(self, ctx: click.Context) -> Any:
-        """Override invoke to catch and reformat Click parameter errors."""
-        try:
-            return super().invoke(ctx)
-        except click.BadParameter as e:
-            param_hint = None
-            if e.param:
-                param_hint = (
-                    e.param.human_readable_name
-                    if hasattr(e.param, "human_readable_name")
-                    else e.param.name
-                )
-                if hasattr(e.param, "opts") and e.param.opts:
-                    param_hint = e.param.opts[0]
-
-            raise ParameterError(
-                message=e.message if hasattr(e, "message") else str(e),
-                param_hint=param_hint,
-                ctx=ctx,
-            ) from e
-
-
-class ExtendedGroup(click.Group):
-    """Custom Click Group that reformats Click errors with our error system."""
-
-    def invoke(self, ctx: click.Context) -> Any:
-        """Override invoke to catch and reformat Click parameter errors."""
-        try:
-            return super().invoke(ctx)
-        except click.BadParameter as e:
-            param_hint = None
-            if e.param:
-                param_hint = (
-                    e.param.human_readable_name
-                    if hasattr(e.param, "human_readable_name")
-                    else e.param.name
-                )
-                if hasattr(e.param, "opts") and e.param.opts:
-                    param_hint = e.param.opts[0]
-
-            raise ParameterError(
-                message=e.message if hasattr(e, "message") else str(e),
-                param_hint=param_hint,
-                ctx=ctx,
-            ) from e
-
-
-class RootNodeWrapper(Generic[ClickType]):
-    """
-    Generic wrapper class for Click commands/groups with visualize() support.
-
-    This wrapper delegates all attribute access to the underlying Click object
-    while also providing access to the tree visualization functionality.
-    """
-
-    def __init__(self, underlying: ClickType, instance: "RootNode") -> None:
-        """
-        Initialize the wrapper.
-
-        Args:
-            underlying (ClickType):
-                The underlying Click Command or Group instance.
-            instance (RootNode):
-                The `RootNode` instance to wrap.
-        """
-        self._underlying = underlying
-        self._root_instance = instance
-
-    def visualize(self) -> None:
-        """Visualize the tree structure."""
-        self._root_instance.visualize()
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """Allow the wrapper to be called like the underlying Click object."""
-        return self._underlying(*args, **kwargs)
-
-    def __getattr__(self, name: str) -> Any:
-        """Delegate all other attribute access to the underlying object."""
-        return getattr(self._underlying, name)
+if TYPE_CHECKING:
+    from click_extended.core._click_command import ClickCommand
+    from click_extended.core._click_group import ClickGroup
 
 
 class RootNode(Node):
-    """The node used as a root node."""
+    """The node used as a root node for initializing a new context."""
 
     parent: None
     tree: Tree
+    aliases: str | list[str] | None
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -137,24 +60,34 @@ class RootNode(Node):
                 Additional positional arguments (stored but not passed to Node).
             **kwargs (Any):
                 Additional keyword arguments (stored but not passed to Node).
+                May include 'aliases' for command/group aliases.
         """
-        super().__init__(name=name)
-        self.children = {}
+        super().__init__(name=name, children={})  # type: ignore[arg-type]
+        self.aliases = kwargs.pop("aliases", None)
         self.tree = Tree()
         self.extra_args = args
         self.extra_kwargs = kwargs
 
-    @property
-    def children(
-        self,
-    ) -> Mapping[str | int, "ParentNode"]:
-        """Get the children with proper ParentNode typing."""
-        return cast(Mapping[str | int, "ParentNode"], self._children)
+    def format_name_with_aliases(self) -> str:
+        """
+        Format the node name with its aliases for display.
 
-    @children.setter
-    def children(self, value: dict[str | int, Node] | None) -> None:
-        """Set the children storage."""
-        self._children = value
+        Returns:
+            str:
+                Formatted name like "name (alias1, alias2)"
+        """
+        if not self.aliases:
+            return self.name
+
+        aliases_list = (
+            [self.aliases] if isinstance(self.aliases, str) else self.aliases
+        )
+        valid_aliases = [a for a in aliases_list if a]
+
+        if valid_aliases:
+            return f"{self.name} ({', '.join(valid_aliases)})"
+
+        return self.name
 
     @classmethod
     def _get_click_decorator(cls) -> Callable[..., Any]:
@@ -165,26 +98,98 @@ class RootNode(Node):
 
         Returns:
             Callable:
-                The Click decorator function (e.g.,
-                `click.command`, `click.group`).
+                The Click decorator function
+                (e.g.,`click.command`, `click.group`).
         """
         raise NotImplementedError(
             "Subclasses must implement _get_click_decorator()"
         )
 
     @classmethod
-    def _get_click_cls(cls) -> type[click.Command]:
+    def _get_click_cls(cls) -> type["ClickCommand | ClickGroup"]:
         """
-        Return the Click class to use for aliasing.
+        Return the Click class to use for this root node.
 
-        Subclasses must override this to specify which aliased
-        Click class to use.
+        Subclasses must override this to specify which Click class to use.
 
         Returns:
-            type[click.Command]:
-                The Click class (e.g., `AliasedCommand`, `AliasedGroup`).
+            type[ClickCommand|ClickGroup]:
+                The Click class (e.g., `ClickCommand`, `ClickGroup`).
         """
         raise NotImplementedError("Subclasses must implement _get_click_cls()")
+
+    @classmethod
+    def _build_click_params(
+        cls,
+        func: Callable[..., Any],
+        instance: "RootNode",
+    ) -> tuple[Callable[..., Any], bool]:
+        """
+        Build Click decorators for options and arguments.
+
+        Returns:
+            tuple:
+                A tuple with `wrapped_func` and `h_flag_taken`
+        """
+        h_flag_taken = False
+        seen_short_flags: dict[str, str] = {}
+
+        if not instance.tree.root or not instance.tree.root.children:
+            return func, h_flag_taken
+
+        for parent_node in instance.tree.root.children.values():
+            if isinstance(parent_node, Option) and parent_node.short:
+                if parent_node.short == "-h":
+                    h_flag_taken = True
+                if parent_node.short in seen_short_flags:
+                    prev_name = seen_short_flags[parent_node.short]
+                    raise NameExistsError(
+                        parent_node.short,
+                        tip=f"Short flag '{parent_node.short}' is used by both "
+                        f"'{prev_name}' and '{parent_node.name}'",
+                    )
+                seen_short_flags[parent_node.short] = parent_node.name
+
+        parent_items = list(instance.tree.root.children.items())
+        for _parent_name, parent_node in reversed(parent_items):
+            if isinstance(parent_node, Option):
+                params: list[str] = []
+                if parent_node.short:
+                    params.append(parent_node.short)
+                params.append(parent_node.long)
+
+                option_kwargs: dict[str, Any] = {
+                    "type": parent_node.type,
+                    "required": parent_node.required,
+                    "is_flag": parent_node.is_flag,
+                    "help": parent_node.help,
+                    **parent_node.extra_kwargs,
+                }
+
+                if not parent_node.required or parent_node.default is not None:
+                    option_kwargs["default"] = parent_node.default
+
+                if parent_node.multiple:
+                    option_kwargs["multiple"] = True
+                if parent_node.nargs > 1:
+                    option_kwargs["nargs"] = parent_node.nargs
+
+                func = click.option(*params, **option_kwargs)(func)
+
+            elif isinstance(parent_node, Argument):
+                arg_kwargs: dict[str, Any] = {
+                    "type": parent_node.type,
+                    "required": parent_node.required,
+                    "nargs": parent_node.nargs,
+                    **parent_node.extra_kwargs,
+                }
+
+                if not parent_node.required or parent_node.default is not None:
+                    arg_kwargs["default"] = parent_node.default
+
+                func = click.argument(parent_node.name, **arg_kwargs)(func)
+
+        return func, h_flag_taken
 
     @classmethod
     def as_decorator(
@@ -213,8 +218,8 @@ class RootNode(Node):
         def decorator(func: Callable[..., Any]) -> Any:
             """The actual decorator that wraps the function."""
             node_name = name if name is not None else func.__name__
-            instance = cls(name=node_name, **kwargs)
-            instance.tree.register_root(instance)
+            root = cls(name=node_name, **kwargs)
+            root.tree.register_root(root)
             original_func = func
 
             if asyncio.iscoroutinefunction(func):
@@ -228,216 +233,547 @@ class RootNode(Node):
 
             @wraps(func)
             def wrapper(*call_args: Any, **call_kwargs: Any) -> Any:
-                """Wrapper that collects parent values and injects them."""
+                """
+                Wrapper that executes the initialization phases
+                and injects values into the function.
+
+                Phases:
+                1. **Collection**: Already done (decorators applied).
+                2. **Context**: Initialize Click context with metadata.
+                3. **Validation**: Build and validate tree structure.
+                4. **Runtime**: Process parameters and execute function.
+                """
                 try:
-                    ctx = click.get_current_context()
-                except RuntimeError:
-                    ctx = None
+                    # Phase 1: Collection
+                    context = click.get_current_context()
 
-                parent_values: dict[str, Any] = {}
+                    # Phase 2: Context
+                    Tree.initialize_context(context, root)
 
-                if instance.tree.root is None:
-                    raise NoRootError
+                    # Phase 3: Validation
+                    root.tree.validate_and_build(context)
 
-                assert instance.tree.root.children is not None
+                    # Phase 4: Runtime
+                    if root.tree.root is None:
+                        raise NoRootError()
 
-                all_tag_names: set[str] = set()
-                for parent_node in instance.tree.root.children.values():
-                    if isinstance(
-                        parent_node, (Option, Argument, type(parent_node))
-                    ):
-                        all_tag_names.update(parent_node.tags)
+                    parent_values: dict[str, Any] = {}
 
-                tags_dict: dict[str, "Tag"] = {}
-                for tag_name, tag in instance.tree.tags.items():
-                    tags_dict[tag_name] = tag
-                    tag.parent_nodes = []
+                    all_tag_names: set[str] = set()
+                    for parent_node in root.tree.root.children.values():
+                        if isinstance(
+                            parent_node, (Option, Argument, type(parent_node))
+                        ):
+                            tags = parent_node.tags  # type: ignore
+                            all_tag_names.update(tags)  # type: ignore
 
-                for tag_name in all_tag_names:
-                    if tag_name not in tags_dict:
-                        auto_tag = Tag(name=tag_name)
-                        tags_dict[tag_name] = auto_tag
-                        auto_tag.parent_nodes = []
+                    tags_dict: dict[str, "Tag"] = {}
+                    for tag_name, tag in root.tree.tags.items():
+                        tags_dict[tag_name] = tag
+                        tag.parent_nodes = []
 
-                for parent_node in instance.tree.root.children.values():
-                    if isinstance(
-                        parent_node, (Option, Argument, type(parent_node))
-                    ):
-                        for tag_name in parent_node.tags:
-                            if tag_name in tags_dict:
-                                tags_dict[tag_name].parent_nodes.append(
-                                    parent_node
-                                )
+                    for tag_name in all_tag_names:
+                        if tag_name not in tags_dict:
+                            auto_tag = Tag(name=tag_name)
+                            tags_dict[tag_name] = auto_tag
+                            auto_tag.parent_nodes = []
 
-                seen_names: dict[str, tuple[str, str]] = {}
+                    for parent_node in root.tree.root.children.values():
+                        if isinstance(
+                            parent_node, (Option, Argument, type(parent_node))
+                        ):
+                            parent_node = cast("ParentNode", parent_node)
+                            p_tags = parent_node.tags
+                            for tag_name in p_tags:
+                                if tag_name in tags_dict:
+                                    tags_dict[tag_name].parent_nodes.append(
+                                        parent_node
+                                    )
 
-                for parent_node in instance.tree.root.children.values():
-                    if isinstance(
-                        parent_node, (Option, Argument, type(parent_node))
-                    ):
-                        node_type = parent_node.__class__.__name__.lower()
-                        node_desc = f"'{parent_node.name}'"
+                    global_values: dict[str, Any] = {}
 
-                        if parent_node.name in seen_names:
-                            prev_type, prev_desc = seen_names[parent_node.name]
-                            raise DuplicateNameError(
-                                parent_node.name,
-                                prev_type,
-                                node_type,
-                                prev_desc,
-                                node_desc,
-                            )
-                        seen_names[parent_node.name] = (node_type, node_desc)
+                    first_globals = [
+                        g for g in root.tree.globals if g.run == "first"
+                    ]
+                    last_globals = [
+                        g for g in root.tree.globals if g.run == "last"
+                    ]
 
-                for tag_name in tags_dict:
-                    if tag_name in seen_names:
-                        prev_type, prev_desc = seen_names[tag_name]
-                        raise DuplicateNameError(
-                            tag_name,
-                            prev_type,
-                            "tag",
-                            prev_desc,
-                            f"'{tag_name}'",
+                    meta = context.meta.get("click_extended", {})
+
+                    def build_global_context() -> Context:
+                        """Build a Context for global node execution."""
+                        all_nodes: dict[str, Node] = {}
+                        all_parents: dict[str, ParentNode] = {}
+                        all_children: dict[str, "ChildNode"] = {}
+
+                        # Add parents
+                        for parent_name, parent_node in root.children.items():
+                            if isinstance(parent_name, str):
+                                all_nodes[parent_name] = parent_node
+                                if isinstance(
+                                    parent_node, (Option, Argument, Env)
+                                ):
+                                    all_parents[parent_name] = parent_node
+                                    for (
+                                        child_name,
+                                        child_node,
+                                    ) in parent_node.children.items():
+                                        if isinstance(child_name, (str, int)):
+                                            all_children[
+                                                child_node.name
+                                            ] = child_node  # type: ignore
+
+                        # Add tags
+                        for tag in root.tree.tags.values():
+                            for child_name, child_node in tag.children.items():
+                                if isinstance(child_name, (str, int)):
+                                    all_children[
+                                        child_node.name
+                                    ] = child_node  # type: ignore
+
+                        parent = (
+                            next(iter(all_parents.values()))
+                            if all_parents
+                            else None
                         )
-                    seen_names[tag_name] = ("tag", f"'{tag_name}'")
 
-                for global_node in instance.tree.globals:
-                    if global_node.inject_name is not None:
-                        if global_node.inject_name in seen_names:
-                            prev_type, prev_desc = seen_names[
-                                global_node.inject_name
-                            ]
-                            raise DuplicateNameError(
-                                global_node.inject_name,
-                                prev_type,
-                                "global",
-                                prev_desc,
-                                f"'{global_node.inject_name}'",
-                            )
-                        seen_names[global_node.inject_name] = (
-                            "global",
-                            f"'{global_node.inject_name}'",
+                        child = (
+                            next(iter(all_children.values()))
+                            if all_children
+                            else None
                         )
 
-                global_values: dict[str, Any] = {}
-                parent_list = [
-                    cast("ParentNode", p)
-                    for p in instance.tree.root.children.values()
-                    if isinstance(p, (Option, Argument, Env))
-                ]
-
-                for global_node in instance.tree.globals:
-                    has_delay = global_node.delay
-                    has_executed = global_node._executed  # type: ignore
-                    if not has_delay and not has_executed:
-                        result = global_node.process(
-                            instance.tree,
-                            instance,
-                            parent_list,
-                            tags_dict,
-                            instance.tree.globals,
-                            call_args,
-                            call_kwargs,
-                            *global_node.process_args,
-                            **global_node.process_kwargs,
+                        return Context(
+                            root=root,
+                            parent=parent,
+                            child=child,
+                            click_context=context,
+                            nodes=all_nodes,
+                            parents=all_parents,
+                            tags=root.tree.tags,
+                            children=all_children,
+                            globals={g.name: g for g in root.tree.globals},
+                            data=meta.get("data", {}),
+                            debug=meta.get("debug", False),
                         )
+
+                    def execute_global(global_node: "GlobalNode") -> None:
+                        """Execute a global node and store its result."""
+                        global_context = build_global_context()
+                        result = global_node.handle(global_context)
 
                         if global_node.inject_name is not None:
                             global_values[global_node.inject_name] = result
 
-                missing_env_vars: list[str] = []
-                for parent_node in instance.tree.root.children.values():
-                    if isinstance(parent_node, Env):
-                        missing_var = parent_node.check_required()
-                        if missing_var:
-                            missing_env_vars.append(missing_var)
+                    for global_node in first_globals:
+                        execute_global(global_node)
 
-                if missing_env_vars:
-                    match len(missing_env_vars):
-                        case 1:
-                            error_msg = (
-                                f"Required environment variable "
-                                f"'{missing_env_vars[0]}' is not set."
-                            )
-                        case 2:
-                            error_msg = (
-                                f"Required environment variables "
-                                f"'{missing_env_vars[0]}' and "
-                                f"'{missing_env_vars[1]}' are not set."
-                            )
-                        case _:
-                            vars_list = "', '".join(missing_env_vars[:-1])
-                            error_msg = (
-                                f"Required environment variables "
-                                f"'{vars_list}' and '{missing_env_vars[-1]}' "
-                                f"are not set."
-                            )
+                    missing_env_vars: list[str] = []
+                    for parent_node in root.tree.root.children.values():
+                        if isinstance(parent_node, Env):
+                            missing_var = parent_node.check_required()
+                            if missing_var:
+                                missing_env_vars.append(missing_var)
 
-                    raise ValueError(error_msg)
+                    if missing_env_vars:
+                        match len(missing_env_vars):
+                            case 1:
+                                error_msg = (
+                                    f"Required environment variable "
+                                    f"'{missing_env_vars[0]}' is not set."
+                                )
+                            case 2:
+                                error_msg = (
+                                    f"Required environment variables "
+                                    f"'{missing_env_vars[0]}' and "
+                                    f"'{missing_env_vars[1]}' are not set."
+                                )
+                            case _:
+                                vars_list = "', '".join(missing_env_vars[:-1])
+                                error_msg = (
+                                    f"Required environment variables "
+                                    f"'{vars_list}' and "
+                                    f"'{missing_env_vars[-1]}' "
+                                    f"are not set."
+                                )
 
-                for (
-                    parent_name,
-                    parent_node,
-                ) in instance.tree.root.children.items():
-                    if isinstance(parent_name, str):
-                        if isinstance(parent_node, (Option, Argument)):
-                            raw_value = call_kwargs.get(parent_name)
-                            was_provided = (
-                                parent_name in call_kwargs
-                                and raw_value != parent_node.default
-                            )
-                            parent_node.set_raw_value(raw_value, was_provided)
+                        raise ProcessError(error_msg)
 
-                            if parent_node.children:
-                                parent_values[parent_name] = process_children(
-                                    raw_value,
-                                    parent_node.children,
-                                    parent_node,
+                    assert root.tree.root is not None
+                    needs_async = False
+                    for parent_node in root.tree.root.children.values():
+                        if isinstance(parent_node, (Option, Argument, Env)):
+                            if (
+                                parent_node.children
+                                and check_has_async_handlers(
+                                    parent_node.children
+                                )
+                            ):
+                                needs_async = True
+                                break
+
+                    if not needs_async:
+                        for tag in root.tree.tags.values():
+                            if tag.children and check_has_async_handlers(
+                                tag.children
+                            ):
+                                needs_async = True
+                                break
+
+                    if needs_async:
+
+                        async def async_processing() -> dict[str, Any]:
+                            """Process all handlers asynchronously."""
+                            assert root.tree.root is not None
+                            async_parent_values: dict[str, Any] = {}
+
+                            for (
+                                parent_name,
+                                parent_node,
+                            ) in root.tree.root.children.items():
+                                if isinstance(parent_name, str):
+                                    if isinstance(
+                                        parent_node, (Option, Argument, Env)
+                                    ):
+                                        raw_value = call_kwargs.get(parent_name)
+                                        was_provided = (
+                                            parent_name in call_kwargs
+                                            and raw_value != parent_node.default
+                                        )
+                                        parent_node.set_raw_value(
+                                            raw_value, was_provided
+                                        )
+
+                                        if parent_node.children:
+                                            Tree.update_scope(
+                                                context,
+                                                "parent",
+                                                parent_node=parent_node,
+                                            )
+
+                                            async_parent_values[parent_name] = (
+                                                await process_children_async(
+                                                    raw_value,
+                                                    parent_node.children,
+                                                    parent_node,
+                                                    tags_dict,
+                                                    context,
+                                                )
+                                            )
+                                        else:
+                                            async_parent_values[parent_name] = (
+                                                raw_value
+                                            )
+                                    else:
+                                        v = parent_node.get_value()  # type: ignore  # pylint: disable=line-too-long
+                                        async_parent_values[parent_name] = v
+
+                            for tag in root.tree.tags.values():
+                                if tag.children:
+                                    tag_values_dict = {
+                                        p.name: (p.get_value())  # type: ignore
+                                        for p in tag.parent_nodes
+                                    }
+
+                                    await process_children_async(
+                                        tag_values_dict,
+                                        tag.children,
+                                        tag,
+                                        tags_dict,
+                                        context,
+                                    )
+
+                            return async_parent_values
+
+                        try:
+                            parent_values = asyncio.run(async_processing())
+                        except RuntimeError as e:
+                            if "already running" in str(e).lower():
+                                raise ProcessError(
+                                    "Cannot use async handlers in an existing "
+                                    "event loop (e.g., Jupyter notebooks).",
+                                    tip="Use synchronous handlers instead, or "
+                                    "run your CLI outside of async contexts.",
+                                ) from e
+                            raise
+                    else:
+                        for (
+                            parent_name,
+                            parent_node,
+                        ) in root.tree.root.children.items():
+                            if isinstance(parent_name, str):
+                                if isinstance(
+                                    parent_node, (Option, Argument, Env)
+                                ):
+                                    raw_value = call_kwargs.get(parent_name)
+                                    was_provided = (
+                                        parent_name in call_kwargs
+                                        and raw_value != parent_node.default
+                                    )
+                                    parent_node.set_raw_value(
+                                        raw_value, was_provided
+                                    )
+
+                                    if parent_node.children:
+                                        Tree.update_scope(
+                                            context,
+                                            "parent",
+                                            parent_node=parent_node,
+                                        )
+
+                                        parent_values[parent_name] = (
+                                            process_children(
+                                                raw_value,
+                                                parent_node.children,
+                                                parent_node,
+                                                tags_dict,
+                                                context,
+                                            )
+                                        )
+                                    else:
+                                        parent_values[parent_name] = raw_value
+                                else:
+                                    parent_node = cast(
+                                        "ParentNode", parent_node
+                                    )
+                                    parent_values[parent_name] = (
+                                        parent_node.get_value()
+                                    )
+
+                        for tag_name, tag in root.tree.tags.items():
+                            if tag.children:
+                                tag_values_dict = {
+                                    parent_node.name: parent_node.get_value()
+                                    for parent_node in tag.parent_nodes
+                                }
+
+                                process_children(
+                                    tag_values_dict,
+                                    tag.children,
+                                    tag,
                                     tags_dict,
-                                    ctx,
+                                    context,
                                 )
-                            else:
-                                parent_values[parent_name] = raw_value
-                        else:
-                            parent_values[parent_name] = parent_node.get_value()
 
-                for tag_name, tag in instance.tree.tags.items():
-                    if tag.children:
-                        for parent_node in tag.parent_nodes:
-                            for child in tag.children.values():
-                                child.validate_type(parent_node)
+                    for global_node in last_globals:
+                        execute_global(global_node)
 
-                            value = parent_node.get_value()
-                            process_children(
-                                value, tag.children, tag, tags_dict, ctx
-                            )
+                    merged_kwargs: dict[str, Any] = {
+                        **call_kwargs,
+                        **parent_values,
+                        **global_values,
+                    }
 
-                for global_node in instance.tree.globals:
-                    if global_node.delay:
-                        result = global_node.process(
-                            instance.tree,
-                            instance,
-                            parent_list,
-                            tags_dict,
-                            instance.tree.globals,
-                            call_args,
-                            call_kwargs,
-                            *global_node.process_args,
-                            **global_node.process_kwargs,
+                    return func(*call_args, **merged_kwargs)
+                except ContextAwareError as e:
+                    e.show()
+                    sys.exit(1)
+                except Exception as e:
+                    context = click.get_current_context()
+                    meta = context.meta.get("click_extended", {})
+                    debug = meta.get("debug", False)
+
+                    child_node = meta.get("child_node")
+                    child_node = cast("ChildNode | None", child_node)
+
+                    parent_from_meta = meta.get("parent_node")
+                    parent_from_meta = cast(
+                        "ParentNode | None", parent_from_meta
+                    )
+
+                    root_node = meta.get("root_node")
+                    root_node = cast("RootNode | None", root_node)
+
+                    exc_name = e.__class__.__name__
+                    exc_value = str(e)
+
+                    if debug:
+                        echo(
+                            f"Exception '{exc_name}' caught:\n",
+                            file=sys.stderr,
+                            color=context.color,
                         )
 
-                        if global_node.inject_name is not None:
-                            global_values[global_node.inject_name] = result
+                        lines: list[str] = [
+                            f"Type: {exc_name}",
+                            f"Message: {exc_value or 'None'}",
+                            f"Function: {node_name}",
+                        ]
 
-                merged_kwargs: dict[str, Any] = {
-                    **call_kwargs,
-                    **parent_values,
-                    **global_values,
-                }
+                        cond1 = child_node is not None
+                        cond2 = parent_from_meta is not None
+                        if cond1 and cond2:
+                            assert parent_from_meta is not None
+                            idx_list = [
+                                int(k)
+                                for k, v in parent_from_meta.children.items()
+                                if id(v) == id(child_node)
+                            ]
+                            current_index = idx_list[0]
 
-                return func(*call_args, **merged_kwargs)
+                            # Handler:
+                            handler_name: str = meta.get("handler_method", "")
+                            handler_method = getattr(
+                                child_node,
+                                handler_name,
+                                None,
+                            )
+                            lines.append(f"Handler: {handler_name}")
 
-            return cls.wrap(wrapper, node_name, instance, **kwargs)
+                            # Input value:
+                            input_value = meta.get("handler_value", "")
+                            lines.append(f"Input value: {input_value}")
+
+                            # Input type:
+                            input_type = humanize_type(type(input_value))
+                            lines.append(f"Input type: {input_type}")
+
+                            # Expected type:
+                            expected_types_str = "Any"
+                            handler_params = get_type_hints(handler_method)
+
+                            if "value" in handler_params:
+                                expected_type = handler_params["value"]
+                                expected_type = cast(type, expected_type)
+                                expected_types_str = humanize_type(
+                                    expected_type
+                                )
+
+                            lines.append(  # pylint: disable=line-too-long
+                                f"Expected types: {expected_types_str}"
+                            )
+
+                            # Previous:
+                            has_previous = current_index > 0
+                            if has_previous:
+                                prev = parent_from_meta.children[
+                                    current_index - 1
+                                ]
+                            else:
+                                prev = parent_from_meta
+                            previous_node = prev
+                            lines.append(f"Previous: {repr(previous_node)}")
+
+                            # Current:
+                            lines.append(f"Current: {repr(child_node)}")
+
+                            # Next:
+                            children_len = len(parent_from_meta.children)
+                            has_next = current_index < children_len
+                            if has_next:
+                                next_node = parent_from_meta.children[
+                                    current_index + 1
+                                ]
+                            else:
+                                next_node = None
+                            lines.append(f"Next: {repr(next_node)}")
+
+                        elif parent_from_meta is not None:
+                            pass
+
+                        elif root_node is not None:
+                            pass
+
+                        # File
+                        tracebacks = traceback.extract_tb(e.__traceback__)
+                        frame = tracebacks[-1]
+
+                        file_name = frame.filename
+                        line_number = frame.lineno
+
+                        lines.append(f"File: {file_name}")
+                        lines.append(f"Line: {line_number}")
+
+                        for line in lines:
+                            echo(
+                                line,
+                                file=sys.stderr,
+                                color=context.color,
+                            )
+
+                        # Traceback
+                        echo(
+                            "\nTraceback:",
+                            file=sys.stderr,
+                            color=context.color,
+                        )
+                        tb_lines = traceback.format_exception(
+                            type(e), e, e.__traceback__
+                        )
+                        for line in tb_lines[1:]:
+                            echo(
+                                line.rstrip(),
+                                file=sys.stderr,
+                                color=context.color,
+                            )
+                    else:
+                        echo(
+                            context.get_usage(),
+                            file=sys.stderr,
+                            color=context.color,
+                        )
+
+                        if context.command.get_help_option(context) is not None:
+                            cmd = context.command_path
+                            hint = f"Help: Try '{cmd} --help' for instructions."
+                            echo(hint, file=sys.stderr, color=context.color)
+
+                        if exc_value == "":
+                            template = (
+                                f"Error ({node_name}): "
+                                f"Exception '{exc_name}' was raised."
+                            )
+                            message = template
+                        else:
+                            message = f"{exc_name} ({node_name}): {exc_value}"
+
+                        echo(
+                            "\n" + message,
+                            file=sys.stderr,
+                            color=context.color,
+                        )
+
+                    sys.exit(1)
+
+            pending = list(reversed(Tree.get_pending_nodes()))
+            if root.tree.root is not None:
+                most_recent_parent = None
+                most_recent_tag = None
+                for node_type, node in pending:
+                    if node_type == "parent":
+                        node = cast("ParentNode", node)
+                        root.tree.root[node.name] = node
+                        most_recent_parent = node
+                    elif node_type == "child":
+                        node = cast("ChildNode", node)
+                        if most_recent_tag is not None:
+                            if not root.tree.has_handle_tag_implemented(node):
+                                print(
+                                    (
+                                        f"Error ({most_recent_tag.name}): "
+                                        f"Child node '{node.name}' can not be "
+                                        "used on a tag node.\n"
+                                        "Tip: Children attached to @tag "
+                                        "decorators must implement the "
+                                        "handle_tag(...) method."
+                                    )
+                                )
+                                sys.exit(2)
+
+                            most_recent_tag[len(most_recent_tag)] = node
+                        elif most_recent_parent is not None:
+                            parent_len = len(most_recent_parent)
+                            most_recent_parent[parent_len] = node
+                    elif node_type == "tag":
+                        tag_inst = cast(Tag, node)
+                        root.tree.tags[tag_inst.name] = tag_inst
+                        most_recent_tag = tag_inst
+                        root.tree.recent_tag = tag_inst
+                    elif node_type == "global" and isinstance(node, GlobalNode):
+                        root.tree.globals.insert(0, node)
+
+            return cls.wrap(wrapper, node_name, root, **kwargs)
 
         return decorator
 
@@ -448,12 +784,13 @@ class RootNode(Node):
         name: str,
         instance: "RootNode",
         **kwargs: Any,
-    ) -> Any:
+    ) -> click.Command:
         """
-        Apply Click wrapping after value injection.
+        Create the Click command/group object.
 
-        This method applies the appropriate Click decorator (command or group)
-        and wraps it in a RootNodeWrapper for tree visualization support.
+        This method creates the actual Click command or group that will be
+        returned to the user, with full integration into
+        the `click-extended` system.
 
         Args:
             wrapped_func (Callable):
@@ -463,73 +800,13 @@ class RootNode(Node):
             instance (RootNode):
                 The `RootNode` instance that owns this tree.
             **kwargs (Any):
-                Additional keyword arguments passed to the Click decorator.
+                Additional keyword arguments passed to the Click class.
 
         Returns:
-            RootNodeWrapper:
-                A wrapper containing the Click object with visualize() support.
+            click.Command:
+                A `ClickCommand` or `ClickGroup` instance.
         """
-        func = wrapped_func
-        h_flag_taken = False
-        if instance.tree.root and instance.tree.root.children:
-            seen_short_flags: dict[str, str] = {}
-            for parent_node in instance.tree.root.children.values():
-                if isinstance(parent_node, Option) and parent_node.short:
-                    if parent_node.short == "-h":
-                        h_flag_taken = True
-                    if parent_node.short in seen_short_flags:
-                        prev_name = seen_short_flags[parent_node.short]
-                        raise DuplicateNameError(
-                            parent_node.short,
-                            "option",
-                            "option",
-                            f"'{prev_name}' ({parent_node.short})",
-                            f"'{parent_node.name}' ({parent_node.short})",
-                        )
-                    seen_short_flags[parent_node.short] = parent_node.name
-
-            parent_items = list(instance.tree.root.children.items())
-            for _parent_name, parent_node in reversed(parent_items):
-                if isinstance(parent_node, Option):
-                    params: list[str] = []
-                    if parent_node.short:
-                        params.append(parent_node.short)
-                    params.append(parent_node.long)
-
-                    option_kwargs: dict[str, Any] = {
-                        "type": parent_node.type,
-                        "default": parent_node.default,
-                        "required": parent_node.required,
-                        "is_flag": parent_node.is_flag,
-                        "help": parent_node.help,
-                        **parent_node.extra_kwargs,
-                    }
-
-                    if parent_node.multiple:
-                        option_kwargs["multiple"] = True
-                    if parent_node.nargs > 1:
-                        option_kwargs["nargs"] = parent_node.nargs
-
-                    func = click.option(*params, **option_kwargs)(func)
-
-                elif isinstance(parent_node, Argument):
-                    arg_kwargs: dict[str, Any] = {
-                        "type": parent_node.type,
-                        "required": parent_node.required,
-                        "nargs": parent_node.nargs,
-                        **parent_node.extra_kwargs,
-                    }
-
-                    if (
-                        not parent_node.required
-                        or parent_node.default is not None
-                    ):
-                        arg_kwargs["default"] = parent_node.default
-
-                    func = click.argument(
-                        parent_node.name,
-                        **arg_kwargs,
-                    )(func)
+        func, h_flag_taken = cls._build_click_params(wrapped_func, instance)
 
         if not h_flag_taken:
             if "context_settings" not in kwargs:
@@ -540,13 +817,13 @@ class RootNode(Node):
                     "--help",
                 ]
 
-        click_decorator = cls._get_click_decorator()
         click_cls = cls._get_click_cls()
+        params = getattr(func, "__click_params__", [])
 
-        underlying = click_decorator(name=name, cls=click_cls, **kwargs)(func)
-
-        return RootNodeWrapper(underlying=underlying, instance=instance)
-
-    def visualize(self) -> None:
-        """Visualize the tree structure."""
-        visualize_tree(self.tree.root)
+        return click_cls(
+            name=name,
+            callback=func,
+            params=params,
+            root_instance=instance,
+            **kwargs,
+        )

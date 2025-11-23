@@ -6,8 +6,8 @@ from typing import Any, Callable
 
 import click
 
-from click_extended.core._aliased import AliasedCommand
-from click_extended.core._root_node import RootNode, RootNodeWrapper
+from click_extended.core._click_command import ClickCommand
+from click_extended.core._root_node import RootNode
 
 
 class Command(RootNode):
@@ -15,13 +15,13 @@ class Command(RootNode):
 
     @classmethod
     def _get_click_decorator(cls) -> Callable[..., Any]:
-        """Return the click.command decorator."""
+        """Return the click.command decorator (no longer used)."""
         return click.command
 
     @classmethod
-    def _get_click_cls(cls) -> type[click.Command]:
-        """Return the AliasedCommand class."""
-        return AliasedCommand
+    def _get_click_cls(cls) -> type[click.Command]:  # type: ignore[override]
+        """Return the ClickCommand class."""
+        return ClickCommand
 
 
 def command(
@@ -30,7 +30,7 @@ def command(
     aliases: str | list[str] | None = None,
     help: str | None = None,
     **kwargs: Any,
-) -> Callable[[Callable[..., Any]], RootNodeWrapper[click.Command]]:
+) -> Callable[[Callable[..., Any]], Any]:
     """
     Decorator to create a click command with value injection from parent nodes.
 
@@ -49,21 +49,18 @@ def command(
 
     Returns:
         Callable:
-            A decorator function that returns a `RootNodeWrapper`.
+            A decorator function that returns a Click command.
     """
     if aliases is not None:
         kwargs["aliases"] = aliases
     if help is not None:
         kwargs["help"] = help
 
-    def decorator(func: Callable[..., Any]) -> RootNodeWrapper[click.Command]:
+    def decorator(func: Callable[..., Any]) -> Any:
         if help is None and func.__doc__:
             first_line = func.__doc__.strip().split("\n")[0].strip()
             if first_line:
                 kwargs["help"] = first_line
-        wrapper: RootNodeWrapper[click.Command] = Command.as_decorator(
-            name, **kwargs
-        )(func)
-        return wrapper
+        return Command.as_decorator(name, **kwargs)(func)
 
     return decorator

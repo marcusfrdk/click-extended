@@ -9,8 +9,8 @@ from typing import Any, Callable, ParamSpec, TypeVar
 
 from dotenv import load_dotenv
 
-from click_extended.core._parent_node import ParentNode
-from click_extended.utils.transform import Transform
+from click_extended.core.parent_node import ParentNode
+from click_extended.utils.casing import Casing
 
 load_dotenv()
 
@@ -152,9 +152,7 @@ def env(
         ... def my_func(db):
         ...     print(db)
     """
-    param_name = (
-        name if name is not None else Transform(env_name).to_snake_case()
-    )
+    param_name = name if name is not None else Casing.to_snake_case(env_name)
     return Env.as_decorator(
         name=param_name,
         env_name=env_name,

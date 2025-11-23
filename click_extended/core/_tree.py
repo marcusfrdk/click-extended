@@ -1,241 +1,431 @@
-"""Class for storing the nodes of the current context."""
+"""
+Class for storing the nodes of the current context.
 
-# pylint: disable=global-variable-not-assigned
-# pylint: disable=import-outside-toplevel
-# pylint: disable=broad-exception-caught
-# pylint: disable=too-many-locals
-# pylint: disable=too-many-nested-blocks
-# pylint: disable=protected-access
-# pylint: disable=too-many-branches
+Phases:
+- **Phase 1 (Registration)**:
+    Nodes are queued during decorator application.
+- **Phase 2 (Initialization)**:
+    Click context is created and metadata is injected.
+- **Phase 3 (Validation)**:
+    Tree is built and validated with full context.
+- **Phase 4 (Runtime)**:
+    Parameters are processed with scope tracking.
+"""
 
-import ast
-import inspect
+import os
+import sys
 from typing import TYPE_CHECKING, Any, Literal, cast
 
+import click
+
 from click_extended.errors import (
-    InvalidChildOnTagError,
+    NameExistsError,
     NoParentError,
     NoRootError,
-    ParentNodeExistsError,
-    RootNodeExistsError,
+    ParentExistsError,
+    RootExistsError,
 )
-from click_extended.utils.visualize import visualize_tree
 
 if TYPE_CHECKING:
-    from click_extended.core._child_node import ChildNode
-    from click_extended.core._global_node import GlobalNode
-    from click_extended.core._parent_node import ParentNode
     from click_extended.core._root_node import RootNode
+    from click_extended.core.child_node import ChildNode
+    from click_extended.core.global_node import GlobalNode
+    from click_extended.core.parent_node import ParentNode
     from click_extended.core.tag import Tag
-
-
-_pending_nodes: list[
-    tuple[
-        Literal["parent", "child", "tag", "global"],
-        "ParentNode | ChildNode | Tag | GlobalNode",
-    ]
-] = []
-
-
-def get_pending_nodes() -> list[
-    tuple[
-        Literal["parent", "child", "tag", "global"],
-        "ParentNode | ChildNode | Tag | GlobalNode",
-    ]
-]:
-    """Get and clear the pending nodes queue."""
-    global _pending_nodes
-    nodes = _pending_nodes.copy()
-    _pending_nodes.clear()
-    return nodes
-
-
-def queue_parent(node: "ParentNode") -> None:
-    """Queue a parent node for the next root registration."""
-    _pending_nodes.append(("parent", node))
-
-
-def queue_child(node: "ChildNode") -> None:
-    """Queue a child node for the next root registration."""
-    _pending_nodes.append(("child", node))
-
-
-def queue_tag(node: "Tag") -> None:
-    """Queue a tag node for the next root registration."""
-    _pending_nodes.append(("tag", node))
-
-
-def queue_global(node: "GlobalNode") -> None:
-    """Queue a global node for the next root registration."""
-    _pending_nodes.append(("global", node))
 
 
 class Tree:
     """
-    Class for storing the nodes of the current context.
+    Class for managing the node tree and lifecycle phases.
 
-    This tree is designed to work with decorators, which are applied
-    bottom-to-top. Registrations are queued and then built in reverse
-    order to maintain the hierarchy.
+    The tree coordinates all four lifecycle phases:
+
+    - **Phase 1 (Registration)**:
+        Nodes are queued during decorator application.
+    - **Phase 2 (Initialization)**:
+        Click context is created and metadata is injected.
+    - **Phase 3 (Validation)**:
+        Tree is built and validated with full context.
+    - **Phase 4 (Runtime)**:
+        Parameters are processed with scope tracking.
+
+    Attributes:
+        root (RootNode | None):
+            The root node of the tree
+        recent (ParentNode | None):
+            Most recently registered parent node
+        recent_tag (Tag | None):
+            Most recently registered tag
+        tags (dict[str, Tag]):
+            Dictionary of all tags
+        globals (list[GlobalNode]):
+            List of global nodes
+        data (dict[str, Any]):
+            Custom data storage
+        is_validated (bool):
+            Whether Phase 3 validation has completed.
     """
 
+    # Class-level storage for pending nodes during decorator collection
+    _pending_nodes: list[
+        tuple[
+            Literal["parent", "child", "tag", "global"],
+            "ParentNode | ChildNode | Tag | GlobalNode",
+        ]
+    ] = []
+
+    @staticmethod
+    def get_pending_nodes() -> list[
+        tuple[
+            Literal["parent", "child", "tag", "global"],
+            "ParentNode | ChildNode | Tag | GlobalNode",
+        ]
+    ]:
+        """
+        Get and clear the pending nodes queue.
+        This is where decorators queue nodes during bottom-to-top application.
+
+        Returns:
+            list:
+                List of queued nodes with their types.
+        """
+        nodes = Tree._pending_nodes.copy()
+        Tree._pending_nodes.clear()
+        return nodes
+
+    @staticmethod
+    def queue_parent(node: "ParentNode") -> None:
+        """
+        Queue a parent node for registration.
+
+        Args:
+            node (ParentNode):
+                The parent node to queue.
+        """
+        Tree._pending_nodes.append(("parent", node))
+
+    @staticmethod
+    def queue_child(node: "ChildNode") -> None:
+        """
+        Queue a child node for registration.
+
+        Args:
+            node (ChildNode):
+                The child node to queue.
+        """
+        Tree._pending_nodes.append(("child", node))
+
+    @staticmethod
+    def queue_tag(node: "Tag") -> None:
+        """
+        Queue a tag node for registration.
+
+        Args:
+            node (Tag):
+                The tag to queue.
+        """
+        Tree._pending_nodes.append(("tag", node))
+
+    @staticmethod
+    def queue_global(node: "GlobalNode") -> None:
+        """
+        Queue a global node for registration.
+
+        Args:
+            node (GlobalNode):
+                The global node to queue.
+        """
+        Tree._pending_nodes.append(("global", node))
+
     def __init__(self) -> None:
-        """Initialize a new `Tree` instance."""
+        """Initialize a new Tree instance."""
         self.root: "RootNode | None" = None
         self.recent: "ParentNode | None" = None
         self.recent_tag: "Tag | None" = None
         self.tags: dict[str, "Tag"] = {}
         self.globals: list["GlobalNode"] = []
         self.data: dict[str, Any] = {}
+        self.is_validated: bool = False
 
-    def get_data(self, key: str) -> Any:
+    @staticmethod
+    def initialize_context(
+        context: click.Context, root_node: "RootNode"
+    ) -> None:
         """
-        Get a value from the custom data dictionary.
+        Initialize Click context with `click-extended` metadata.
+        This is a part of `phase 2` and must be called before any
+        validation or processing occurs.
 
         Args:
-            key (str):
-                The key in the dictionary.
-
-        Returns:
-            Any:
-                The value of the key if found, `None` otherwise.
+            context (click.Context):
+                The Click context to initialize.
+            root_node (RootNode):
+                The root node of the tree.
         """
-        return self.data.get(key, None)
+        parents_dict: dict[str, "ParentNode"] = {}
+        if (root := root_node.tree.root) is not None:
+            parents_dict = {
+                name: node  # type: ignore[misc]
+                for name, node in root.children.items()
+                if isinstance(name, str)
+            }
 
-    def set_data(self, key: str, value: Any) -> None:
+        children_dict: dict[str, "ChildNode"] = {}
+        for parent in parents_dict.values():
+            for child_name, child_node in parent.children.items():
+                if isinstance(child_name, (str, int)):
+                    name = child_node.name
+                    children_dict[name] = child_node  # type: ignore
+
+        for tag in root_node.tree.tags.values():
+            for child_name, child_node in tag.children.items():
+                if isinstance(child_name, (str, int)):
+                    name = child_node.name
+                    children_dict[name] = child_node  # type: ignore
+
+        globals_dict = {g.name: g for g in root_node.tree.globals}
+
+        debug = os.getenv("CLICK_EXTENDED_DEBUG", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+
+        context.meta["click_extended"] = {
+            "current_scope": "root",
+            "root_node": root_node,
+            "parent_node": None,
+            "child_node": None,
+            "parents": parents_dict,
+            "tags": root_node.tree.tags,
+            "children": children_dict,
+            "globals": globals_dict,
+            "data": {},
+            "debug": debug,
+        }
+
+    @staticmethod
+    def update_scope(
+        context: click.Context,
+        scope: Literal["root", "parent", "child"],
+        parent_node: "ParentNode | None" = None,
+        child_node: "ChildNode | None" = None,
+    ) -> None:
         """
-        Add a new key/value pair to the custom data dictionary.
+        Update the current scope in the context.
+        This is a part of `phase 4` and is called as the tree is traversed
+        during parameter processing.
 
         Args:
-            key (str):
-                The key in the dictionary.
-            value (Any):
-                The value to add to the dictionary.
+            context (click.Context):
+                The Click context to update.
+            scope (str):
+                The new scope level, must either be `root`, `parent` or `child`.
+            parent_node (ParentNode | None, optional):
+                The current parent node (if in parent/child scope).
+            child_node (ChildNode | None, optional):
+                The current child node (if in child scope).
         """
-        self.data[key] = value
+        if "click_extended" not in context.meta:
+            return
 
-    def register_root(self, node: "RootNode") -> None:
+        context.meta["click_extended"]["current_scope"] = scope
+        context.meta["click_extended"]["parent_node"] = parent_node
+        context.meta["click_extended"]["child_node"] = child_node
+
+    # pylint: disable=unused-argument
+    def validate_and_build(self, context: click.Context) -> None:
         """
-        Register the root node and build the tree from pending nodes.
+        Build and validate the tree structure. This method is a part of
+        `phase 3` and is where all structural validation occurs which is
+        after the Click context has been initialized. All errors raised
+        here are `ContextAwareError` subclasses.
 
-        In decorator systems, the root is called last, so we can
-        build the tree when it's registered by processing all
-        pending nodes that were queued during decoration.
+        This method:
+
+        1. Builds the tree from pending nodes
+        2. Validates structure (root exists, parents/children linked)
+        3. Validates names (no collisions)
+        4. Validates types (child/parent compatibility)
+        5. Sets up tags and globals
 
         Args:
-            node (RootNode):
-                The node to register as the root node for the tree.
+            context (click.Context):
+                The Click context (must be initialized).
+
+        Raises:
+            RootExistsError:
+                If root already exists.
+            NoRootError:
+                If no root is defined.
+            ParentExistsError:
+                If duplicate parent names.
+            NoParentError:
+                If child has no parent.
+            NameExistsError:
+                If name collisions detected.
+            TypeMismatchError:
+                If child/parent types incompatible.
         """
-        if self.root is not None:
-            raise RootNodeExistsError
-        self.root = node
+        if self.is_validated:
+            return
 
-        pending = list(reversed(get_pending_nodes()))
+        if not self.root or not self.root.children:
+            pending = list(reversed(Tree.get_pending_nodes()))
 
-        for node_type, node_inst in pending:
-            if node_type == "parent":
-                if self.root.get(node_inst.name) is not None:
-                    raise ParentNodeExistsError(node_inst.name)
+            for node_type, node_inst in pending:
+                if node_type == "parent":
+                    self._register_parent_node(cast("ParentNode", node_inst))
+                elif node_type == "child":
+                    self._register_child_node(cast("ChildNode", node_inst))
+                elif node_type == "tag":
+                    self._register_tag_node(cast("Tag", node_inst))
+                elif node_type == "global":
+                    self._register_global_node(cast("GlobalNode", node_inst))
 
-                self.recent = cast("ParentNode", node_inst)
-                self.root[node_inst.name] = node_inst
-            elif node_type == "child":
-                if self.recent_tag is not None:
-                    tag = self.recent_tag
-                    child_inst = cast("ChildNode", node_inst)
+        self._validate_names()
+        self.is_validated = True
 
-                    is_validation_only = True
-                    try:
-                        source = inspect.getsource(child_inst.process)
-                        ast_tree = ast.parse(source)
-                        for ast_node in ast.walk(ast_tree):
-                            if isinstance(ast_node, ast.Return):
-                                if ast_node.value is not None:
-                                    if not (
-                                        isinstance(ast_node.value, ast.Constant)
-                                        and ast_node.value.value is None
-                                    ):
-                                        is_validation_only = False
-                                        break
-                    except Exception:
-                        is_validation_only = True
-
-                    if not is_validation_only:
-                        raise InvalidChildOnTagError(
-                            child_name=child_inst.__class__.__name__,
-                            tag_name=tag.name,
-                        )
-
-                    index = len(tag)
-                    tag[index] = child_inst
-                elif self.recent is not None:
-                    name = self.recent.name
-                    parent_node = cast("ParentNode", self.root[name])
-                    index = len(parent_node)
-                    parent_node[index] = cast("ChildNode", node_inst)
-                else:
-                    raise NoParentError(node_inst.name)
-            elif node_type == "tag":
-                tag_inst = cast("Tag", node_inst)
-                self.tags[tag_inst.name] = tag_inst
-                self.recent_tag = tag_inst
-            elif node_type == "global":
-                global_inst = cast("GlobalNode", node_inst)
-
-                if not global_inst.delay:
-                    global_inst.process(
-                        self,
-                        self.root,
-                        list(self.root.children.values()),
-                        self.tags,
-                        self.globals,
-                        (),
-                        {},
-                        *global_inst.process_args,
-                        **global_inst.process_kwargs,
-                    )
-                    global_inst._executed = True  # type: ignore
-
-                self.globals.insert(0, global_inst)
-
-    def register_parent(self, node: "ParentNode") -> None:
-        """
-        Register a parent node directly to this tree.
-
-        Args:
-            node (ParentNode):
-                The parent node to register to the tree.
-        """
+    def _register_parent_node(self, node: "ParentNode") -> None:
+        """Register a parent node during validation phase."""
         if self.root is None:
-            raise NoRootError
+            raise NoRootError()
 
-        if self.root.get(node.name) is not None:
-            raise ParentNodeExistsError(node.name)
+        if self.root.children.get(node.name) is not None:
+            raise ParentExistsError(node.name)
 
         self.recent = node
         self.root[node.name] = node
 
-    def register_child(self, node: "ChildNode") -> None:
-        """
-        Register a child node directly to this tree.
-
-        This method is for runtime registration, not decorator-time.
-
-        Args:
-            node (ChildNode):
-                The `ChildNode` to add to the `ParentNode` instance.
-        """
+    def _register_child_node(self, node: "ChildNode") -> None:
+        """Register a child node during validation phase."""
         if self.root is None:
-            raise NoRootError
+            raise NoRootError()
 
-        if self.recent is None:
+        # Attach tag
+        if self.recent_tag is not None:
+            tag = self.recent_tag
+
+            if not self.has_handle_tag_implemented(node):
+                print(
+                    f"Error ({tag.name}): Child node '{node.name}' can not be "
+                    "used on a tag node.\nTip: Children attached to @tag "
+                    "decorators must implement the handle_tag() method."
+                )
+                sys.exit(2)
+
+            index = len(tag)
+            tag[index] = node
+
+        # Attach parent
+        elif self.recent is not None:
+            parent_node = cast("ParentNode", self.root[self.recent.name])
+            index = len(parent_node)
+            parent_node[index] = node
+
+        else:
             raise NoParentError(node.name)
 
-        name = self.recent.name
-        parent_node = cast("ParentNode", self.root[name])
-        index = len(parent_node)
-        parent_node[index] = node
+    def _register_tag_node(self, node: "Tag") -> None:
+        """Register a tag node during validation phase."""
+        self.tags[node.name] = node
+        self.recent_tag = node
+
+    def _register_global_node(self, node: "GlobalNode") -> None:
+        """
+        Register a global node during validation phase.
+
+        Global nodes are just added to the tree's globals list. They will be
+        executed during runtime based on their `run` parameter (first/last).
+        """
+        if self.root is None:
+            raise NoRootError()
+
+        self.globals.insert(0, node)
+
+    def has_handle_tag_implemented(self, node: "ChildNode") -> bool:
+        """Check if a child node has `handle_tag` implemented."""
+        # pylint: disable=import-outside-toplevel
+        from click_extended.core.child_node import ChildNode
+
+        handle_tag_method = getattr(type(node), "handle_tag", None)
+
+        if handle_tag_method is None:
+            return False
+
+        try:
+            base_method = getattr(ChildNode, "handle_tag", None)
+
+            if handle_tag_method is base_method:
+                return False
+
+            return True
+        except AttributeError:
+            return False
+
+    def _validate_names(self) -> None:
+        """
+        Validate that all names are unique.
+
+        Checks for collisions between options, arguments, envs, tags,
+        and globals.
+
+        Raises:
+            NameExistsError: If duplicate names found.
+        """
+        if self.root is None:
+            return
+
+        seen_names: set[str] = set()
+
+        # Check parents
+        for parent_node in self.root.children.values():
+            if parent_node.name in seen_names:
+                raise NameExistsError(parent_node.name)
+            seen_names.add(parent_node.name)
+
+        # Check tags
+        for tag_name in self.tags:
+            if tag_name in seen_names:
+                raise NameExistsError(tag_name)
+            seen_names.add(tag_name)
+
+        # Check globals
+        for global_node in self.globals:
+            if (
+                global_node.inject_name is not None
+                and global_node.inject_name in seen_names
+            ):
+                raise NameExistsError(global_node.inject_name)
+            if global_node.inject_name is not None:
+                seen_names.add(global_node.inject_name)
+
+    def register_root(self, node: "RootNode") -> None:
+        """
+        Register the root node. This is called in `phase 1`.
+
+        Args:
+            node (RootNode):
+                The root node to register.
+
+        Raises:
+            RootExistsError:
+                If root already exists.
+        """
+        if self.root is not None:
+            raise RootExistsError()
+
+        self.root = node
 
     def visualize(self) -> None:
-        """Visualize the tree."""
-        visualize_tree(self.root)
+        """Visualize the tree structure."""
+        if self.root is None:
+            raise NoRootError()
+
+        print(self.root.name)
+        assert self.root.children is not None
+        for parent in self.root.children.values():
+            print(f"  {parent.name}")
+            assert parent.children is not None
+            for child in parent.children.values():
+                print(f"    {child.name}")

@@ -1,17 +1,16 @@
-"""`ParentNode` that represents a Click argument."""
+"""Class to support arguments in the command line interface."""
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
 
 from builtins import type as builtins_type
-from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
+from typing import Any, Type, cast
 
-from click_extended.core._parent_node import ParentNode
-from click_extended.utils.transform import Transform
-
-P = ParamSpec("P")
-T = TypeVar("T")
+from click_extended.core.parent_node import ParentNode
+from click_extended.types import Decorator
+from click_extended.utils.casing import Casing
+from click_extended.utils.naming import validate_name
 
 _MISSING = object()
 
@@ -22,6 +21,7 @@ class Argument(ParentNode):
     def __init__(
         self,
         name: str,
+        param: str | None = None,
         nargs: int = 1,
         type: Type[Any] | Any = None,
         help: str | None = None,
@@ -35,7 +35,12 @@ class Argument(ParentNode):
 
         Args:
             name (str):
-                The name of the argument.
+                The argument name in snake_case, SCREAMING_SNAKE_CASE,
+                or kebab-case. Examples: "filename", "input_file",
+                "INPUT_FILE", "input-file"
+            param (str, optional):
+                Custom parameter name for the function.
+                If not provided, derived from name as snake_case.
             nargs (int):
                 Number of arguments to accept. Use `-1` for unlimited.
                 Defaults to `1`.
@@ -58,6 +63,12 @@ class Argument(ParentNode):
             ValueError: If both `default` is provided and `required=True` is
                 explicitly set (detected via kwargs inspection in decorator).
         """
+        validate_name(name, "argument name")
+
+        param_name = param if param is not None else Casing.to_snake_case(name)
+
+        validate_name(param_name, "parameter name")
+
         if default is not _MISSING and required is True:
             required = False
 
@@ -70,9 +81,8 @@ class Argument(ParentNode):
             else:
                 type = str
 
-        name = Transform(name).to_snake_case()
         super().__init__(
-            name=name,
+            name=param_name,
             help=help,
             required=required,
             default=default,
@@ -85,6 +95,7 @@ class Argument(ParentNode):
 
 def argument(
     name: str,
+    param: str | None = None,
     nargs: int = 1,
     type: Type[Any] | Any = None,
     help: str | None = None,
@@ -92,13 +103,18 @@ def argument(
     default: Any = _MISSING,
     tags: str | list[str] | None = None,
     **kwargs: Any,
-) -> Callable[[Callable[P, T]], Callable[P, T]]:
+) -> Decorator:
     """
     Decorator to create a Click argument with value injection.
 
     Args:
         name (str):
-            The name of the argument.
+            The argument name in snake_case, SCREAMING_SNAKE_CASE,
+            or kebab-case. Examples: "filename", "input_file",
+            "INPUT_FILE", "input-file"
+        param (str, optional):
+            Custom parameter name for the function.
+            If not provided, derived from name as snake_case.
         nargs (int):
             Number of arguments to accept. Use `-1` for unlimited.
             Defaults to `1`.
@@ -118,7 +134,7 @@ def argument(
             Additional Click argument parameters.
 
     Returns:
-        Callable:
+        Decorator:
             A decorator function that registers the argument parent node.
 
     Examples:
@@ -141,9 +157,17 @@ def argument(
         def my_func(port):
             print(f"Port: {port}")
         ```
+
+        ```python
+        # Custom parameter name
+        @argument("input_file", param="infile")
+        def my_func(infile):  # param: infile, CLI: INPUT_FILE
+            print(f"Input: {infile}")
+        ```
     """
     return Argument.as_decorator(
         name=name,
+        param=param,
         nargs=nargs,
         type=type,
         help=help,

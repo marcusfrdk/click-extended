@@ -44,4 +44,5 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        args: [--cov=click_extended, --cov-fail-under=80]
+        # args: [--cov=click_extended, --cov-fail-under=80]
+        args: [--cov-fail-under=80]

@@ -1,14 +1,13 @@
 """Tag implementation for the `click_extended` library."""
 
-from functools import wraps
-from typing import TYPE_CHECKING, Callable, Mapping, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
-from click_extended.core._node import Node
-from click_extended.core._tree import queue_tag
+from click_extended.core._tree import Tree
+from click_extended.core.node import Node
 
 if TYPE_CHECKING:
-    from click_extended.core._child_node import ChildNode
-    from click_extended.core._parent_node import ParentNode
+    from click_extended.core.child_node import ChildNode
+    from click_extended.core.parent_node import ParentNode
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -25,16 +24,8 @@ class Tag(Node):
             name (str):
                 The name of the tag for grouping ParentNodes.
         """
-        super().__init__(name=name, children={})
+        super().__init__(name=name, children={})  # type: ignore[arg-type]
         self.parent_nodes: list["ParentNode"] = []
-
-    @property
-    def children(self) -> Mapping[str | int, "ChildNode"]:
-        return cast(Mapping[str | int, "ChildNode"], self._children)
-
-    @children.setter
-    def children(self, value: dict[str | int, "Node"] | None) -> None:
-        self._children = value
 
     def get_provided_values(self) -> list[str]:
         """
@@ -46,6 +37,23 @@ class Tag(Node):
                 List of parameter names that were provided.
         """
         return [node.name for node in self.parent_nodes if node.was_provided()]
+
+    def get_value(self) -> dict[str, Any]:
+        """
+        Get a dictionary of values from all parent nodes.
+
+        Returns a dictionary mapping parameter names to their values from all
+        parent nodes that reference this tag. Each key is the parent
+        node's name, and the value is `None` if not provided.
+
+        Returns:
+            dict[str, Any]:
+                Dictionary mapping parameter names to values.
+        """
+        return {
+            parent_node.name: parent_node.get_value()
+            for parent_node in self.parent_nodes
+        }
 
     @classmethod
     def as_decorator(
@@ -64,25 +72,19 @@ class Tag(Node):
         """
 
         def decorator(func: Callable[P, T]) -> Callable[P, T]:
-            """The actual decorator that wraps the function."""
+            """The actual decorator that registers the tag."""
             instance = cls(name=name)
-            queue_tag(instance)
-
-            @wraps(func)
-            def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
-                """Wrapper that preserves the original function."""
-                return func(*call_args, **call_kwargs)
-
-            return wrapper
+            Tree.queue_tag(instance)
+            return func
 
         return decorator
 
 
 def tag(name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    Decorator to create a tag for grouping ParentNodes.
+    Decorator to create a tag for grouping parent nodes.
 
-    Tags allow you to apply ChildNodes to multiple ParentNodes at once
+    Tags allow you to apply child nodes to multiple parent nodes at once
     and perform cross-node validation.
 
     Args:
@@ -100,8 +102,8 @@ def tag(name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
         @option("--api-key", tags="api-config")
         @option("--api-url", tags="api-config")
         @tag("api-config")
-        @requires_one()
-        def my_func(api_key, api_url):
+        @at_least(1)
+        def my_function(api_key: str, api_url: str):
             print(f"API Key: {api_key}, URL: {api_url}")
         ```
     """
