@@ -6,6 +6,7 @@
 PYTHON := python3
 VENV_DIR := .venv
 SRC_DIR := click_extended
+TESTS_DIR := tests
 PIP := $(VENV_DIR)/bin/pip
 
 # Overview
@@ -111,7 +112,7 @@ format-check:
 
 # Type checking
 type:
-	@$(VENV_DIR)/bin/mypy $(SRC_DIR)
+	@$(VENV_DIR)/bin/mypy $(SRC_DIR) $(TESTS_DIR)
 
 # Deployment
 build:

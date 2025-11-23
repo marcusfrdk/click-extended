@@ -33,6 +33,6 @@
 ## Guides
 
 - [Migrating From Click](./guides/MIGRATING_FROM_CLICK.md): A guide on how to migrate your codebase from `click` to `click-extended`.
-- [Create a Child](./guides/CREATE_CHILD.md): A guide on how to create a new custom child for validating and processing data.
+- [Create a Child](./concepts/CHILD_NODE.md#extending): A guide on how to create a new custom child for validating and processing data.
 - [Create a Parent](./guides/CREATE_PARENT.md): A guide on how to create a new parent that allows custom data fetching with the ability to post-process the data.
 - [Create a Global](./guides/CREATE_GLOBAL.md): A guide on how to create a new global that allows custom data fetching without the ability to post-proces the data.

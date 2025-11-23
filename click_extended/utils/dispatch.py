@@ -45,12 +45,12 @@ if TYPE_CHECKING:
 
 
 PRIMITIVE_TYPES = (str, int, float, bool)
-COMPLEX_TYPES = (
-    tuple,
-    list,
-    dict,
-    set,
-    frozenset,
+ITERABLE_TYPES = (tuple, list, dict, set, frozenset)
+SIMPLE_TYPES = (
+    str,
+    int,
+    float,
+    bool,
     Path,
     UUID,
     datetime,
@@ -66,7 +66,7 @@ def _classify_tuple(
     value: tuple[Any, ...],
 ) -> Literal["flat", "nested", "mixed"]:
     """
-    Classify tuple as flat (all primitives), nested (all complex), or mixed.
+    Classify tuple as flat (all simple types), nested (all iterables), or mixed.
 
     Args:
         value (tuple[Any, ...]):
@@ -74,27 +74,29 @@ def _classify_tuple(
 
     Returns:
         str:
-            - `"flat"` if all elements are primitives.
-            - `"nested"` if all elements are complex types.
-            - `"mixed"` if contains both primitives and complex types.
+            - `"flat"` if all elements are simple/non-iterable types
+              (str, int, datetime, Path, UUID, etc).
+            - `"nested"` if all elements are iterable/collection types
+              (tuple, list, dict, set).
+            - `"mixed"` if contains both simple and iterable types.
     """
     if not value:
         return "flat"
 
-    has_primitive = False
-    has_complex = False
+    has_simple = False
+    has_iterable = False
 
     for elem in value:
-        if isinstance(elem, PRIMITIVE_TYPES):
-            has_primitive = True
-        elif isinstance(elem, COMPLEX_TYPES):
-            has_complex = True
+        if isinstance(elem, SIMPLE_TYPES):
+            has_simple = True
+        elif isinstance(elem, ITERABLE_TYPES):
+            has_iterable = True
         else:
-            has_complex = True
+            has_simple = True
 
-    if has_primitive and has_complex:
+    if has_simple and has_iterable:
         return "mixed"
-    if has_complex:
+    if has_iterable:
         return "nested"
 
     return "flat"
@@ -479,6 +481,19 @@ def dispatch_to_child(
         except NotImplementedError:
             pass
 
+        if _is_handler_implemented(child, "handle_primitive"):
+            try:
+                if _should_call_handler(child, "handle_primitive", value):
+                    result = child.handle_primitive(
+                        value,  # type: ignore[arg-type]
+                        context,
+                        *child.process_args,
+                        **child.process_kwargs,
+                    )
+                    return value if result is None else result
+            except NotImplementedError:
+                pass
+
         return None
 
     handler_name = _determine_handler(child, value, context)
@@ -654,10 +669,7 @@ def _should_call_handler(
 
         origin = get_origin(value_hint)
 
-        if origin is type(UnionType) or (
-            hasattr(origin, "__origin__")
-            and origin.__origin__ is type(UnionType)
-        ):
+        if origin is UnionType:
             args = get_args(value_hint)
             return type(None) in args
 
@@ -837,6 +849,28 @@ async def dispatch_to_child_async(
                 return value if result is None else result
         except NotImplementedError:
             pass
+
+        if _is_handler_implemented(child, "handle_primitive"):
+            try:
+                if _should_call_handler(child, "handle_primitive", value):
+                    primitive_handler = child.handle_primitive
+                    if asyncio.iscoroutinefunction(primitive_handler):
+                        result = await primitive_handler(
+                            value,  # type: ignore[arg-type]
+                            context,
+                            *child.process_args,
+                            **child.process_kwargs,
+                        )
+                    else:
+                        result = primitive_handler(
+                            value,  # type: ignore[arg-type]
+                            context,
+                            *child.process_args,
+                            **child.process_kwargs,
+                        )
+                    return value if result is None else result
+            except NotImplementedError:
+                pass
 
         return None
 
