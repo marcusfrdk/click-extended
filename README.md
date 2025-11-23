@@ -9,16 +9,22 @@
 ![release](https://github.com/marcusfrdk/click-extended/actions/workflows/release.yml/badge.svg)
 ![issues](https://img.shields.io/github/issues/marcusfrdk/click-extended)
 ![contributors](https://img.shields.io/github/contributors/marcusfrdk/click-extended)
-![PyPI](https://img.shields.io/pypi/v/click-extended)
-![License](https://img.shields.io/github/license/marcusfrdk/click-extended)
-![Downloads](https://static.pepy.tech/badge/click-extended)
-![Monthly Downloads](https://static.pepy.tech/badge/click-extended/month)
+![pypi](https://img.shields.io/pypi/v/click-extended)
+![license](https://img.shields.io/github/license/marcusfrdk/click-extended)
+![downloads](https://static.pepy.tech/badge/click-extended)
+![monthly downloads](https://static.pepy.tech/badge/click-extended/month)
 
 An extension of the [Click](https://github.com/pallets/click) library with additional features like aliasing, asynchronous support, an extended decorator API and more.
 
 ## Features
 
-TBD
+- **Decorator API**: Extend the functionality your command line by adding custom data sources, data processing pipelines, and more.
+- **Aliasing**: Use aliases for groups and commands to reduce boilerplate and code repetition.
+- **Tags**: Use tags to group several data sources together to apply batch processing.
+- **Async Support**: Native support for declaring functions and methods asynchronous.
+- **Environment Variables**: Built-in support for loading and using environment variables as a data source.
+- **Full Type Support**: Built with type-hinting from the ground up, meaning everything is fully typed.
+- **Improved Errors**: Improved error output like tips, debugging, and more.
 
 ## Installation
 
