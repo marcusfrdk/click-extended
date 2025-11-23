@@ -5,6 +5,8 @@
 ![top language](https://img.shields.io/github/languages/top/marcusfrdk/click-extended)
 ![code size](https://img.shields.io/github/languages/code-size/marcusfrdk/click-extended)
 ![last commit](https://img.shields.io/github/last-commit/marcusfrdk/click-extended)
+![tests](https://github.com/marcusfrdk/click-extended/actions/workflows/tests.yml/badge.svg)
+![release](https://github.com/marcusfrdk/click-extended/actions/workflows/release.yml/badge.svg)
 ![issues](https://img.shields.io/github/issues/marcusfrdk/click-extended)
 ![contributors](https://img.shields.io/github/contributors/marcusfrdk/click-extended)
 ![PyPI](https://img.shields.io/pypi/v/click-extended)
@@ -30,11 +32,152 @@ pip install click-extended
 
 ## Quick Start
 
-TBD
+### Basic Command
+
+```python
+from click_extended import command, argument, option
+
+@command(aliases="ping")
+@argument("value")
+@option("--count", "-c", default=1)
+def my_function(value: str, count: int):
+    """This is the help message for my_function."""
+    if _ in range(count):
+        print(value)
+
+if __name__ == "__main__":
+    my_function()
+
+# $ python cli.py "Hello world"
+# Hello world
+
+# $ python cli.py "Hello world" --count 3
+# Hello world
+# Hello world
+# Hello world
+```
+
+### Basic Command Line Interface
+
+```python
+from click_extended import group, argument, option
+
+@group()
+def my_group():
+    """This is the help message for my_group."""
+    print("Running initialization code...")
+
+@my_group.command(aliases=["ping", "repeat"])
+@argument("value")
+@option("--count", "-c", default=1)
+def my_function(value: str, count: int):
+    """This is the help message for my_function."""
+    if _ in range(count):
+        print(value)
+
+if __name__ == "__main__":
+    my_group()
+
+# $ python cli.py "Hello world"
+# Running initialization code...
+# Hello world
+
+# $ python cli.py "Hello world" --count 3
+# Running initialization code...
+# Hello world
+# Hello world
+# Hello world
+```
+
+### Using Environment Variables
+
+```python
+from click_extended import group, command, env
+
+@group()
+def my_group():
+    """This is the help message for my_group."""
+
+@my_group.command()
+@env("API_KEY")
+def my_function_1(api_key: str | None):
+    """This is the help message for my_function."""
+    print(f"The API key is: {api_key}")
+
+@my_group.command()
+@env("API_KEY", required=True)
+def my_function_2(api_key: str):
+    """This is the help message for my_function."""
+    print(f"The API key is: {api_key}")
+
+if __name__ == "__main__":
+    my_group()
+
+# $ python cli.py my_function_1
+# The API key is: None
+
+# $ API_KEY=api-key python cli.py my_function_1
+# The API key is: api-key
+
+# $ python cli.py my_function_2
+# ProcessError (my_function_2): Required environment variable 'API_KEY' is not set.
+
+# $ API_KEY=api-key python cli.py my_function_2
+# The API key is: api-key
+```
+
+### Custom Children
+
+```python
+from typing import Any
+
+from click_extended import group, argument, option
+from click_extended.classes import ChildNode
+from click_extended.types import Context, Decorator
+
+class MyCustomChild(ChildNode):
+    def handle_primitive(
+        self,
+        value: str,
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        if value == "invalid":
+            raise ValueError("The value 'invalid' is not valid")
+
+        return value.upper()
+
+def my_custom_child() -> Decorator:
+    """Checks if the value is invalid and converts it to uppercase."""
+    return MyCustomChild.as_decorator()
+
+
+@group()
+def my_group():
+    """This is the help message for my_group."""
+    print("Running initialization code...")
+
+@my_group.command(aliases=["ping", "repeat"])
+@argument("value")
+@my_custom_child()
+def my_function(value: str):
+    """This is the help message for my_function."""
+    print(f"The value '{value}' should be uppercase.")
+
+if __name__ == "__main__":
+    my_group()
+
+# $ python cli.py my_function valid
+# The value 'VALID' should be uppercase.
+
+# $ python cli.py my_function invalid
+# ValueError (my_function): "The value 'invalid' is not valid"
+```
 
 ## Documentation
 
-The full documentation is [available here](./docs/README.md) and introduces concepts like how things work, how to extend the library, how to use it, and much more.
+The full documentation is [available here](./docs/README.md) and goes through the full library, from explaining design choices, how to use the library, and much more.
 
 ## Contributing
 
@@ -42,7 +185,7 @@ Contributors are more than welcome to work on this project. Read the [contributi
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License, see the [license file](./LICENSE) for details.
 
 ## Acknowledgements
 
