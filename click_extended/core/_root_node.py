@@ -338,7 +338,7 @@ class RootNode(Node):
                             else None
                         )
 
-                        child = (
+                        current = (
                             next(iter(all_children.values()))
                             if all_children
                             else None
@@ -347,7 +347,7 @@ class RootNode(Node):
                         return Context(
                             root=root,
                             parent=parent,
-                            child=child,
+                            current=current,
                             click_context=context,
                             nodes=all_nodes,
                             parents=all_parents,

@@ -115,7 +115,7 @@ def process_children(
         context = Context(
             root=cast("RootNode", root_node),
             parent=parent,
-            child=child,
+            current=child,
             click_context=cast(click.Context, click_context),
             nodes=all_nodes,
             parents=all_parents,
@@ -228,7 +228,7 @@ async def process_children_async(
         context = Context(
             root=cast("RootNode", root_node),
             parent=parent,
-            child=child,
+            current=child,
             click_context=cast(click.Context, click_context),
             nodes=all_nodes,
             parents=all_parents,
