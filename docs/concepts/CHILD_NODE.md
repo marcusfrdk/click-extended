@@ -30,7 +30,7 @@ Child nodes are processed sequentially, so the `value` passed to the handler it 
 @argument("my_argument") # output: "Hello World"
 @to_lower_case() # output: "hello world"
 @is_valid() # output: None (skipped transforming value)
-@add_prefix("!") # output: "hello world!"
+@add_suffix("!") # output: "hello world!"
 def my_function(my_argument: str):
     print(my_argument) # prints: "hello world!"
 ```

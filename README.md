@@ -84,11 +84,11 @@ def my_function(value: str, count: int):
 if __name__ == "__main__":
     my_group()
 
-# $ python cli.py "Hello world"
+# $ python cli.py my_function "Hello world"
 # Running initialization code...
 # Hello world
 
-# $ python cli.py "Hello world" --count 3
+# $ python cli.py my_function "Hello world" --count 3
 # Running initialization code...
 # Hello world
 # Hello world
