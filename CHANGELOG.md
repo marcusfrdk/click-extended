@@ -6,11 +6,30 @@
 
 ### Added
 
+- **New Decorator API**: A new and simplified decorator API.
+- **ArgumentNode**: A parent node that receives its value from a positional command line argument.
+- **OptionNode**: A parent node that receives its value from a keyword command line argument.
+- **Context**: A universal context that is initialized and used within a tree and accessible from anywhere.
+- **Test Coverage**: Added test coverage as a part of the pipeline and achieved 92% test coverage.
+- **Humanize**: Added humanize utility module for better displaying iterables and types in a human readable format.
+- **Documentation**: A new and improved documentation.
+- **Phase System**: The framework applies initialization in phases with a clearer separation than before.
+
 ### Updated
+
+- **ParentNode**: The parent node is now a base class for `ArgumentNode`, `OptionNode`, and custom implementations while replacing the functionality of the old `GlobalNode`.
+- **Improved Errors**: Rehauled the error system to be more pythonic, display better errors, and a debug mode.
+- **Easier Custom Classes**: Implementing custom `ParentNode` and `ChildNode` classes is now much easier because of a simpler API.
 
 ### Removed
 
+- **ProcessContext**: Removed the context specific to handlers and made it more universal as the `Context`.
+- **GlobalNode**: Removed the `GlobalNode` as it's replaced with the `ParentNode`.
+
 ### Fixed
+
+- **Better Tag Support**: Tags are now deeply integrated into the framework.
+- **Better Async Support**: All handlers and parent node methods support both an asynchronous or a synchronous execution model.
 
 ## v0.3.2
 
