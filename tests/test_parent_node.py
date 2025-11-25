@@ -837,3 +837,111 @@ class TestParentNodeWithChildren:
         result = cli_runner.invoke(calculate, ["--num", "10"])
         assert result.exit_code == 0
         assert "Result: 20" in result.output
+
+
+class TestEnvNode:
+    """Test Env node specific functionality."""
+
+    def test_env_load_with_missing_env_name(self) -> None:
+        """Test that load raises ValueError when env_name is not provided."""
+        from click_extended.core.context import Context
+        from click_extended.core.env import Env
+
+        env_node = Env(name="test")
+        context = Context(
+            root=None,  # type: ignore[arg-type]
+            parent=None,  # type: ignore[arg-type]
+            current=env_node,
+            click_context=None,  # type: ignore[arg-type]
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(ValueError, match="env_name must be provided"):
+            env_node.load(context)
+
+    def test_env_required_but_not_set(self) -> None:
+        """Test that required env var raises ValueError when not set."""
+        import os
+
+        from click_extended.core.context import Context
+        from click_extended.core.env import Env
+
+        # Ensure the env var doesn't exist
+        env_name = "NONEXISTENT_REQUIRED_VAR_12345"
+        if env_name in os.environ:
+            del os.environ[env_name]
+
+        env_node = Env(name="test", env_name=env_name, required=True)
+        context = Context(
+            root=None,  # type: ignore[arg-type]
+            parent=None,  # type: ignore[arg-type]
+            current=env_node,
+            click_context=None,  # type: ignore[arg-type]
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            ValueError,
+            match=f"Required environment variable '{env_name}' is not set",
+        ):
+            env_node.load(context, env_name=env_name)
+
+    def test_env_check_required_returns_name_when_missing(self) -> None:
+        """Test check_required returns env name when required and missing."""
+        import os
+
+        from click_extended.core.env import Env
+
+        env_name = "NONEXISTENT_CHECK_VAR_67890"
+        if env_name in os.environ:
+            del os.environ[env_name]
+
+        env_node = Env(name="test", required=True)
+        # Simulate what the decorator does - store env_name in decorator_kwargs
+        env_node.decorator_kwargs["env_name"] = env_name
+
+        result = env_node.check_required()
+
+        assert result == env_name
+
+    def test_env_check_required_returns_none_when_not_required(self) -> None:
+        """Test check_required returns None when not required."""
+        import os
+
+        from click_extended.core.env import Env
+
+        env_name = "NONEXISTENT_OPTIONAL_VAR"
+        if env_name in os.environ:
+            del os.environ[env_name]
+
+        env_node = Env(name="test", required=False)
+        env_node.decorator_kwargs["env_name"] = env_name
+
+        result = env_node.check_required()
+
+        assert result is None
+
+    def test_env_check_required_returns_none_when_set(self) -> None:
+        """Test check_required returns None when env var is set."""
+        import os
+
+        from click_extended.core.env import Env
+
+        env_name = "EXISTING_REQUIRED_VAR"
+        os.environ[env_name] = "some_value"
+
+        try:
+            env_node = Env(name="test", required=True)
+            env_node.decorator_kwargs["env_name"] = env_name
+            result = env_node.check_required()
+            assert result is None
+        finally:
+            del os.environ[env_name]

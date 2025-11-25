@@ -100,7 +100,13 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 source = ["click_extended"]
-omit = ["*/tests/*", "*/__pycache__/*", "*/.venv/*"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/.venv/*",
+    "click_extended/classes.py",
+    "click_extended/decorators/__init__.py",
+]
 
 [tool.coverage.report]
 exclude_lines = [

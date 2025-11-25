@@ -263,6 +263,60 @@ class TestHumanizeList:
         result = humanize_iterable(["str", "int"], wrap=("", ""))
         assert result == "str and int"
 
+    def test_suffix_single_item(self) -> None:
+        """Test single item with singular suffix."""
+        result = humanize_iterable(
+            ["apple"],
+            suffix_singular=" is available",
+            suffix_plural=" are available",
+        )
+        assert result == "apple is available"
+
+    def test_suffix_multiple_items(self) -> None:
+        """Test multiple items with plural suffix."""
+        result = humanize_iterable(
+            ["apple", "banana"],
+            suffix_singular=" is available",
+            suffix_plural=" are available",
+        )
+        assert result == "apple and banana are available"
+
+    def test_only_singular_suffix_raises_error(self) -> None:
+        """Test that providing only singular suffix raises ValueError."""
+        with pytest.raises(
+            ValueError,
+            match="Both suffix_singular and suffix_plural must be provided together",
+        ):
+            humanize_iterable(["str"], suffix_singular="!")
+
+    def test_only_plural_suffix_raises_error(self) -> None:
+        """Test that providing only plural suffix raises ValueError."""
+        with pytest.raises(
+            ValueError,
+            match="Both suffix_singular and suffix_plural must be provided together",
+        ):
+            humanize_iterable(["str", "int"], suffix_plural="!")
+
+    def test_prefix_and_suffix_together(self) -> None:
+        """Test using both prefix and suffix."""
+        result = humanize_iterable(
+            ["apple"],
+            prefix_singular="The item ",
+            prefix_plural="The items ",
+            suffix_singular=" is ready",
+            suffix_plural=" are ready",
+        )
+        assert result == "The item apple is ready"
+
+        result = humanize_iterable(
+            ["apple", "banana"],
+            prefix_singular="The item ",
+            prefix_plural="The items ",
+            suffix_singular=" is ready",
+            suffix_plural=" are ready",
+        )
+        assert result == "The items apple and banana are ready"
+
 
 class TestHumanizeType:
     """Tests for the humanize_type function."""
@@ -334,3 +388,20 @@ class TestHumanizeType:
         """Test set types."""
         assert humanize_type(set[str]) == "set[str]"
         assert humanize_type(set[int | str]) == "set[int | str]"
+
+    def test_none_type(self) -> None:
+        """Test None type formatting."""
+        assert humanize_type(type(None)) == "None"
+        assert humanize_type(str | None) == "str and None"
+        assert humanize_type(int | None) == "int and None"
+
+    def test_type_without_name_attribute(self) -> None:
+        """Test type that doesn't have __name__ attribute."""
+
+        class MockType:
+            def __str__(self) -> str:
+                return "MockCustomType"
+
+        mock_type = MockType()
+        result = humanize_type(mock_type)  # type: ignore[arg-type]
+        assert result == "MockCustomType"

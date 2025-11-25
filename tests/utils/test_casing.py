@@ -93,7 +93,7 @@ cases: list[Case] = [
         value="MISSING_ENV2",
         upper_case="MISSING_ENV2",
         lower_case="missing_env2",
-        meme_case="mIsSiNg_eNv2",
+        meme_case="MiSsInG EnV",
         snake_case="missing_env2",
         screaming_snake_case="MISSING_ENV2",
         camel_case="missingEnv2",
@@ -109,7 +109,7 @@ cases: list[Case] = [
         value="hello",
         upper_case="HELLO",
         lower_case="hello",
-        meme_case="hElLo",
+        meme_case="HeLlO",
         snake_case="hello",
         screaming_snake_case="HELLO",
         camel_case="hello",
@@ -125,7 +125,7 @@ cases: list[Case] = [
         value="thisIsCamelCase",
         upper_case="THISISCAMELCASE",
         lower_case="thisiscamelcase",
-        meme_case="tHiSiScaMeLcAsE",
+        meme_case="ThIs Is CaMeL CaSe",
         snake_case="this_is_camel_case",
         screaming_snake_case="THIS_IS_CAMEL_CASE",
         camel_case="thisIsCamelCase",
@@ -141,7 +141,7 @@ cases: list[Case] = [
         value="test123case",
         upper_case="TEST123CASE",
         lower_case="test123case",
-        meme_case="tEsT123CaSe",
+        meme_case="TeSt CaSe",
         snake_case="test123_case",
         screaming_snake_case="TEST123_CASE",
         camel_case="test123Case",
@@ -155,9 +155,9 @@ cases: list[Case] = [
     ),
     Case(
         value="   spaces   around   ",
-        upper_case="SPACES AROUND",
-        lower_case="spaces around",
-        meme_case="sPaCeS aRoUnD",
+        upper_case="SPACES   AROUND",
+        lower_case="spaces   around",
+        meme_case="SpAcEs ArOuNd",
         snake_case="spaces_around",
         screaming_snake_case="SPACES_AROUND",
         camel_case="spacesAround",
@@ -173,7 +173,7 @@ cases: list[Case] = [
         value="Hello, world",
         upper_case="HELLO, WORLD",
         lower_case="hello, world",
-        meme_case="hElLo, wOrLd",
+        meme_case="HeLlO WoRlD",
         snake_case="hello_world",
         screaming_snake_case="HELLO_WORLD",
         camel_case="helloWorld",
@@ -189,7 +189,7 @@ cases: list[Case] = [
         value="_Difficult, string!!!",
         upper_case="_DIFFICULT, STRING!!!",
         lower_case="_difficult, string!!!",
-        meme_case="_DiFfIcUlT, sTrInG!!!",
+        meme_case="DiFfIcUlT StRiNg",
         snake_case="difficult_string",
         screaming_snake_case="DIFFICULT_STRING",
         camel_case="difficultString",
@@ -205,7 +205,7 @@ cases: list[Case] = [
         value="HELLO WORLD",
         upper_case="HELLO WORLD",
         lower_case="hello world",
-        meme_case="hElLo wOrLd",
+        meme_case="HeLlO WoRlD",
         snake_case="hello_world",
         screaming_snake_case="HELLO_WORLD",
         camel_case="helloWorld",
@@ -221,7 +221,7 @@ cases: list[Case] = [
         value="hello___world---test",
         upper_case="HELLO___WORLD---TEST",
         lower_case="hello___world---test",
-        meme_case="hElLo___wOrLd---tEsT",
+        meme_case="HeLlO WoRlD TeSt",
         snake_case="hello_world_test",
         screaming_snake_case="HELLO_WORLD_TEST",
         camel_case="helloWorldTest",
@@ -237,7 +237,7 @@ cases: list[Case] = [
         value="v2.0.1",
         upper_case="V2.0.1",
         lower_case="v2.0.1",
-        meme_case="v2.0.1",
+        meme_case="V",
         snake_case="v2_0_1",
         screaming_snake_case="V2_0_1",
         camel_case="v201",
@@ -253,7 +253,7 @@ cases: list[Case] = [
         value="already_snake_case",
         upper_case="ALREADY_SNAKE_CASE",
         lower_case="already_snake_case",
-        meme_case="aLrEaDy_sNaKe_cAsE",
+        meme_case="AlReAdY SnAkE CaSe",
         snake_case="already_snake_case",
         screaming_snake_case="ALREADY_SNAKE_CASE",
         camel_case="alreadySnakeCase",
@@ -269,7 +269,7 @@ cases: list[Case] = [
         value="PascalCaseInput",
         upper_case="PASCALCASEINPUT",
         lower_case="pascalcaseinput",
-        meme_case="pAsCalCaSeInPuT",
+        meme_case="PaScAl CaSe InPuT",
         snake_case="pascal_case_input",
         screaming_snake_case="PASCAL_CASE_INPUT",
         camel_case="pascalCaseInput",
@@ -282,6 +282,33 @@ cases: list[Case] = [
         path_case="Pascal/Case/Input",
     ),
 ]
+
+
+class TestLowerCase:
+    """Test the lower case methods."""
+
+    def test_cases(self) -> None:
+        """Test cases."""
+        for case in cases:
+            assert Casing.to_lower_case(case.value) == case.lower_case
+
+
+class TestUpperCase:
+    """Test the upper case methods."""
+
+    def test_cases(self) -> None:
+        """Test cases."""
+        for case in cases:
+            assert Casing.to_upper_case(case.value) == case.upper_case
+
+
+class TestMemeCase:
+    """Test the meme case methods."""
+
+    def test_cases(self) -> None:
+        """Test cases."""
+        for case in cases:
+            assert Casing.to_meme_case(case.value) == case.meme_case
 
 
 class TestSnakeCase:

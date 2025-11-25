@@ -272,6 +272,20 @@ class TestRootNodeDecorator:
         result = cli_runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
 
+    def test_group_decorator_with_explicit_help(self, cli_runner: Any) -> None:
+        """Test @group() decorator with explicit help parameter."""
+
+        @group(help="Explicit help text")
+        def admin() -> None:
+            """Docstring that should be ignored."""
+            pass
+
+        # Help text should be the explicit parameter
+        result = cli_runner.invoke(admin, ["--help"])
+        assert result.exit_code == 0
+        assert "Explicit help text" in result.output
+        assert "Docstring that should be ignored" not in result.output
+
     def test_command_with_return_value(self, cli_runner: Any) -> None:
         """Test that command return values are preserved."""
 
@@ -1898,9 +1912,329 @@ class TestRootNodeAliasInvocation:
         """Test that empty aliases are filtered out."""
         from click_extended.core.command import Command
 
+        cmd = Command(name="build", aliases=["", "b", "", "compile"])
+        filtered = [a for a in cmd.aliases if a]  # type: ignore[union-attr]
+
+        assert len(filtered) == 2
+        assert "b" in filtered
+        assert "compile" in filtered
+
+
+class TestClickCommandAndGroupClasses:
+    """Test the ClickCommand and ClickGroup classes."""
+
+    def test_click_command_requires_root_instance(self) -> None:
+        """Test that ClickCommand raises ValueError without root_instance."""
+        from click_extended.core._click_command import ClickCommand
+
+        with pytest.raises(
+            ValueError, match="root_instance is required for ClickCommand"
+        ):
+            ClickCommand(name="test", root_instance=None)
+
+    def test_click_group_requires_root_instance(self) -> None:
+        """Test that ClickGroup raises ValueError without root_instance."""
+        from click_extended.core._click_group import ClickGroup
+
+        with pytest.raises(
+            ValueError, match="root_instance is required for ClickGroup"
+        ):
+            ClickGroup(name="test", root_instance=None)
+
+    def test_click_command_with_root_instance(self) -> None:
+        """Test that ClickCommand works with valid root_instance."""
+        from click_extended.core._click_command import ClickCommand
+        from click_extended.core.command import Command
+
+        root = Command(name="test")
+        click_cmd = ClickCommand(name="test", root_instance=root)
+
+        assert click_cmd.root == root
+        assert click_cmd.name == "test"
+
+    def test_click_group_with_root_instance(self) -> None:
+        """Test that ClickGroup works with valid root_instance."""
+        from click_extended.core._click_group import ClickGroup
+        from click_extended.core.group import Group
+
+        root = Group(name="test")
+        click_grp = ClickGroup(name="test", root_instance=root)
+
+        assert click_grp.root == root
+        assert click_grp.name == "test"
+
+    def test_click_group_add_command_with_string_alias(
+        self, cli_runner: Any
+    ) -> None:
+        """Test ClickGroup.add_command with command that has string alias."""
+        import click
+
+        from click_extended.core._click_group import ClickGroup
+        from click_extended.core.command import Command
+        from click_extended.core.group import Group
+
+        # Create a group
+        root_group = Group(name="cli")
+        click_grp = ClickGroup(name="cli", root_instance=root_group)
+
+        # Create a command with a single alias
+        root_cmd = Command(name="deploy", aliases="d")
+        click_cmd = click.Command(
+            name="deploy", callback=lambda: click.echo("Deploying")
+        )
+        click_cmd.aliases = "d"  # type: ignore[attr-defined]
+
+        # Add command to group
+        click_grp.add_command(click_cmd)
+
+        # Both name and alias should work
+        assert "deploy" in click_grp.commands
+        assert "d" in click_grp.commands
+
+    def test_click_group_add_command_with_list_aliases(
+        self, cli_runner: Any
+    ) -> None:
+        """Test ClickGroup.add_command with command that has list of aliases."""
+        import click
+
+        from click_extended.core._click_group import ClickGroup
+        from click_extended.core.group import Group
+
+        # Create a group
+        root_group = Group(name="cli")
+        click_grp = ClickGroup(name="cli", root_instance=root_group)
+
+        # Create a command with multiple aliases
+        click_cmd = click.Command(
+            name="deploy", callback=lambda: click.echo("Deploying")
+        )
+        click_cmd.aliases = ["d", "push", "release"]  # type: ignore[attr-defined]
+
+        # Add command to group
+        click_grp.add_command(click_cmd)
+
+        # Name and all aliases should work
+        assert "deploy" in click_grp.commands
+        assert "d" in click_grp.commands
+        assert "push" in click_grp.commands
+        assert "release" in click_grp.commands
+
+    def test_click_group_command_decorator_extracts_docstring(
+        self, cli_runner: Any
+    ) -> None:
+        """Test that .command() decorator extracts help from docstring."""
+
+        @group()
+        def cli() -> None:
+            """Main CLI."""
+            pass
+
+        @cli.command()  # type: ignore[misc]
+        def deploy() -> None:
+            """Deploy the application.
+
+            This is the full docstring.
+            """
+            pass
+
+        # Help text should be extracted from first line of docstring
+        result = cli_runner.invoke(cli, ["--help"])
+        assert "Deploy the application" in result.output
+
+    def test_click_group_group_decorator_extracts_docstring(
+        self, cli_runner: Any
+    ) -> None:
+        """Test that .group() decorator extracts help from docstring."""
+
+        @group()
+        def cli() -> None:
+            """Main CLI."""
+            pass
+
+        @cli.group()  # type: ignore[misc]
+        def admin() -> None:
+            """Admin commands.
+
+            These are administrative commands.
+            """
+            pass
+
+        # Help text should be extracted from first line of docstring
+        result = cli_runner.invoke(cli, ["--help"])
+        assert "Admin commands" in result.output
+
+    def test_click_group_command_with_explicit_help(
+        self, cli_runner: Any
+    ) -> None:
+        """Test that .command() decorator uses explicit help parameter."""
+
+        @group()
+        def cli() -> None:
+            """Main CLI."""
+            pass
+
+        @cli.command(help="Explicit help text")  # type: ignore[misc]
+        def deploy() -> None:
+            """Docstring that should be ignored."""
+            pass
+
+        # Help text should be the explicit parameter, not docstring
+        result = cli_runner.invoke(cli, ["--help"])
+        assert "Explicit help text" in result.output
+        assert "Docstring that should be ignored" not in result.output
+
+    def test_click_group_group_with_explicit_help(
+        self, cli_runner: Any
+    ) -> None:
+        """Test that .group() decorator uses explicit help parameter."""
+
+        @group()
+        def cli() -> None:
+            """Main CLI."""
+            pass
+
+        @cli.group(help="Explicit group help")  # type: ignore[misc]
+        def admin() -> None:
+            """Docstring that should be ignored."""
+            pass
+
+        # Help text should be the explicit parameter, not docstring
+        result = cli_runner.invoke(cli, ["--help"])
+        assert "Explicit group help" in result.output
+        assert "Docstring that should be ignored" not in result.output
+
+    def test_click_group_group_decorator_with_aliases(
+        self, cli_runner: Any
+    ) -> None:
+        """Test .group() decorator with aliases parameter."""
+
+        @group()
+        def cli() -> None:
+            """Main CLI."""
+            pass
+
+        @cli.group(aliases="adm", help="Admin commands")  # type: ignore[misc]
+        def admin() -> None:
+            """Admin commands."""
+            pass
+
+        # Both name and alias should work
+        result1 = cli_runner.invoke(cli, ["admin", "--help"])
+        assert result1.exit_code == 0
+
+        result2 = cli_runner.invoke(cli, ["adm", "--help"])
+        assert result2.exit_code == 0
+
+    def test_click_group_format_commands_with_empty_aliases(
+        self, cli_runner: Any
+    ) -> None:
+        """Test format_commands with command that has empty string aliases."""
+        import click
+
+        from click_extended.core._click_group import ClickGroup
+        from click_extended.core.group import Group
+
+        # Create a group
+        root_group = Group(name="cli")
+        click_grp = ClickGroup(name="cli", root_instance=root_group)
+
+        # Create a command with aliases including empty strings
+        click_cmd = click.Command(
+            name="deploy", callback=lambda: click.echo("Deploying")
+        )
+        click_cmd.aliases = ["d", "", "push", ""]  # type: ignore[attr-defined]
+
+        # Add command to group
+        click_grp.add_command(click_cmd)
+
+        # Format commands - should filter empty aliases
+        formatter = click.HelpFormatter()
+        click_grp.format_commands(click.Context(click_grp), formatter)
+
+        # Should have formatted properly with non-empty aliases
+        assert "deploy (d, push)" in formatter.getvalue()
+
+    def test_group_decorator_extracts_docstring_help(
+        self, cli_runner: Any
+    ) -> None:
+        """Test that group() decorator extracts help from docstring."""
+
+        @group()
+        def admin() -> None:
+            """Admin panel commands.
+
+            Full description of admin commands.
+            """
+            pass
+
+        # Help text should be extracted from first line
+        result = cli_runner.invoke(admin, ["--help"])
+        assert result.exit_code == 0
+        assert "Admin panel commands" in result.output
+
+    def test_click_group_add_method_returns_self(self) -> None:
+        """Test that ClickGroup.add() returns self for chaining."""
+        import click
+
+        from click_extended.core._click_group import ClickGroup
+        from click_extended.core.group import Group
+
+        root_group = Group(name="cli")
+        click_grp = ClickGroup(name="cli", root_instance=root_group)
+
+        cmd1 = click.Command(name="cmd1", callback=lambda: None)
+        cmd2 = click.Command(name="cmd2", callback=lambda: None)
+
+        # Test method chaining
+        result = click_grp.add(cmd1).add(cmd2)
+
+        assert result is click_grp
+        assert "cmd1" in click_grp.commands
+        assert "cmd2" in click_grp.commands
+
+
+class TestCommandAliases:
+    """Test command alias functionality."""
+
+    def test_aliases_with_special_characters_filtered(
+        self, cli_runner: Any
+    ) -> None:
+
         # Creating with aliases including empty strings
         cmd = Command(name="test", aliases=["t", "", "check"])
         formatted = cmd.format_name_with_aliases()
 
         # Empty strings are filtered out by format_name_with_aliases
         assert formatted == "test (t, check)"
+
+    def test_format_name_with_aliases_no_aliases(self) -> None:
+        """Test format_name_with_aliases when no aliases provided."""
+        cmd = Command(name="test")
+        formatted = cmd.format_name_with_aliases()
+        assert formatted == "test"
+
+    def test_format_name_with_aliases_only_empty_strings(self) -> None:
+        """Test format_name_with_aliases when all aliases are empty."""
+        cmd = Command(name="test", aliases=["", ""])
+        formatted = cmd.format_name_with_aliases()
+        assert formatted == "test"
+
+
+class TestClickDecoratorMethods:
+    """Test _get_click_decorator methods."""
+
+    def test_command_get_click_decorator(self) -> None:
+        """Test Command._get_click_decorator returns click.command."""
+        from click_extended.core.command import Command
+
+        decorator = Command._get_click_decorator()
+        # Should return click.command function
+        assert callable(decorator)
+
+    def test_group_get_click_decorator(self) -> None:
+        """Test Group._get_click_decorator returns click.group."""
+        from click_extended.core.group import Group
+
+        decorator = Group._get_click_decorator()
+        # Should return click.group function
+        assert callable(decorator)

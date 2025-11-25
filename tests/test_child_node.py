@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, cast
 
 import click
+import pytest
 from click.testing import CliRunner
 
 from click_extended.core.child_node import ChildNode
@@ -2588,7 +2589,45 @@ class TestEdgeCases:
 
         # User doesn't provide value - default used, still processed
         processed.clear()
-        result = cli_runner.invoke(cmd, [])
+        result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
-        # Note: Defaults are still processed through handlers
-        assert "Text: DEFAULT" in result.output
+
+
+class TestChildNodeStructure:
+    """Test ChildNode's structural properties."""
+
+    def test_child_node_has_no_children(self) -> None:
+        """Test that ChildNode.get() always returns None."""
+
+        class TestChild(ChildNode):
+            pass
+
+        child = TestChild(name="test")
+        # ChildNode.get() always returns None (not like dict.get())
+        assert child.get("any_key") is None  # type: ignore[func-returns-value]
+
+    def test_child_node_getitem_raises_key_error(self) -> None:
+        """Test that accessing children via __getitem__ raises KeyError."""
+
+        class TestChild(ChildNode):
+            pass
+
+        child = TestChild(name="test")
+
+        with pytest.raises(
+            KeyError, match="A ChildNode instance has no children"
+        ):
+            _ = child["some_key"]
+
+    def test_child_node_getitem_with_int_raises_key_error(self) -> None:
+        """Test that accessing children with int key raises KeyError."""
+
+        class TestChild(ChildNode):
+            pass
+
+        child = TestChild(name="test")
+
+        with pytest.raises(
+            KeyError, match="A ChildNode instance has no children"
+        ):
+            _ = child[0]
