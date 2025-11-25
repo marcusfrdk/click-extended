@@ -153,7 +153,7 @@ class RootNode(Node):
         parent_items = list(instance.tree.root.children.items())
         for _parent_name, parent_node in reversed(parent_items):
             if isinstance(parent_node, OptionNode):
-                params: list[str] = []
+                params: list[str] = [parent_node.name]
                 if parent_node.short:
                     params.append(parent_node.short)
                 params.append(parent_node.long)
