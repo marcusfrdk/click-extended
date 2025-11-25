@@ -18,10 +18,10 @@ from click.utils import echo
 from click_extended.core._tree import Tree
 from click_extended.core.argument_node import ArgumentNode
 from click_extended.core.context import Context
+from click_extended.core.env import Env
 from click_extended.core.node import Node
 from click_extended.core.option_node import OptionNode
 from click_extended.core.tag import Tag
-from click_extended.decorators.parents.env import Env
 from click_extended.errors import (
     ContextAwareError,
     NameExistsError,

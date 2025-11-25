@@ -12,13 +12,13 @@ if TYPE_CHECKING:
     from click import Context as ClickContext
 
     from click_extended.core._root_node import RootNode
+    from click_extended.core.argument import Argument
     from click_extended.core.child_node import ChildNode
+    from click_extended.core.env import Env
     from click_extended.core.node import Node
+    from click_extended.core.option import Option
     from click_extended.core.parent_node import ParentNode
     from click_extended.core.tag import Tag
-    from click_extended.decorators.parents.argument import Argument
-    from click_extended.decorators.parents.env import Env
-    from click_extended.decorators.parents.option import Option
 
 
 @dataclass(frozen=True)
@@ -119,7 +119,7 @@ class Context:
             bool:
                 `True` if current node is an `Argument`, `False` otherwise.
         """
-        from click_extended.decorators.parents.argument import Argument
+        from click_extended.core.argument import Argument
 
         return isinstance(self.current, Argument)
 
@@ -131,7 +131,7 @@ class Context:
             bool:
                 `True` if current node is an `Option`, `False` otherwise.
         """
-        from click_extended.decorators.parents.option import Option
+        from click_extended.core.option import Option
 
         return isinstance(self.current, Option)
 
@@ -143,7 +143,7 @@ class Context:
             bool:
                 `True` if current node is an `Env`, `False` otherwise.
         """
-        from click_extended.decorators.parents.env import Env
+        from click_extended.core.env import Env
 
         return isinstance(self.current, Env)
 
@@ -288,7 +288,7 @@ class Context:
             list[Argument]:
                 List of provided argument nodes.
         """
-        from click_extended.decorators.parents.argument import Argument
+        from click_extended.core.argument import Argument
 
         return [
             parent
@@ -304,7 +304,7 @@ class Context:
             list[Option]:
                 List of provided option nodes.
         """
-        from click_extended.decorators.parents.option import Option
+        from click_extended.core.option import Option
 
         return [
             parent
@@ -320,7 +320,7 @@ class Context:
             list[Env]:
                 List of provided env nodes.
         """
-        from click_extended.decorators.parents.env import Env
+        from click_extended.core.env import Env
 
         return [
             parent
@@ -354,7 +354,7 @@ class Context:
             list[Argument]:
                 List of all argument nodes.
         """
-        from click_extended.decorators.parents.argument import Argument
+        from click_extended.core.argument import Argument
 
         return [
             parent
@@ -370,7 +370,7 @@ class Context:
             list[Option]:
                 List of all option nodes.
         """
-        from click_extended.decorators.parents.option import Option
+        from click_extended.core.option import Option
 
         return [
             parent
@@ -386,7 +386,7 @@ class Context:
             list[Env]:
                 List of all env nodes.
         """
-        from click_extended.decorators.parents.env import Env
+        from click_extended.core.env import Env
 
         return [
             parent

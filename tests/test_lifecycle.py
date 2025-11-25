@@ -6,7 +6,7 @@ from conftest import SimpleChild, ValidatingChild, assert_error, assert_success
 
 from click_extended.core.child_node import ChildNode
 from click_extended.core.command import command
-from click_extended.decorators.parents.option import option
+from click_extended.core.option import option
 
 
 class TestPhase1Collection:

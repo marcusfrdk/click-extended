@@ -11,7 +11,7 @@ from click.testing import CliRunner
 from click_extended.core.child_node import ChildNode
 from click_extended.core.command import command
 from click_extended.core.context import Context
-from click_extended.decorators.parents.option import option
+from click_extended.core.option import option
 
 
 class TestSyncHandlerDispatch:
@@ -1370,7 +1370,7 @@ class TestParentNodeIntegration:
 
     def test_child_with_argument_parent(self, cli_runner: CliRunner) -> None:
         """Child node processes @argument value."""
-        from click_extended.decorators.parents.argument import argument
+        from click_extended.core.argument import argument
 
         class DoubleHandler(ChildNode):
             def handle_primitive(self, value: int, context: Context) -> int:
@@ -1388,7 +1388,7 @@ class TestParentNodeIntegration:
 
     def test_child_with_env_parent(self, cli_runner: CliRunner) -> None:
         """Child node processes @env value."""
-        from click_extended.decorators.parents.env import env
+        from click_extended.core.env import env
 
         class PrefixHandler(ChildNode):
             def handle_primitive(self, value: str, context: Context) -> str:
@@ -1547,7 +1547,7 @@ class TestParentNodeIntegration:
         self, cli_runner: CliRunner
     ) -> None:
         """Child handles argument with nargs=-1 (unlimited)."""
-        from click_extended.decorators.parents.argument import argument
+        from click_extended.core.argument import argument
 
         class ListToStringHandler(ChildNode):
             def handle_flat_tuple(
@@ -1567,7 +1567,7 @@ class TestParentNodeIntegration:
 
     def test_env_with_async_transformer(self, cli_runner: CliRunner) -> None:
         """Env value transformed by async handler."""
-        from click_extended.decorators.parents.env import env
+        from click_extended.core.env import env
 
         class AsyncEnvHandler(ChildNode):
             async def handle_primitive(

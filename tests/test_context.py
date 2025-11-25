@@ -7,14 +7,14 @@ import click
 import pytest
 
 from click_extended.core._root_node import RootNode
+from click_extended.core.argument import Argument
 from click_extended.core.child_node import ChildNode
 from click_extended.core.context import Context
+from click_extended.core.env import Env
 from click_extended.core.group import Group
 from click_extended.core.node import Node
+from click_extended.core.option import Option
 from click_extended.core.tag import Tag
-from click_extended.decorators.parents.argument import Argument
-from click_extended.decorators.parents.env import Env
-from click_extended.decorators.parents.option import Option
 
 
 class StubNode(Node):
