@@ -83,4 +83,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests/ -v --cov=click_extended --cov-report=term-missing
+          pytest tests/ -v --cov=click_extended --cov-report=term-missing --cov-fail-under=80
