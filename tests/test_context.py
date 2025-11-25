@@ -7,18 +7,16 @@ import click
 import pytest
 
 from click_extended.core._root_node import RootNode
-from click_extended.core.argument import Argument
 from click_extended.core.child_node import ChildNode
 from click_extended.core.context import Context
-from click_extended.core.env import Env
-from click_extended.core.global_node import GlobalNode
 from click_extended.core.group import Group
 from click_extended.core.node import Node
-from click_extended.core.option import Option
 from click_extended.core.tag import Tag
+from click_extended.decorators.parents.argument import Argument
+from click_extended.decorators.parents.env import Env
+from click_extended.decorators.parents.option import Option
 
 
-# Simple stub classes for testing isinstance checks
 class StubNode(Node):
     """Stub Node for testing."""
 
@@ -112,15 +110,6 @@ def mock_group() -> Mock:
 
 
 @pytest.fixture
-def mock_global_node() -> Mock:
-    """Create a mock GlobalNode."""
-    gnode = Mock(spec=GlobalNode)
-    gnode.name = "test_global"
-    gnode.__class__ = GlobalNode  # type: ignore[assignment]
-    return gnode
-
-
-@pytest.fixture
 def basic_context(mock_root_node: Any, mock_click_context: Any) -> Context:
     """Create a basic Context with minimal setup."""
     return Context(
@@ -132,7 +121,6 @@ def basic_context(mock_root_node: Any, mock_click_context: Any) -> Context:
         parents={},
         tags={},
         children={},
-        globals={},
         data={},
         debug=False,
     )
@@ -147,7 +135,6 @@ def full_context(
     mock_env: Any,
     mock_tag: Any,
     mock_command: Any,
-    mock_global_node: Any,
 ) -> Context:
     """Create a fully populated Context for testing."""
     return Context(
@@ -162,7 +149,6 @@ def full_context(
             "test_env": mock_env,
             "test_tag": mock_tag,
             "test_command": mock_command,
-            "test_global": mock_global_node,
         },
         parents={
             "test_arg": mock_argument,
@@ -171,7 +157,6 @@ def full_context(
         },
         tags={"test_tag": mock_tag},
         children={"test_command": mock_command},
-        globals={"test_global": mock_global_node},
         data={"key": "value"},
         debug=False,
     )
@@ -188,7 +173,6 @@ def _replace_current(context: Context, current: Any) -> Context:
         parents=context.parents,
         tags=context.tags,
         children=context.children,
-        globals=context.globals,
         data=context.data,
         debug=context.debug,
     )
@@ -229,20 +213,6 @@ class TestContextCheckMethods:
         context = _replace_current(basic_context, mock_command)
         assert context.is_parent() is False
 
-    def test_is_global_with_global_node(
-        self, basic_context: Context, mock_global_node: Any
-    ) -> None:
-        """Test is_global() returns True when current is GlobalNode."""
-        context = _replace_current(basic_context, mock_global_node)
-        assert context.is_global() is True
-
-    def test_is_global_with_non_global_node(
-        self, basic_context: Context, mock_command: Any
-    ) -> None:
-        """Test is_global() returns False when current is not GlobalNode."""
-        context = _replace_current(basic_context, mock_command)
-        assert context.is_global() is False
-
     def test_is_tag_with_tag_parent(
         self, basic_context: Context, mock_tag: Any, mock_command: Any
     ) -> None:
@@ -257,7 +227,6 @@ class TestContextCheckMethods:
             parents=context.parents,
             tags=context.tags,
             children=context.children,
-            globals=context.globals,
             data=context.data,
             debug=context.debug,
         )
@@ -277,7 +246,6 @@ class TestContextCheckMethods:
             parents=context.parents,
             tags=context.tags,
             children=context.children,
-            globals=context.globals,
             data=context.data,
             debug=context.debug,
         )

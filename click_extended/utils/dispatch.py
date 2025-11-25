@@ -194,7 +194,6 @@ def _validate_handler_type(
             actual_type = type(value).__name__
             suggestion = ""
 
-            # Add helpful suggestions
             if actual_type == "str" and int in expected_types:
                 suggestion = (
                     "\nTip: Add type=int to your option/argument "

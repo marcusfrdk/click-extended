@@ -3,6 +3,7 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 # pylint: disable=import-outside-toplevel
+# pylint: disable=protected-access
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -11,14 +12,13 @@ if TYPE_CHECKING:
     from click import Context as ClickContext
 
     from click_extended.core._root_node import RootNode
-    from click_extended.core.argument import Argument
     from click_extended.core.child_node import ChildNode
-    from click_extended.core.env import Env
-    from click_extended.core.global_node import GlobalNode
     from click_extended.core.node import Node
-    from click_extended.core.option import Option
     from click_extended.core.parent_node import ParentNode
     from click_extended.core.tag import Tag
+    from click_extended.decorators.parents.argument import Argument
+    from click_extended.decorators.parents.env import Env
+    from click_extended.decorators.parents.option import Option
 
 
 @dataclass(frozen=True)
@@ -44,11 +44,9 @@ class Context:
         All tag instances by name.
       children (dict[str, ChildNode]):
         All child node instances.
-      globals (dict[str, GlobalNode]):
-        All global node instances.
       data (dict[str, Any]):
         Shared data store accessible across all nodes. Use this to pass
-        custom data between global nodes and child nodes.
+        custom data between nodes.
       debug (bool):
         Debug mode flag. When `True`, handler exceptions show full tracebacks.
         Set via `@debug()` decorator.
@@ -62,11 +60,8 @@ class Context:
     parents: dict[str, "ParentNode"]
     tags: dict[str, "Tag"]
     children: dict[str, "ChildNode"]
-    globals: dict[str, "GlobalNode"]
     data: dict[str, Any]
     debug: bool = False
-
-    # Check methods
 
     def is_root(self) -> bool:
         """
@@ -91,18 +86,6 @@ class Context:
         from click_extended.core.parent_node import ParentNode
 
         return isinstance(self.current, ParentNode)
-
-    def is_global(self) -> bool:
-        """
-        Check if the current node is a `GlobalNode` instance.
-
-        Returns:
-            bool:
-                `True` if current node is a `GlobalNode`, `False` otherwise.
-        """
-        from click_extended.core.global_node import GlobalNode
-
-        return isinstance(self.current, GlobalNode)
 
     def is_tag(self) -> bool:
         """
@@ -136,7 +119,7 @@ class Context:
             bool:
                 `True` if current node is an `Argument`, `False` otherwise.
         """
-        from click_extended.core.argument import Argument
+        from click_extended.decorators.parents.argument import Argument
 
         return isinstance(self.current, Argument)
 
@@ -148,7 +131,7 @@ class Context:
             bool:
                 `True` if current node is an `Option`, `False` otherwise.
         """
-        from click_extended.core.option import Option
+        from click_extended.decorators.parents.option import Option
 
         return isinstance(self.current, Option)
 
@@ -160,7 +143,7 @@ class Context:
             bool:
                 `True` if current node is an `Env`, `False` otherwise.
         """
-        from click_extended.core.env import Env
+        from click_extended.decorators.parents.env import Env
 
         return isinstance(self.current, Env)
 
@@ -177,8 +160,6 @@ class Context:
         if isinstance(self.current, ParentNode):
             return len(self.current.tags) > 0
         return False
-
-    # Getter methods
 
     def get_root(self) -> "RootNode":
         """
@@ -255,20 +236,6 @@ class Context:
         """
         return self.parents.get(name)
 
-    def get_global(self, name: str) -> "GlobalNode | None":
-        """
-        Get a global node by name.
-
-        Args:
-            name (str):
-                The global node name to retrieve.
-
-        Returns:
-            GlobalNode | None:
-                The global node if found, `None` otherwise.
-        """
-        return self.globals.get(name)
-
     def get_node(self, name: str) -> "Node | None":
         """
         Get any node by name.
@@ -321,12 +288,12 @@ class Context:
             list[Argument]:
                 List of provided argument nodes.
         """
-        from click_extended.core.argument import Argument
+        from click_extended.decorators.parents.argument import Argument
 
         return [
             parent
             for parent in self.parents.values()
-            if isinstance(parent, Argument) and parent.was_provided()
+            if isinstance(parent, Argument) and parent.was_provided
         ]
 
     def get_provided_options(self) -> list["Option"]:
@@ -337,12 +304,12 @@ class Context:
             list[Option]:
                 List of provided option nodes.
         """
-        from click_extended.core.option import Option
+        from click_extended.decorators.parents.option import Option
 
         return [
             parent
             for parent in self.parents.values()
-            if isinstance(parent, Option) and parent.was_provided()
+            if isinstance(parent, Option) and parent.was_provided
         ]
 
     def get_provided_envs(self) -> list["Env"]:
@@ -353,12 +320,12 @@ class Context:
             list[Env]:
                 List of provided env nodes.
         """
-        from click_extended.core.env import Env
+        from click_extended.decorators.parents.env import Env
 
         return [
             parent
             for parent in self.parents.values()
-            if isinstance(parent, Env) and parent.was_provided()
+            if isinstance(parent, Env) and parent.was_provided
         ]
 
     def get_provided_value(self, name: str) -> Any:
@@ -375,8 +342,8 @@ class Context:
                 otherwise.
         """
         parent = self.get_parent(name)
-        if parent is not None and parent.was_provided():
-            return parent.get_raw_value()
+        if parent is not None and parent.was_provided:
+            return parent.cached_value  # type: ignore
         return None
 
     def get_missing_arguments(self) -> list["Argument"]:
@@ -385,14 +352,14 @@ class Context:
 
         Returns:
             list[Argument]:
-                List of missing argument nodes.
+                List of all argument nodes.
         """
-        from click_extended.core.argument import Argument
+        from click_extended.decorators.parents.argument import Argument
 
         return [
             parent
             for parent in self.parents.values()
-            if isinstance(parent, Argument) and not parent.was_provided()
+            if isinstance(parent, Argument) and not parent.was_provided
         ]
 
     def get_missing_options(self) -> list["Option"]:
@@ -401,14 +368,14 @@ class Context:
 
         Returns:
             list[Option]:
-                List of missing option nodes.
+                List of all option nodes.
         """
-        from click_extended.core.option import Option
+        from click_extended.decorators.parents.option import Option
 
         return [
             parent
             for parent in self.parents.values()
-            if isinstance(parent, Option) and not parent.was_provided()
+            if isinstance(parent, Option) and not parent.was_provided
         ]
 
     def get_missing_envs(self) -> list["Env"]:
@@ -417,14 +384,14 @@ class Context:
 
         Returns:
             list[Env]:
-                List of missing env nodes.
+                List of all env nodes.
         """
-        from click_extended.core.env import Env
+        from click_extended.decorators.parents.env import Env
 
         return [
             parent
             for parent in self.parents.values()
-            if isinstance(parent, Env) and not parent.was_provided()
+            if isinstance(parent, Env) and not parent.was_provided
         ]
 
     def get_current_tags(self) -> list[str]:

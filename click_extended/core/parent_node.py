@@ -1,37 +1,42 @@
 """ParentNode class for parameter nodes (Option, Argument, Env)."""
 
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=redefined-builtin
+
 import asyncio
-from abc import ABC
+from abc import ABC, abstractmethod
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
 from click_extended.core._tree import Tree
 from click_extended.core.node import Node
-from click_extended.utils.process import process_children
 
 if TYPE_CHECKING:
     from click_extended.core._root_node import RootNode
+    from click_extended.core.context import Context
 
 P = ParamSpec("P")
 T = TypeVar("T")
 
 
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-positional-arguments
-# pylint: disable=redefined-builtin
 class ParentNode(Node, ABC):
-    """A node used for managing child nodes."""
+    """
+    Abstract base class for nodes that manage child nodes and inject values.
+    """
 
     parent: "RootNode"
 
     def __init__(
         self,
         name: str,
+        param: str | None = None,
         help: str | None = None,
         required: bool = False,
         default: Any = None,
         tags: str | list[str] | None = None,
+        **kwargs: Any,
     ):
         """
         Initialize a new `ParentNode` instance.
@@ -39,6 +44,9 @@ class ParentNode(Node, ABC):
         Args:
             name (str):
                 The name of the node (parameter name for injection).
+            param (str, optional):
+                The parameter name to inject into the function.
+                If not provided, uses name.
             help (str, optional):
                 Help text for this parameter. If not provided,
                 may use function's docstring.
@@ -49,8 +57,12 @@ class ParentNode(Node, ABC):
             tags (str | list[str], optional):
                 Tag(s) to associate with this parameter for grouping.
                 Can be a single string or list of strings.
+            **kwargs (Any):
+                Additional keyword arguments (ignored in base class,
+                subclasses can use them if they override __init__).
         """
-        super().__init__(name=name, children={})  # type: ignore[arg-type]
+        super().__init__(name=name, children={})
+        self.param = param if param is not None else name
         self.help = help
         self.required = required
         self.default = default
@@ -62,34 +74,95 @@ class ParentNode(Node, ABC):
         else:
             self.tags = list(tags)
 
-        self._raw_value: Any = None
-        self._raw_value_set: bool = False
-        self._cached_value: Any = None
+        self.was_provided: bool = False
+        self.cached_value: Any = None
         self._value_computed: bool = False
-        self._was_provided: bool = False
+        self.decorator_kwargs: dict[str, Any] = {}
+
+    @abstractmethod
+    def load(self, context: "Context", *args: Any, **kwargs: Any) -> Any:
+        """
+        Load and return the value for this node.
+
+        This method must be implemented by all ParentNode subclasses to define
+        how values are obtained. The method can be either synchronous or
+        asynchronous.
+
+        For self-sourcing nodes (e.g., @env), this method retrieves the value
+        from its source (environment variables, config files, etc.).
+
+        For CLI-sourcing nodes (ArgumentNode, OptionNode), subclasses override
+        this signature to include a `value` parameter with the parsed CLI input.
+
+        Args:
+            context (Context):
+                The current context instance containing node data and state.
+            *args (Any):
+                Optional positional arguments.
+            **kwargs (Any):
+                Optional keyword arguments.
+
+        Returns:
+            Any:
+                The loaded value to inject into the function. Can return `None`
+                if that's a valid value for this node.
+        """
+        raise NotImplementedError
 
     @classmethod
     def as_decorator(
-        cls, **config: Any
+        cls,
+        *,
+        name: str,
+        param: str | None = None,
+        help: str | None = None,
+        required: bool = False,
+        default: Any = None,
+        tags: str | list[str] | None = None,
+        **kwargs: Any,
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
         """
         Return a decorator representation of the parent node.
 
-        All configuration parameters are passed through to the
-        subclass's __init__ method.
+        All configuration parameters are stored and passed to the load() method.
+        Subclasses can override __init__ to accept additional parameters.
 
         Args:
-            **config (Any):
-                Configuration parameters specific to the `ParentNode` subclass.
+            name (str):
+                The name of the node (parameter name for injection).
+            param (str, optional):
+                The parameter name to inject into the function.
+                If not provided, uses name.
+            help (str, optional):
+                Help text for this parameter.
+            required (bool):
+                Whether this parameter is required. Defaults to False.
+            default (Any):
+                Default value if not provided. Defaults to `None`.
+            tags (str | list[str], optional):
+                Tag(s) to associate with this parameter for grouping.
+            **kwargs (Any):
+                Additional keyword arguments specific to the subclass.
+                These are passed to both __init__ and load().
 
         Returns:
             Callable:
                 A decorator function that registers the parent node.
         """
+        config = {
+            "name": name,
+            "param": param,
+            "help": help,
+            "required": required,
+            "default": default,
+            "tags": tags,
+            **kwargs,
+        }
 
         def decorator(func: Callable[P, T]) -> Callable[P, T]:
             """The actual decorator that wraps the function."""
-            instance = cls(**config)
+            instance = cls(**config)  # type: ignore
+            instance.decorator_kwargs = config
             Tree.queue_parent(instance)
 
             if asyncio.iscoroutinefunction(func):
@@ -113,80 +186,23 @@ class ParentNode(Node, ABC):
 
         return decorator
 
-    def set_raw_value(self, value: Any, was_provided: bool = False) -> None:
-        """
-        Set the raw value from the source.
-
-        This method is called by `RootNode` to set the value retrieved
-        from Click or other sources.
-
-        Args:
-            value (Any):
-                The raw value from the source (Click context, env var, etc.).
-            was_provided (bool):
-                Whether the user explicitly provided this value
-                (as opposed to using the default).
-        """
-        self._raw_value = value
-        self._raw_value_set = True
-        self._was_provided = was_provided
-        self._value_computed = False
-        self._cached_value = None
-
-    def was_provided(self) -> bool:
-        """
-        Check if the user explicitly provided this value.
-
-        Returns:
-            bool:
-                `True` if the value was explicitly provided by the user,
-                `False` if it's using the default value.
-        """
-        return self._was_provided
-
-    def get_raw_value(self) -> Any:
-        """
-        Get the raw value from the source (`click.Argument`, `click.Option`,
-        env, etc.).
-
-        This method must be implemented by subclasses to retrieve the value
-        from their specific source (e.g. command-line arguments, options,
-        environment variables, etc.).
-
-        Returns:
-            Any:
-                The raw value from the source before processing.
-        """
-        raise NotImplementedError
-
     def get_value(self) -> Any:
         """
-        Get the processed value of the `ParentNode`.
+        Get the cached value of the `ParentNode`.
 
-        Processes the raw value through the chain of children and returns
-        the processed value. Results are cached after first computation.
+        Returns the cached value that was set after calling load() and
+        processing through any child nodes.
 
         Returns:
             Any:
-                The processed value of the chain of children.
+                The cached processed value.
         """
-        if not self._value_computed:
-            if self._raw_value_set:
-                raw_value = self._raw_value
-            else:
-                raw_value = self.get_raw_value()
-
-            assert self.children is not None
-            self._cached_value = process_children(
-                raw_value, self.children, self, None, None
-            )
-            self._value_computed = True
-        return self._cached_value
+        return self.cached_value
 
     def __repr__(self) -> str:
         """Return a detailed representation of the parent node."""
         class_name = self.__class__.__name__
-        return f"<{class_name} name='{self.name}' value='{self._raw_value}'>"
+        return f"<{class_name} name='{self.name}'>"
 
 
 __all__ = ["ParentNode"]

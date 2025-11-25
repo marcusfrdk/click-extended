@@ -86,6 +86,10 @@ def make_parent(
         def __init__(self, **init_kwargs: Any):
             super().__init__(name=name, **{**kwargs, **init_kwargs})
 
+        def load(self, context: Context, *args: Any, **kwargs: Any) -> Any:
+            """Load method implementation for testing."""
+            return kwargs.get("default")
+
     return TestParent()
 
 

@@ -3,11 +3,13 @@
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
+# pylint: disable=too-many-locals
 
 from builtins import type as builtins_type
 from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.context import Context
+from click_extended.core.option_node import OptionNode
 from click_extended.utils.casing import Casing
 from click_extended.utils.naming import (
     is_long_flag,
@@ -19,10 +21,9 @@ P = ParamSpec("P")
 T = TypeVar("T")
 
 
-class Option(ParentNode):
-    """`ParentNode` that represents a Click option."""
+class Option(OptionNode):
+    """`OptionNode` that represents a Click option."""
 
-    # pylint: disable=too-many-locals
     def __init__(
         self,
         name: str,
@@ -83,7 +84,7 @@ class Option(ParentNode):
         """
         # When @option("--my-option")
         if is_long_flag(name):
-            derived_name = name[2:]  # Remove "--" prefix
+            derived_name = name[2:]
             long_flag = name if long is None else long
 
         # When @option("my_option") or @option("my-option")
@@ -130,20 +131,46 @@ class Option(ParentNode):
                 type = str
 
         super().__init__(
-            name=param_name,
+            name=derived_name,
+            param=param_name,
+            short=short,
+            long=long_flag,
+            is_flag=is_flag,
+            type=type,
+            nargs=nargs,
+            multiple=multiple,
             help=help,
             required=required,
             default=default,
             tags=tags,
         )
-
-        self.long = long_flag
-        self.short = short
-        self.is_flag = is_flag
-        self.type = type
-        self.nargs = nargs
-        self.multiple = multiple
         self.extra_kwargs = kwargs
+
+    def load(
+        self,
+        value: str | int | float | bool | None,
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Load and return the CLI option value.
+
+        Args:
+            value (str | int | float | bool | None):
+                The parsed CLI option value from Click.
+            context (Context):
+                The current context instance.
+            *args (Any):
+                Optional positional arguments.
+            **kwargs (Any):
+                Optional keyword arguments.
+
+        Returns:
+            Any:
+                The option value to inject into the function.
+        """
+        return value
 
 
 def option(

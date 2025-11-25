@@ -6,7 +6,8 @@
 
 - [Root Node](./concepts/ROOT.md): A node that initializes a context and orchestrates the full lifecycle of the application.
 - [Parent Node](./concepts/PARENT_NODE.md): A node that works like a data source and can have attached children.
-- [Global Node](./concepts/GLOBAL_NODE.md): A node that works like a data source but can not have attached children.
+- [Argument Node](./concepts/ARGUMENT_NODE.md): An extension of the parent node that injects a value from a positional argument in the command line.
+- [Option Node](./concepts/OPTION_NODE.md): An extension of the parent node that injects a value from a keyword argument in the command line.
 - [Child Node](./concepts/CHILD_NODE.md): A node that processes data through validation and transformation of the data from a data source.
 - [Context](./concepts/CONTEXT.md): The context used across an application for data sharing, orchestration and synchronization of nodes.
 - [Tree](./concepts/TREE.md): The structure used for storing the nodes of the current context.
@@ -23,16 +24,6 @@
 - [`@option`](./nodes/OPTION.md): A parent node that reads data through keyword arguments in the command line.
 - [`@tag`](./nodes/TAG.md): A special node that allows grouping of parent nodes through the `tags` parameter.
 
-## Usage
-
-- [Examples](./usage/EXAMPLES.md): Examples of how to use the library and some ideas of real-world applications.
-- [Errors](./usage/ERRORS.md): How and when to use various errors and how the error system works.
-- [Aliasing](./usage/ALIASING.md): How aliasing works and how to use it.
-- [Sync and Async](./usage/SYNC_AND_ASYNC.md.md): How to use both synchronous and asynchronous functions and methods.
-
 ## Guides
 
 - [Migrating From Click](./guides/MIGRATING_FROM_CLICK.md): A guide on how to migrate your codebase from `click` to `click-extended`.
-- [Create a Child](./concepts/CHILD_NODE.md#extending): A guide on how to create a new custom child for validating and processing data.
-- [Create a Parent](./guides/CREATE_PARENT.md): A guide on how to create a new parent that allows custom data fetching with the ability to post-process the data.
-- [Create a Global](./guides/CREATE_GLOBAL.md): A guide on how to create a new global that allows custom data fetching without the ability to post-proces the data.

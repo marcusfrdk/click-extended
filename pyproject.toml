@@ -85,6 +85,7 @@ disable = [
     "duplicate-code",
     "unidiomatic-typecheck",
     "import-outside-toplevel",
+    "unused-argument",
 ]
 
 [tool.pylint.format]

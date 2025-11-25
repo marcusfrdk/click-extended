@@ -1,6 +1,7 @@
 """Click Group class for integration with RootNode."""
 
 # pylint: disable=cyclic-import
+# pylint: disable=redefined-builtin
 
 from typing import TYPE_CHECKING, Any, Callable
 
@@ -154,7 +155,7 @@ class ClickGroup(click.Group):
         name: str | None = None,
         *,
         aliases: str | list[str] | None = None,
-        help: str | None = None,  # pylint: disable=redefined-builtin
+        help: str | None = None,
         **kwargs: Any,
     ) -> Any:
         """
@@ -200,7 +201,7 @@ class ClickGroup(click.Group):
         name: str | None = None,
         *,
         aliases: str | list[str] | None = None,
-        help: str | None = None,  # pylint: disable=redefined-builtin
+        help: str | None = None,
         **kwargs: Any,
     ) -> Any:
         """

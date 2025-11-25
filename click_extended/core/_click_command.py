@@ -39,7 +39,7 @@ class ClickCommand(click.Command):
         kwargs.pop("aliases", None)
         super().__init__(*args, **kwargs)
 
-    def format_help(  # type: ignore[override]
+    def format_help(
         self, ctx: click.Context, formatter: click.HelpFormatter
     ) -> None:
         """

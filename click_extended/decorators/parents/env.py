@@ -5,10 +5,11 @@
 # pylint: disable=redefined-builtin
 
 import os
-from typing import Any, Callable, ParamSpec, TypeVar
+from typing import Any, Callable, ParamSpec, TypeVar, cast
 
 from dotenv import load_dotenv
 
+from click_extended.core.context import Context
 from click_extended.core.parent_node import ParentNode
 from click_extended.utils.casing import Casing
 
@@ -21,79 +22,41 @@ T = TypeVar("T")
 class Env(ParentNode):
     """`ParentNode` that loads a value from an environment variable."""
 
-    def __init__(
-        self,
-        name: str,
-        env_name: str,
-        param: str | None = None,
-        help: str | None = None,
-        required: bool = False,
-        default: Any = None,
-        tags: str | list[str] | None = None,
-        **kwargs: Any,
-    ):
+    def load(self, context: Context, *args: Any, **kwargs: Any) -> Any:
         """
-        Initialize a new `Env` instance.
+        Load and return the environment variable value.
 
         Args:
-            name (str):
-                The internal name for this node (derived from env_name).
-            env_name (str):
-                The name of the environment variable to read from.
-            param (str, optional):
-                The parameter name to inject into the function.
-                If not provided, uses name.
-            help (str, optional):
-                Help text for this parameter.
-            required (bool):
-                Whether this parameter is required. Defaults to `False`.
-            default (Any):
-                Default value if environment variable is not set.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this parameter for grouping.
+            context (Context):
+                The current context instance.
+            *args (Any):
+                Optional positional arguments.
             **kwargs (Any):
-                Additional keyword arguments.
-        """
-        param_name = param if param is not None else name
-
-        super().__init__(
-            name=name,
-            help=help,
-            required=required,
-            default=default,
-            tags=tags,
-        )
-        self.env_name = env_name
-        self.param = param_name
-        self.extra_kwargs = kwargs
-
-    def get_raw_value(self) -> Any:
-        """
-        Get the raw value from the environment variable.
+                Keyword arguments from the decorator, including:
+                - env_name (str): The environment variable name to read.
 
         Returns:
             Any:
-                The value of the environment variable, or the default
-                value if not required and not set.
+                The value of the environment variable, or the default value
+                if not required and not set.
 
         Raises:
             ValueError:
-                If the environment variable is required but not set,
-                regardless of whether a default is provided.
+                If the environment variable is required but not set.
         """
-        value = os.getenv(self.env_name)
-        was_provided = value is not None
+        env_name = kwargs.get("env_name")
+        if env_name is None:
+            raise ValueError("env_name must be provided")
+
+        value = os.getenv(env_name)
 
         if value is None:
             if self.required:
                 raise ValueError(
-                    f"Required environment variable '{self.env_name}' "
-                    "is not set."
+                    f"Required environment variable '{env_name}' " "is not set."
                 )
             value = self.default
 
-        self._was_provided = was_provided
-        self._raw_value = value
         return value
 
     def check_required(self) -> str | None:
@@ -105,8 +68,9 @@ class Env(ParentNode):
                 The name of the missing environment variable if required
                 and not set, otherwise None.
         """
-        if self.required and os.getenv(self.env_name) is None:
-            return self.env_name
+        env_name = self.decorator_kwargs.get("env_name")
+        if env_name and self.required and os.getenv(env_name) is None:
+            return cast(str, env_name)
         return None
 
 

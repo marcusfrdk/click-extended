@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-locals
 # pylint: disable=broad-exception-caught
+# pylint: disable=too-many-locals
 
 from typing import TYPE_CHECKING, Any, Mapping, cast
 
@@ -23,7 +24,6 @@ if TYPE_CHECKING:
     from click_extended.core.tag import Tag
 
 
-# pylint: disable=too-many-locals
 def process_children(
     value: Any,
     children: Mapping[Any, Any],
@@ -121,7 +121,6 @@ def process_children(
             parents=all_parents,
             tags=all_tags,
             children=all_children,
-            globals=all_globals,
             data=meta.get("data", {}),
             debug=meta.get("debug", False),
         )
@@ -234,7 +233,6 @@ async def process_children_async(
             parents=all_parents,
             tags=all_tags,
             children=all_children,
-            globals=all_globals,
             data=meta.get("data", {}),
             debug=meta.get("debug", False),
         )

@@ -7,7 +7,8 @@
 from builtins import type as builtins_type
 from typing import Any, Type, cast
 
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.argument_node import ArgumentNode
+from click_extended.core.context import Context
 from click_extended.types import Decorator
 from click_extended.utils.casing import Casing
 from click_extended.utils.naming import validate_name
@@ -15,8 +16,8 @@ from click_extended.utils.naming import validate_name
 _MISSING = object()
 
 
-class Argument(ParentNode):
-    """`ParentNode` that represents a Click argument."""
+class Argument(ArgumentNode):
+    """`ArgumentNode` that represents a Click argument."""
 
     def __init__(
         self,
@@ -82,15 +83,42 @@ class Argument(ParentNode):
                 type = str
 
         super().__init__(
-            name=param_name,
+            name=name,
+            param=param_name,
+            nargs=nargs,
+            type=type,
             help=help,
             required=required,
             default=default,
             tags=tags,
         )
-        self.nargs = nargs
-        self.type = type
         self.extra_kwargs = kwargs
+
+    def load(
+        self,
+        value: str | int | float | bool | None,
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Load and return the CLI argument value.
+
+        Args:
+            value (str | int | float | bool | None):
+                The parsed CLI argument value from Click.
+            context (Context):
+                The current context instance.
+            *args (Any):
+                Optional positional arguments.
+            **kwargs (Any):
+                Optional keyword arguments.
+
+        Returns:
+            Any:
+                The argument value to inject into the function.
+        """
+        return value
 
 
 def argument(

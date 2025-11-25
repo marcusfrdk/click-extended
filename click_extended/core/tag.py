@@ -6,7 +6,6 @@ from click_extended.core._tree import Tree
 from click_extended.core.node import Node
 
 if TYPE_CHECKING:
-    from click_extended.core.child_node import ChildNode
     from click_extended.core.parent_node import ParentNode
 
 P = ParamSpec("P")
@@ -24,7 +23,7 @@ class Tag(Node):
             name (str):
                 The name of the tag for grouping ParentNodes.
         """
-        super().__init__(name=name, children={})  # type: ignore[arg-type]
+        super().__init__(name=name, children={})
         self.parent_nodes: list["ParentNode"] = []
 
     def get_provided_values(self) -> list[str]:
@@ -36,7 +35,7 @@ class Tag(Node):
             list[str]:
                 List of parameter names that were provided.
         """
-        return [node.name for node in self.parent_nodes if node.was_provided()]
+        return [node.name for node in self.parent_nodes if node.was_provided]
 
     def get_value(self) -> dict[str, Any]:
         """

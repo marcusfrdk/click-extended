@@ -29,7 +29,6 @@ from click_extended.errors import (
 if TYPE_CHECKING:
     from click_extended.core._root_node import RootNode
     from click_extended.core.child_node import ChildNode
-    from click_extended.core.global_node import GlobalNode
     from click_extended.core.parent_node import ParentNode
     from click_extended.core.tag import Tag
 
@@ -66,19 +65,18 @@ class Tree:
             Whether Phase 3 validation has completed.
     """
 
-    # Class-level storage for pending nodes during decorator collection
     _pending_nodes: list[
         tuple[
-            Literal["parent", "child", "tag", "global"],
-            "ParentNode | ChildNode | Tag | GlobalNode",
+            Literal["parent", "child", "tag"],
+            "ParentNode | ChildNode | Tag",
         ]
     ] = []
 
     @staticmethod
     def get_pending_nodes() -> list[
         tuple[
-            Literal["parent", "child", "tag", "global"],
-            "ParentNode | ChildNode | Tag | GlobalNode",
+            Literal["parent", "child", "tag"],
+            "ParentNode | ChildNode | Tag",
         ]
     ]:
         """
@@ -126,24 +124,12 @@ class Tree:
         """
         Tree._pending_nodes.append(("tag", node))
 
-    @staticmethod
-    def queue_global(node: "GlobalNode") -> None:
-        """
-        Queue a global node for registration.
-
-        Args:
-            node (GlobalNode):
-                The global node to queue.
-        """
-        Tree._pending_nodes.append(("global", node))
-
     def __init__(self) -> None:
         """Initialize a new Tree instance."""
         self.root: "RootNode | None" = None
         self.recent: "ParentNode | None" = None
         self.recent_tag: "Tag | None" = None
         self.tags: dict[str, "Tag"] = {}
-        self.globals: list["GlobalNode"] = []
         self.data: dict[str, Any] = {}
         self.is_validated: bool = False
 
@@ -183,8 +169,6 @@ class Tree:
                     name = child_node.name
                     children_dict[name] = child_node  # type: ignore
 
-        globals_dict = {g.name: g for g in root_node.tree.globals}
-
         debug = os.getenv("CLICK_EXTENDED_DEBUG", "").lower() in (
             "1",
             "true",
@@ -199,7 +183,6 @@ class Tree:
             "parents": parents_dict,
             "tags": root_node.tree.tags,
             "children": children_dict,
-            "globals": globals_dict,
             "data": {},
             "debug": debug,
         }
@@ -233,7 +216,6 @@ class Tree:
         context.meta["click_extended"]["parent_node"] = parent_node
         context.meta["click_extended"]["child_node"] = child_node
 
-    # pylint: disable=unused-argument
     def validate_and_build(self, context: click.Context) -> None:
         """
         Build and validate the tree structure. This method is a part of
@@ -280,8 +262,6 @@ class Tree:
                     self._register_child_node(cast("ChildNode", node_inst))
                 elif node_type == "tag":
                     self._register_tag_node(cast("Tag", node_inst))
-                elif node_type == "global":
-                    self._register_global_node(cast("GlobalNode", node_inst))
 
         self._validate_names()
         self.is_validated = True
@@ -331,18 +311,6 @@ class Tree:
         self.tags[node.name] = node
         self.recent_tag = node
 
-    def _register_global_node(self, node: "GlobalNode") -> None:
-        """
-        Register a global node during validation phase.
-
-        Global nodes are just added to the tree's globals list. They will be
-        executed during runtime based on their `run` parameter (first/last).
-        """
-        if self.root is None:
-            raise NoRootError()
-
-        self.globals.insert(0, node)
-
     def has_handle_tag_implemented(self, node: "ChildNode") -> bool:
         """Check if a child node has `handle_tag` implemented."""
         # pylint: disable=import-outside-toplevel
@@ -389,16 +357,6 @@ class Tree:
             if tag_name in seen_names:
                 raise NameExistsError(tag_name)
             seen_names.add(tag_name)
-
-        # Check globals
-        for global_node in self.globals:
-            if (
-                global_node.inject_name is not None
-                and global_node.inject_name in seen_names
-            ):
-                raise NameExistsError(global_node.inject_name)
-            if global_node.inject_name is not None:
-                seen_names.add(global_node.inject_name)
 
     def register_root(self, node: "RootNode") -> None:
         """

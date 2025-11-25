@@ -4,6 +4,7 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=broad-exception-caught
+# pylint: disable=protected-access
 
 import asyncio
 import sys
@@ -15,15 +16,12 @@ import click
 from click.utils import echo
 
 from click_extended.core._tree import Tree
-from click_extended.core.argument import Argument
-from click_extended.core.child_node import ChildNode
+from click_extended.core.argument_node import ArgumentNode
 from click_extended.core.context import Context
-from click_extended.core.env import Env
-from click_extended.core.global_node import GlobalNode
 from click_extended.core.node import Node
-from click_extended.core.option import Option
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.option_node import OptionNode
 from click_extended.core.tag import Tag
+from click_extended.decorators.parents.env import Env
 from click_extended.errors import (
     ContextAwareError,
     NameExistsError,
@@ -40,6 +38,8 @@ from click_extended.utils.process import (
 if TYPE_CHECKING:
     from click_extended.core._click_command import ClickCommand
     from click_extended.core._click_group import ClickGroup
+    from click_extended.core.child_node import ChildNode
+    from click_extended.core.parent_node import ParentNode
 
 
 class RootNode(Node):
@@ -62,7 +62,7 @@ class RootNode(Node):
                 Additional keyword arguments (stored but not passed to Node).
                 May include 'aliases' for command/group aliases.
         """
-        super().__init__(name=name, children={})  # type: ignore[arg-type]
+        super().__init__(name=name, children={})
         self.aliases = kwargs.pop("aliases", None)
         self.tree = Tree()
         self.extra_args = args
@@ -138,7 +138,7 @@ class RootNode(Node):
             return func, h_flag_taken
 
         for parent_node in instance.tree.root.children.values():
-            if isinstance(parent_node, Option) and parent_node.short:
+            if isinstance(parent_node, OptionNode) and parent_node.short:
                 if parent_node.short == "-h":
                     h_flag_taken = True
                 if parent_node.short in seen_short_flags:
@@ -152,7 +152,7 @@ class RootNode(Node):
 
         parent_items = list(instance.tree.root.children.items())
         for _parent_name, parent_node in reversed(parent_items):
-            if isinstance(parent_node, Option):
+            if isinstance(parent_node, OptionNode):
                 params: list[str] = []
                 if parent_node.short:
                     params.append(parent_node.short)
@@ -163,8 +163,11 @@ class RootNode(Node):
                     "required": parent_node.required,
                     "is_flag": parent_node.is_flag,
                     "help": parent_node.help,
-                    **parent_node.extra_kwargs,
                 }
+
+                extra_kwargs = getattr(parent_node, "extra_kwargs", {})
+                if extra_kwargs:
+                    option_kwargs.update(extra_kwargs)
 
                 if not parent_node.required or parent_node.default is not None:
                     option_kwargs["default"] = parent_node.default
@@ -176,13 +179,16 @@ class RootNode(Node):
 
                 func = click.option(*params, **option_kwargs)(func)
 
-            elif isinstance(parent_node, Argument):
+            elif isinstance(parent_node, ArgumentNode):
                 arg_kwargs: dict[str, Any] = {
                     "type": parent_node.type,
                     "required": parent_node.required,
                     "nargs": parent_node.nargs,
-                    **parent_node.extra_kwargs,
                 }
+
+                extra_kwargs = getattr(parent_node, "extra_kwargs", {})
+                if extra_kwargs:
+                    arg_kwargs.update(extra_kwargs)
 
                 if not parent_node.required or parent_node.default is not None:
                     arg_kwargs["default"] = parent_node.default
@@ -262,7 +268,8 @@ class RootNode(Node):
                     all_tag_names: set[str] = set()
                     for parent_node in root.tree.root.children.values():
                         if isinstance(
-                            parent_node, (Option, Argument, type(parent_node))
+                            parent_node,
+                            (OptionNode, ArgumentNode, type(parent_node)),
                         ):
                             tags = parent_node.tags  # type: ignore
                             all_tag_names.update(tags)  # type: ignore
@@ -280,7 +287,8 @@ class RootNode(Node):
 
                     for parent_node in root.tree.root.children.values():
                         if isinstance(
-                            parent_node, (Option, Argument, type(parent_node))
+                            parent_node,
+                            (OptionNode, ArgumentNode, type(parent_node)),
                         ):
                             parent_node = cast("ParentNode", parent_node)
                             p_tags = parent_node.tags
@@ -290,84 +298,7 @@ class RootNode(Node):
                                         parent_node
                                     )
 
-                    global_values: dict[str, Any] = {}
-
-                    first_globals = [
-                        g for g in root.tree.globals if g.run == "first"
-                    ]
-                    last_globals = [
-                        g for g in root.tree.globals if g.run == "last"
-                    ]
-
                     meta = context.meta.get("click_extended", {})
-
-                    def build_global_context() -> Context:
-                        """Build a Context for global node execution."""
-                        all_nodes: dict[str, Node] = {}
-                        all_parents: dict[str, ParentNode] = {}
-                        all_children: dict[str, "ChildNode"] = {}
-
-                        # Add parents
-                        for parent_name, parent_node in root.children.items():
-                            if isinstance(parent_name, str):
-                                all_nodes[parent_name] = parent_node
-                                if isinstance(
-                                    parent_node, (Option, Argument, Env)
-                                ):
-                                    all_parents[parent_name] = parent_node
-                                    for (
-                                        child_name,
-                                        child_node,
-                                    ) in parent_node.children.items():
-                                        if isinstance(child_name, (str, int)):
-                                            all_children[
-                                                child_node.name
-                                            ] = child_node  # type: ignore
-
-                        # Add tags
-                        for tag in root.tree.tags.values():
-                            for child_name, child_node in tag.children.items():
-                                if isinstance(child_name, (str, int)):
-                                    all_children[
-                                        child_node.name
-                                    ] = child_node  # type: ignore
-
-                        parent = (
-                            next(iter(all_parents.values()))
-                            if all_parents
-                            else None
-                        )
-
-                        current = (
-                            next(iter(all_children.values()))
-                            if all_children
-                            else None
-                        )
-
-                        return Context(
-                            root=root,
-                            parent=parent,
-                            current=current,
-                            click_context=context,
-                            nodes=all_nodes,
-                            parents=all_parents,
-                            tags=root.tree.tags,
-                            children=all_children,
-                            globals={g.name: g for g in root.tree.globals},
-                            data=meta.get("data", {}),
-                            debug=meta.get("debug", False),
-                        )
-
-                    def execute_global(global_node: "GlobalNode") -> None:
-                        """Execute a global node and store its result."""
-                        global_context = build_global_context()
-                        result = global_node.handle(global_context)
-
-                        if global_node.inject_name is not None:
-                            global_values[global_node.inject_name] = result
-
-                    for global_node in first_globals:
-                        execute_global(global_node)
 
                     missing_env_vars: list[str] = []
                     for parent_node in root.tree.root.children.values():
@@ -400,10 +331,26 @@ class RootNode(Node):
 
                         raise ProcessError(error_msg)
 
+                    meta = context.meta.get("click_extended", {})
+                    custom_context = Context(
+                        root=root,
+                        parent=None,
+                        current=None,
+                        click_context=context,
+                        nodes={},
+                        parents={},
+                        tags=root.tree.tags,
+                        children={},
+                        data=meta.get("data", {}),
+                        debug=meta.get("debug", False),
+                    )
+
                     assert root.tree.root is not None
                     needs_async = False
                     for parent_node in root.tree.root.children.values():
-                        if isinstance(parent_node, (Option, Argument, Env)):
+                        if isinstance(
+                            parent_node, (OptionNode, ArgumentNode, Env)
+                        ):
                             if (
                                 parent_node.children
                                 and check_has_async_handlers(
@@ -433,56 +380,88 @@ class RootNode(Node):
                                 parent_node,
                             ) in root.tree.root.children.items():
                                 if isinstance(parent_name, str):
-                                    inject_name = parent_name
                                     raw_value = None
+                                    was_provided = False
 
-                                    if isinstance(parent_node, Env):
-                                        raw_value = parent_node.get_raw_value()
-                                        was_provided = (
-                                            parent_node.was_provided()
-                                        )
-                                        parent_node.set_raw_value(
-                                            raw_value, was_provided
-                                        )
-                                        inject_name = parent_node.param
-                                    elif isinstance(
-                                        parent_node, (Option, Argument)
+                                    if isinstance(
+                                        parent_node, (OptionNode, ArgumentNode)
                                     ):
                                         raw_value = call_kwargs.get(parent_name)
                                         was_provided = (
                                             parent_name in call_kwargs
                                             and raw_value != parent_node.default
                                         )
-                                        parent_node.set_raw_value(
-                                            raw_value, was_provided
-                                        )
-                                        inject_name = parent_name
+                                        parent_node.was_provided = was_provided
 
-                                    if isinstance(
-                                        parent_node, (Option, Argument, Env)
-                                    ):
-                                        if parent_node.children:
-                                            Tree.update_scope(
-                                                context,
-                                                "parent",
-                                                parent_node=parent_node,
-                                            )
-
-                                            async_parent_values[inject_name] = (
-                                                await process_children_async(
-                                                    raw_value,
-                                                    parent_node.children,
-                                                    parent_node,
-                                                    tags_dict,
-                                                    context,
-                                                )
+                                        if asyncio.iscoroutinefunction(
+                                            parent_node.load
+                                        ):
+                                            raw_value = await parent_node.load(
+                                                raw_value,
+                                                custom_context,
+                                                **parent_node.decorator_kwargs,
                                             )
                                         else:
-                                            async_parent_values[inject_name] = (
-                                                raw_value
+                                            raw_value = parent_node.load(
+                                                raw_value,
+                                                custom_context,
+                                                **parent_node.decorator_kwargs,
                                             )
                                     else:
-                                        v = parent_node.get_value()  # type: ignore  # pylint: disable=line-too-long
+                                        parent_node = cast(
+                                            "ParentNode", parent_node
+                                        )
+                                        raw_value = (
+                                            await parent_node.load(
+                                                custom_context,
+                                                **parent_node.decorator_kwargs,
+                                            )
+                                            if asyncio.iscoroutinefunction(
+                                                parent_node.load
+                                            )
+                                            else parent_node.load(
+                                                custom_context,
+                                                **parent_node.decorator_kwargs,
+                                            )
+                                        )
+                                        was_provided = raw_value is not None
+                                        parent_node.was_provided = was_provided
+
+                                    inject_name = parent_node.param
+
+                                    if parent_node.children:
+                                        Tree.update_scope(
+                                            context,
+                                            "parent",
+                                            parent_node=parent_node,
+                                        )
+
+                                        processed_value = (
+                                            await process_children_async(
+                                                raw_value,
+                                                parent_node.children,
+                                                parent_node,
+                                                tags_dict,
+                                                context,
+                                            )
+                                        )
+                                        async_parent_values[inject_name] = (
+                                            processed_value
+                                        )
+                                        parent_node.cached_value = (
+                                            processed_value
+                                        )
+                                    else:
+                                        async_parent_values[inject_name] = (
+                                            raw_value
+                                        )
+                                        parent_node.cached_value = raw_value
+                                else:
+                                    parent_node = cast(
+                                        "ParentNode", parent_node
+                                    )
+                                    v = parent_node.get_value()
+                                    if isinstance(parent_name, str):
                                         async_parent_values[parent_name] = v
 
                             for tag in root.tree.tags.values():
@@ -519,54 +498,58 @@ class RootNode(Node):
                             parent_node,
                         ) in root.tree.root.children.items():
                             if isinstance(parent_name, str):
-                                inject_name = parent_name
                                 raw_value = None
+                                was_provided = False
 
-                                if isinstance(parent_node, Env):
-                                    raw_value = parent_node.get_raw_value()
-                                    was_provided = parent_node.was_provided()
-                                    parent_node.set_raw_value(
-                                        raw_value, was_provided
-                                    )
-                                    inject_name = parent_node.param
-                                elif isinstance(
-                                    parent_node, (Option, Argument)
+                                if isinstance(
+                                    parent_node, (OptionNode, ArgumentNode)
                                 ):
                                     raw_value = call_kwargs.get(parent_name)
                                     was_provided = (
                                         parent_name in call_kwargs
                                         and raw_value != parent_node.default
                                     )
-                                    parent_node.set_raw_value(
-                                        raw_value, was_provided
+                                    parent_node.was_provided = was_provided
+                                    raw_value = parent_node.load(
+                                        raw_value,
+                                        custom_context,
+                                        **parent_node.decorator_kwargs,
                                     )
-                                    inject_name = parent_name
-
-                                if isinstance(
-                                    parent_node, (Option, Argument, Env)
-                                ):
-                                    if parent_node.children:
-                                        Tree.update_scope(
-                                            context,
-                                            "parent",
-                                            parent_node=parent_node,
-                                        )
-
-                                        parent_values[inject_name] = (
-                                            process_children(
-                                                raw_value,
-                                                parent_node.children,
-                                                parent_node,
-                                                tags_dict,
-                                                context,
-                                            )
-                                        )
-                                    else:
-                                        parent_values[inject_name] = raw_value
                                 else:
                                     parent_node = cast(
                                         "ParentNode", parent_node
                                     )
+                                    raw_value = parent_node.load(
+                                        custom_context,
+                                        **parent_node.decorator_kwargs,
+                                    )
+                                    was_provided = raw_value is not None
+                                    parent_node.was_provided = was_provided
+
+                                inject_name = parent_node.param
+
+                                if parent_node.children:
+                                    Tree.update_scope(
+                                        context,
+                                        "parent",
+                                        parent_node=parent_node,
+                                    )
+
+                                    processed_value = process_children(
+                                        raw_value,
+                                        parent_node.children,
+                                        parent_node,
+                                        tags_dict,
+                                        context,
+                                    )
+                                    parent_values[inject_name] = processed_value
+                                    parent_node.cached_value = processed_value
+                                else:
+                                    parent_values[inject_name] = raw_value
+                                    parent_node.cached_value = raw_value
+                            else:
+                                parent_node = cast("ParentNode", parent_node)
+                                if isinstance(parent_name, str):
                                     parent_values[parent_name] = (
                                         parent_node.get_value()
                                     )
@@ -586,13 +569,9 @@ class RootNode(Node):
                                     context,
                                 )
 
-                    for global_node in last_globals:
-                        execute_global(global_node)
-
                     merged_kwargs: dict[str, Any] = {
                         **call_kwargs,
                         **parent_values,
-                        **global_values,
                     }
 
                     return func(*call_args, **merged_kwargs)
@@ -670,7 +649,7 @@ class RootNode(Node):
                                     expected_type
                                 )
 
-                            lines.append(  # pylint: disable=line-too-long
+                            lines.append(
                                 f"Expected types: {expected_types_str}"
                             )
 
@@ -800,8 +779,6 @@ class RootNode(Node):
                         root.tree.tags[tag_inst.name] = tag_inst
                         most_recent_tag = tag_inst
                         root.tree.recent_tag = tag_inst
-                    elif node_type == "global" and isinstance(node, GlobalNode):
-                        root.tree.globals.insert(0, node)
 
             return cls.wrap(wrapper, node_name, root, **kwargs)
 
