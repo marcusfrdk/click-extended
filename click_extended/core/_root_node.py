@@ -154,49 +154,60 @@ class RootNode(Node):
                 seen_short_flags[parent_node.short] = parent_node.name
 
         parent_items = list(instance.tree.root.children.items())
-        for _parent_name, parent_node in reversed(parent_items):
-            if isinstance(parent_node, OptionNode):
-                params: list[str] = [parent_node.name]
-                if parent_node.short:
-                    params.append(parent_node.short)
-                params.append(parent_node.long)
 
-                option_kwargs: dict[str, Any] = {
-                    "type": parent_node.type,
-                    "required": parent_node.required,
-                    "is_flag": parent_node.is_flag,
-                    "help": parent_node.help,
-                }
+        option_nodes = [
+            (name, node)
+            for name, node in parent_items
+            if isinstance(node, OptionNode)
+        ]
+        argument_nodes = [
+            (name, node)
+            for name, node in parent_items
+            if isinstance(node, ArgumentNode)
+        ]
 
-                extra_kwargs = getattr(parent_node, "extra_kwargs", {})
-                if extra_kwargs:
-                    option_kwargs.update(extra_kwargs)
+        for _parent_name, parent_node in option_nodes:
+            params: list[str] = [parent_node.name]
+            if parent_node.short:
+                params.append(parent_node.short)
+            params.append(parent_node.long)
 
-                if not parent_node.required or parent_node.default is not None:
-                    option_kwargs["default"] = parent_node.default
+            option_kwargs: dict[str, Any] = {
+                "type": parent_node.type,
+                "required": parent_node.required,
+                "is_flag": parent_node.is_flag,
+                "help": parent_node.help,
+            }
 
-                if parent_node.multiple:
-                    option_kwargs["multiple"] = True
-                if parent_node.nargs > 1:
-                    option_kwargs["nargs"] = parent_node.nargs
+            extra_kwargs = getattr(parent_node, "extra_kwargs", {})
+            if extra_kwargs:
+                option_kwargs.update(extra_kwargs)
 
-                func = click.option(*params, **option_kwargs)(func)
+            if not parent_node.required or parent_node.default is not None:
+                option_kwargs["default"] = parent_node.default
 
-            elif isinstance(parent_node, ArgumentNode):
-                arg_kwargs: dict[str, Any] = {
-                    "type": parent_node.type,
-                    "required": parent_node.required,
-                    "nargs": parent_node.nargs,
-                }
+            if parent_node.multiple:
+                option_kwargs["multiple"] = True
+            if parent_node.nargs > 1:
+                option_kwargs["nargs"] = parent_node.nargs
 
-                extra_kwargs = getattr(parent_node, "extra_kwargs", {})
-                if extra_kwargs:
-                    arg_kwargs.update(extra_kwargs)
+            func = click.option(*params, **option_kwargs)(func)
 
-                if not parent_node.required or parent_node.default is not None:
-                    arg_kwargs["default"] = parent_node.default
+        for _parent_name, parent_node in reversed(argument_nodes):
+            arg_kwargs: dict[str, Any] = {
+                "type": parent_node.type,
+                "required": parent_node.required,
+                "nargs": parent_node.nargs,
+            }
 
-                func = click.argument(parent_node.name, **arg_kwargs)(func)
+            extra_kwargs = getattr(parent_node, "extra_kwargs", {})
+            if extra_kwargs:
+                arg_kwargs.update(extra_kwargs)
+
+            if not parent_node.required or parent_node.default is not None:
+                arg_kwargs["default"] = parent_node.default
+
+            func = click.argument(parent_node.name, **arg_kwargs)(func)
 
         return func, h_flag_taken
 
