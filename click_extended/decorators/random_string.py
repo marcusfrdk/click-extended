@@ -16,6 +16,9 @@ class RandomString(ParentNode):
     """Parent node for generating random strings."""
 
     def load(self, context: Context, *args: Any, **kwargs: Any) -> str:
+        if kwargs.get("seed") is not None:
+            random.seed(kwargs["seed"])
+
         chars = ""
         if kwargs["lowercase"]:
             chars += ascii_lowercase
@@ -36,6 +39,7 @@ def random_string(
     uppercase: bool = True,
     numbers: bool = True,
     symbols: bool = True,
+    seed: int | None = None,
 ) -> Decorator:
     """
     Parent node to generate a random string.
@@ -53,6 +57,8 @@ def random_string(
             Whether to include numbers.
         symbols (bool):
             Whether to include symbols.
+        seed (int | None):
+            Optional seed for reproducible randomness.
     """
     return RandomString.as_decorator(
         name=name,
@@ -61,4 +67,5 @@ def random_string(
         uppercase=uppercase,
         numbers=numbers,
         symbols=symbols,
+        seed=seed,
     )

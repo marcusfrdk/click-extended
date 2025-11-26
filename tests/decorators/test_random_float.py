@@ -16,7 +16,7 @@ class TestRandomFloatBasic:
         """Test that default range is 0.0-1.0."""
 
         @command()
-        @random_float("value")
+        @random_float("value", seed=2000)
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -29,7 +29,7 @@ class TestRandomFloatBasic:
         """Test custom range parameter."""
 
         @command()
-        @random_float("price", min_value=10.0, max_value=100.0)
+        @random_float("price", min_value=10.0, max_value=100.0, seed=2001)
         def cmd(price: float) -> None:
             click.echo(f"Price: {price}")
 
@@ -42,7 +42,7 @@ class TestRandomFloatBasic:
         """Test default decimals is 3."""
 
         @command()
-        @random_float("value")
+        @random_float("value", seed=2002)
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -59,7 +59,9 @@ class TestRandomFloatBasic:
         """Test custom decimal places."""
 
         @command()
-        @random_float("ratio", min_value=0.0, max_value=1.0, decimals=5)
+        @random_float(
+            "ratio", min_value=0.0, max_value=1.0, decimals=5, seed=2003
+        )
         def cmd(ratio: float) -> None:
             click.echo(f"Ratio: {ratio}")
 
@@ -74,12 +76,17 @@ class TestRandomFloatBasic:
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that multiple invocations generate different values."""
 
-        @command()
-        @random_float("value", min_value=0.0, max_value=100.0)
-        def cmd(value: float) -> None:
-            click.echo(f"Value: {value}")
+        results = []
+        for i in range(10):
 
-        results = [cli_runner.invoke(cmd).output for _ in range(10)]
+            @command()
+            @random_float(
+                "value", min_value=0.0, max_value=100.0, seed=2004 + i
+            )
+            def cmd(value: float) -> None:
+                click.echo(f"Value: {value}")
+
+            results.append(cli_runner.invoke(cmd).output)
         values = [float(r.split("Value: ")[1].strip()) for r in results]
         # Should have variety
         assert len(set(values)) > 1
@@ -92,7 +99,7 @@ class TestRandomFloatRanges:
         """Test negative number range."""
 
         @command()
-        @random_float("temp", min_value=-50.0, max_value=-10.0)
+        @random_float("temp", min_value=-50.0, max_value=-10.0, seed=2014)
         def cmd(temp: float) -> None:
             click.echo(f"Temp: {temp}")
 
@@ -105,7 +112,7 @@ class TestRandomFloatRanges:
         """Test range crossing zero."""
 
         @command()
-        @random_float("value", min_value=-25.5, max_value=25.5)
+        @random_float("value", min_value=-25.5, max_value=25.5, seed=2015)
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -118,7 +125,7 @@ class TestRandomFloatRanges:
         """Test very large range."""
 
         @command()
-        @random_float("value", min_value=0.0, max_value=1_000_000.0)
+        @random_float("value", min_value=0.0, max_value=1_000_000.0, seed=2016)
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -131,7 +138,9 @@ class TestRandomFloatRanges:
         """Test very small range with high precision."""
 
         @command()
-        @random_float("epsilon", min_value=0.0001, max_value=0.0002, decimals=6)
+        @random_float(
+            "epsilon", min_value=0.0001, max_value=0.0002, decimals=6, seed=2017
+        )
         def cmd(epsilon: float) -> None:
             click.echo(f"Epsilon: {epsilon}")
 
@@ -148,7 +157,9 @@ class TestRandomFloatDecimals:
         """Test with 0 decimal places (whole numbers)."""
 
         @command()
-        @random_float("value", min_value=10.0, max_value=20.0, decimals=0)
+        @random_float(
+            "value", min_value=10.0, max_value=20.0, decimals=0, seed=2018
+        )
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -161,7 +172,9 @@ class TestRandomFloatDecimals:
         """Test with 1 decimal place."""
 
         @command()
-        @random_float("score", min_value=0.0, max_value=10.0, decimals=1)
+        @random_float(
+            "score", min_value=0.0, max_value=10.0, decimals=1, seed=2019
+        )
         def cmd(score: float) -> None:
             click.echo(f"Score: {score}")
 
@@ -178,7 +191,9 @@ class TestRandomFloatDecimals:
         """Test with many decimal places."""
 
         @command()
-        @random_float("precise", min_value=0.0, max_value=1.0, decimals=10)
+        @random_float(
+            "precise", min_value=0.0, max_value=1.0, decimals=10, seed=2020
+        )
         def cmd(precise: float) -> None:
             click.echo(f"Precise: {precise}")
 
@@ -198,7 +213,7 @@ class TestRandomFloatErrors:
         """Test that min > max raises ValueError."""
 
         @command()
-        @random_float("value", min_value=100.0, max_value=10.0)
+        @random_float("value", min_value=100.0, max_value=10.0, seed=2021)
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -215,14 +230,17 @@ class TestRandomFloatDistribution:
     ) -> None:
         """Test that values near boundaries can be generated."""
 
-        @command()
-        @random_float("value", min_value=0.0, max_value=1.0, decimals=1)
-        def cmd(value: float) -> None:
-            click.echo(f"{value}")
-
         # Collect samples
         values = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_float(
+                "value", min_value=0.0, max_value=1.0, decimals=1, seed=2022 + i
+            )
+            def cmd(value: float) -> None:
+                click.echo(f"{value}")
+
             result = cli_runner.invoke(cmd)
             value = float(result.output.strip())
             values.append(value)
@@ -234,13 +252,20 @@ class TestRandomFloatDistribution:
     def test_coverage_across_range(self, cli_runner: CliRunner) -> None:
         """Test that values cover the range."""
 
-        @command()
-        @random_float("value", min_value=0.0, max_value=10.0, decimals=0)
-        def cmd(value: float) -> None:
-            click.echo(f"{value}")
-
         values = []
-        for _ in range(50):
+        for i in range(50):
+
+            @command()
+            @random_float(
+                "value",
+                min_value=0.0,
+                max_value=10.0,
+                decimals=0,
+                seed=2122 + i,
+            )
+            def cmd(value: float) -> None:
+                click.echo(f"{value}")
+
             result = cli_runner.invoke(cmd)
             value = float(result.output.strip())
             values.append(value)
@@ -257,8 +282,12 @@ class TestRandomFloatIntegration:
         """Test multiple random_float decorators."""
 
         @command()
-        @random_float("price", min_value=10.0, max_value=100.0, decimals=2)
-        @random_float("discount", min_value=0.0, max_value=1.0, decimals=2)
+        @random_float(
+            "price", min_value=10.0, max_value=100.0, decimals=2, seed=2172
+        )
+        @random_float(
+            "discount", min_value=0.0, max_value=1.0, decimals=2, seed=2173
+        )
         def cmd(price: float, discount: float) -> None:
             click.echo(f"Price: {price}, Discount: {discount}")
 
@@ -276,8 +305,12 @@ class TestRandomFloatIntegration:
         """Test same range with different decimal precision."""
 
         @command()
-        @random_float("rough", min_value=0.0, max_value=10.0, decimals=1)
-        @random_float("precise", min_value=0.0, max_value=10.0, decimals=5)
+        @random_float(
+            "rough", min_value=0.0, max_value=10.0, decimals=1, seed=2174
+        )
+        @random_float(
+            "precise", min_value=0.0, max_value=10.0, decimals=5, seed=2175
+        )
         def cmd(rough: float, precise: float) -> None:
             click.echo(f"Rough: {rough}, Precise: {precise}")
 

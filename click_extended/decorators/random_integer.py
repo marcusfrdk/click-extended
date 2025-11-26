@@ -15,6 +15,9 @@ class RandomInteger(ParentNode):
     """Parent node for generating random integers."""
 
     def load(self, context: Context, *args: Any, **kwargs: Any) -> int:
+        if kwargs.get("seed") is not None:
+            random.seed(kwargs["seed"])
+
         if kwargs["max_value"] < kwargs["min_value"]:
             raise ValueError("min_value can not be larger than max_value.")
         return random.randint(kwargs["min_value"], kwargs["max_value"])
@@ -24,6 +27,7 @@ def random_integer(
     name: str,
     min_value: int = 0,
     max_value: int = 100,
+    seed: int | None = None,
 ) -> Decorator:
     """
     Parent node to generate a random integers.
@@ -35,9 +39,12 @@ def random_integer(
             The lower value in the range. Defaults to 0.
         max_value (int):
             The upper value in the range. Defaults to 100.
+        seed (int | None):
+            Optional seed for reproducible randomness.
     """
     return RandomInteger.as_decorator(
         name=name,
         min_value=min_value,
         max_value=max_value,
+        seed=seed,
     )

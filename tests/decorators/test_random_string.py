@@ -18,7 +18,7 @@ class TestRandomStringBasic:
 
         @command()
         @option("--token", type=str, default=None)
-        @random_string("token")
+        @random_string("token", seed=42)
         def cmd(token: str) -> None:
             click.echo(f"Token: {token}")
 
@@ -33,7 +33,7 @@ class TestRandomStringBasic:
 
         @command()
         @option("--code", type=str, default=None)
-        @random_string("code", length=16)
+        @random_string("code", length=16, seed=100)
         def cmd(code: str) -> None:
             click.echo(f"Code: {code}")
 
@@ -43,16 +43,21 @@ class TestRandomStringBasic:
         assert len(code) == 16
 
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
-        """Test that multiple invocations generate different values."""
+        """Test that multiple invocations with different seeds generate different values."""
 
-        @command()
-        @option("--value", type=str, default=None)
-        @random_string("value", length=16)
-        def cmd(value: str) -> None:
-            click.echo(f"Value: {value}")
+        results = []
+        for i in range(5):
 
-        results = [cli_runner.invoke(cmd).output for _ in range(5)]
-        # All results should be different (extremely unlikely to collide)
+            @command()
+            @option("--value", type=str, default=None)
+            @random_string("value", length=16, seed=200 + i)
+            def cmd(value: str) -> None:
+                click.echo(f"Value: {value}")
+
+            result = cli_runner.invoke(cmd)
+            results.append(result.output)
+
+        # All results should be different (different seeds)
         assert len(set(results)) == 5
 
 
@@ -71,6 +76,7 @@ class TestRandomStringCharacterSets:
             uppercase=False,
             numbers=False,
             symbols=False,
+            seed=300,
         )
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
@@ -93,6 +99,7 @@ class TestRandomStringCharacterSets:
             uppercase=True,
             numbers=False,
             symbols=False,
+            seed=301,
         )
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
@@ -114,6 +121,7 @@ class TestRandomStringCharacterSets:
             uppercase=False,
             numbers=True,
             symbols=False,
+            seed=302,
         )
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
@@ -135,6 +143,7 @@ class TestRandomStringCharacterSets:
             uppercase=False,
             numbers=False,
             symbols=True,
+            seed=303,
         )
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
@@ -149,7 +158,7 @@ class TestRandomStringCharacterSets:
 
         @command()
         @option("--token", type=str, default=None)
-        @random_string("token", length=100, symbols=False)
+        @random_string("token", length=100, symbols=False, seed=304)
         def cmd(token: str) -> None:
             click.echo(f"Token: {token}")
 
@@ -168,7 +177,7 @@ class TestRandomStringCharacterSets:
 
         @command()
         @option("--password", type=str, default=None)
-        @random_string("password", length=50)
+        @random_string("password", length=50, seed=305)
         def cmd(password: str) -> None:
             click.echo(f"Password: {password}")
 
@@ -192,7 +201,7 @@ class TestRandomStringEdgeCases:
 
         @command()
         @option("--value", type=str, default=None)
-        @random_string("value", length=1)
+        @random_string("value", length=1, seed=400)
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
 
@@ -206,7 +215,7 @@ class TestRandomStringEdgeCases:
 
         @command()
         @option("--value", type=str, default=None)
-        @random_string("value", length=1000)
+        @random_string("value", length=1000, seed=401)
         def cmd(value: str) -> None:
             click.echo(f"Length: {len(value)}")
 
@@ -226,6 +235,7 @@ class TestRandomStringEdgeCases:
             uppercase=False,
             numbers=True,
             symbols=False,
+            seed=402,
         )
         def cmd(code: str) -> None:
             click.echo(f"Code: {code}")
@@ -246,8 +256,8 @@ class TestRandomStringIntegration:
         @command()
         @option("--token", type=str, default=None)
         @option("--password", type=str, default=None)
-        @random_string("token", length=16, symbols=False)
-        @random_string("password", length=20)
+        @random_string("token", length=16, symbols=False, seed=500)
+        @random_string("password", length=20, seed=501)
         def cmd(token: str, password: str) -> None:
             click.echo(f"Token: {token}")
             click.echo(f"Password: {password}")
@@ -267,7 +277,7 @@ class TestRandomStringIntegration:
         """Test that decorator generates value when default is None."""
 
         @command()
-        @random_string("token", length=16)
+        @random_string("token", length=16, seed=502)
         def cmd(token: str) -> None:
             click.echo(f"Token: {token}")
             click.echo(f"Length: {len(token)}")
@@ -283,7 +293,7 @@ class TestRandomStringIntegration:
 
         @command()
         @option("--value", type=str, default=None)
-        @random_string("value", length=100)
+        @random_string("value", length=100, seed=503)
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
 

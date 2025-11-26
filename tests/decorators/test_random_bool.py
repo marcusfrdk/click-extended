@@ -14,7 +14,7 @@ class TestRandomBoolBasic:
         """Test that it generates a boolean value."""
 
         @command()
-        @random_bool("flag")
+        @random_bool("flag", seed=3000)
         def cmd(flag: bool) -> None:
             click.echo(f"Flag: {flag}")
 
@@ -26,14 +26,15 @@ class TestRandomBoolBasic:
     def test_default_weight_50_percent(self, cli_runner: CliRunner) -> None:
         """Test default weight gives approximately 50% distribution."""
 
-        @command()
-        @random_bool("coin")
-        def cmd(coin: bool) -> None:
-            click.echo(f"{coin}")
-
         # Sample many times
         results = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_bool("coin", seed=3001 + i)
+            def cmd(coin: bool) -> None:
+                click.echo(f"{coin}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -45,14 +46,15 @@ class TestRandomBoolBasic:
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that both True and False are generated."""
 
-        @command()
-        @random_bool("value")
-        def cmd(value: bool) -> None:
-            click.echo(f"{value}")
-
         # Run enough times to see both values
         values = set()
-        for _ in range(20):
+        for i in range(20):
+
+            @command()
+            @random_bool("value", seed=3002 + i)
+            def cmd(value: bool) -> None:
+                click.echo(f"{value}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             values.add(value)
@@ -68,7 +70,7 @@ class TestRandomBoolWeights:
         """Test weight=0.0 always returns False."""
 
         @command()
-        @random_bool("never", weight=0.0)
+        @random_bool("never", weight=0.0, seed=3003)
         def cmd(never: bool) -> None:
             click.echo(f"{never}")
 
@@ -81,7 +83,7 @@ class TestRandomBoolWeights:
         """Test weight=1.0 always returns True."""
 
         @command()
-        @random_bool("always", weight=1.0)
+        @random_bool("always", weight=1.0, seed=3004)
         def cmd(always: bool) -> None:
             click.echo(f"{always}")
 
@@ -93,13 +95,14 @@ class TestRandomBoolWeights:
     def test_weight_high_mostly_true(self, cli_runner: CliRunner) -> None:
         """Test weight=0.8 gives mostly True values."""
 
-        @command()
-        @random_bool("likely", weight=0.8)
-        def cmd(likely: bool) -> None:
-            click.echo(f"{likely}")
-
         results = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_bool("likely", weight=0.8, seed=3005 + i)
+            def cmd(likely: bool) -> None:
+                click.echo(f"{likely}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -111,13 +114,14 @@ class TestRandomBoolWeights:
     def test_weight_low_mostly_false(self, cli_runner: CliRunner) -> None:
         """Test weight=0.2 gives mostly False values."""
 
-        @command()
-        @random_bool("unlikely", weight=0.2)
-        def cmd(unlikely: bool) -> None:
-            click.echo(f"{unlikely}")
-
         results = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_bool("unlikely", weight=0.2, seed=3006 + i)
+            def cmd(unlikely: bool) -> None:
+                click.echo(f"{unlikely}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -129,13 +133,14 @@ class TestRandomBoolWeights:
     def test_weight_quarter(self, cli_runner: CliRunner) -> None:
         """Test weight=0.25 gives approximately 25% True."""
 
-        @command()
-        @random_bool("rare", weight=0.25)
-        def cmd(rare: bool) -> None:
-            click.echo(f"{rare}")
-
         results = []
-        for _ in range(200):
+        for i in range(200):
+
+            @command()
+            @random_bool("rare", weight=0.25, seed=3007 + i)
+            def cmd(rare: bool) -> None:
+                click.echo(f"{rare}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -147,13 +152,14 @@ class TestRandomBoolWeights:
     def test_weight_three_quarters(self, cli_runner: CliRunner) -> None:
         """Test weight=0.75 gives approximately 75% True."""
 
-        @command()
-        @random_bool("common", weight=0.75)
-        def cmd(common: bool) -> None:
-            click.echo(f"{common}")
-
         results = []
-        for _ in range(200):
+        for i in range(200):
+
+            @command()
+            @random_bool("common", weight=0.75, seed=3008 + i)
+            def cmd(common: bool) -> None:
+                click.echo(f"{common}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -170,7 +176,7 @@ class TestRandomBoolEdgeCases:
         """Test that negative weights are clamped to 0."""
 
         @command()
-        @random_bool("negative", weight=-0.5)
+        @random_bool("negative", weight=-0.5, seed=3009)
         def cmd(negative: bool) -> None:
             click.echo(f"{negative}")
 
@@ -183,7 +189,7 @@ class TestRandomBoolEdgeCases:
         """Test that weights > 1.0 are clamped to 1.0."""
 
         @command()
-        @random_bool("over", weight=2.0)
+        @random_bool("over", weight=2.0, seed=3010)
         def cmd(over: bool) -> None:
             click.echo(f"{over}")
 
@@ -195,13 +201,14 @@ class TestRandomBoolEdgeCases:
     def test_very_small_weight(self, cli_runner: CliRunner) -> None:
         """Test very small but non-zero weight."""
 
-        @command()
-        @random_bool("tiny", weight=0.01)
-        def cmd(tiny: bool) -> None:
-            click.echo(f"{tiny}")
-
         results = []
-        for _ in range(500):
+        for i in range(500):
+
+            @command()
+            @random_bool("tiny", weight=0.01, seed=3011 + i)
+            def cmd(tiny: bool) -> None:
+                click.echo(f"{tiny}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -213,13 +220,14 @@ class TestRandomBoolEdgeCases:
     def test_very_large_weight(self, cli_runner: CliRunner) -> None:
         """Test weight very close to 1.0."""
 
-        @command()
-        @random_bool("almost", weight=0.99)
-        def cmd(almost: bool) -> None:
-            click.echo(f"{almost}")
-
         results = []
-        for _ in range(500):
+        for i in range(500):
+
+            @command()
+            @random_bool("almost", weight=0.99, seed=3012 + i)
+            def cmd(almost: bool) -> None:
+                click.echo(f"{almost}")
+
             result = cli_runner.invoke(cmd)
             value = result.output.strip() == "True"
             results.append(value)
@@ -236,8 +244,8 @@ class TestRandomBoolIntegration:
         """Test multiple random_bool decorators with different weights."""
 
         @command()
-        @random_bool("likely", weight=0.9)
-        @random_bool("unlikely", weight=0.1)
+        @random_bool("likely", weight=0.9, seed=3013)
+        @random_bool("unlikely", weight=0.1, seed=3014)
         def cmd(likely: bool, unlikely: bool) -> None:
             click.echo(f"Likely: {likely}, Unlikely: {unlikely}")
 
@@ -251,15 +259,16 @@ class TestRandomBoolIntegration:
     ) -> None:
         """Test that multiple bools are independent."""
 
-        @command()
-        @random_bool("coin1", weight=0.5)
-        @random_bool("coin2", weight=0.5)
-        def cmd(coin1: bool, coin2: bool) -> None:
-            click.echo(f"{coin1},{coin2}")
-
         # Collect samples
         results = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_bool("coin1", weight=0.5, seed=3015 + i * 2)
+            @random_bool("coin2", weight=0.5, seed=3016 + i * 2)
+            def cmd(coin1: bool, coin2: bool) -> None:
+                click.echo(f"{coin1},{coin2}")
+
             result = cli_runner.invoke(cmd)
             parts = result.output.strip().split(",")
             pair = (parts[0] == "True", parts[1] == "True")
@@ -277,16 +286,19 @@ class TestRandomBoolPractical:
     def test_feature_flag_simulation(self, cli_runner: CliRunner) -> None:
         """Test simulating a feature flag rollout."""
 
-        @command()
-        @random_bool("new_feature", weight=0.1)  # 10% rollout
-        def cmd(new_feature: bool) -> None:
-            if new_feature:
-                click.echo("Using new feature")
-            else:
-                click.echo("Using old feature")
-
         results = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_bool(
+                "new_feature", weight=0.1, seed=3017 + i
+            )  # 10% rollout
+            def cmd(new_feature: bool) -> None:
+                if new_feature:
+                    click.echo("Using new feature")
+                else:
+                    click.echo("Using old feature")
+
             result = cli_runner.invoke(cmd)
             new = "new" in result.output
             results.append(new)
@@ -298,14 +310,15 @@ class TestRandomBoolPractical:
     def test_ab_testing_simulation(self, cli_runner: CliRunner) -> None:
         """Test simulating A/B testing with equal split."""
 
-        @command()
-        @random_bool("variant_b", weight=0.5)
-        def cmd(variant_b: bool) -> None:
-            variant = "B" if variant_b else "A"
-            click.echo(f"Variant: {variant}")
-
         results = {"A": 0, "B": 0}
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_bool("variant_b", weight=0.5, seed=3018 + i)
+            def cmd(variant_b: bool) -> None:
+                variant = "B" if variant_b else "A"
+                click.echo(f"Variant: {variant}")
+
             result = cli_runner.invoke(cmd)
             variant = result.output.split("Variant: ")[1].strip()
             results[variant] += 1

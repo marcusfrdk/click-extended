@@ -15,6 +15,9 @@ class RandomFloat(ParentNode):
     """Parent node for generating random floating point values."""
 
     def load(self, context: Context, *args: Any, **kwargs: Any) -> float:
+        if kwargs.get("seed") is not None:
+            random.seed(kwargs["seed"])
+
         if kwargs["max_value"] < kwargs["min_value"]:
             raise ValueError("min_value can not be larger than max_value.")
 
@@ -27,6 +30,7 @@ def random_float(
     min_value: float = 0.0,
     max_value: float = 1.0,
     decimals: int = 3,
+    seed: int | None = None,
 ) -> Decorator:
     """
     Parent node to generate a random floating point values.
@@ -40,10 +44,13 @@ def random_float(
             The upper value in the range. Defaults to 1.0.
         decimals (int):
             The number of decimal places to round to. Defaults to 3.
+        seed (int | None):
+            Optional seed for reproducible randomness.
     """
     return RandomFloat.as_decorator(
         name=name,
         min_value=min_value,
         max_value=max_value,
         decimals=decimals,
+        seed=seed,
     )

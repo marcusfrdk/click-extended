@@ -16,7 +16,7 @@ class TestRandomIntegerBasic:
         """Test that default range is 0-100."""
 
         @command()
-        @random_integer("value")
+        @random_integer("value", seed=1000)
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
@@ -29,7 +29,7 @@ class TestRandomIntegerBasic:
         """Test custom range parameter."""
 
         @command()
-        @random_integer("age", min_value=18, max_value=65)
+        @random_integer("age", min_value=18, max_value=65, seed=1001)
         def cmd(age: int) -> None:
             click.echo(f"Age: {age}")
 
@@ -41,13 +41,16 @@ class TestRandomIntegerBasic:
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that multiple invocations generate different values."""
 
-        @command()
-        @random_integer("value", min_value=0, max_value=1000)
-        def cmd(value: int) -> None:
-            click.echo(f"Value: {value}")
+        values = []
+        for i in range(10):
 
-        results = [cli_runner.invoke(cmd).output for _ in range(10)]
-        values = [int(r.split("Value: ")[1].strip()) for r in results]
+            @command()
+            @random_integer("value", min_value=0, max_value=1000, seed=1002 + i)
+            def cmd(value: int) -> None:
+                click.echo(f"Value: {value}")
+
+            result = cli_runner.invoke(cmd)
+            values.append(int(result.output.split("Value: ")[1].strip()))
         # With range 0-1000, we should have at least some variety
         assert len(set(values)) > 1
 
@@ -55,7 +58,7 @@ class TestRandomIntegerBasic:
         """Test when min and max are the same."""
 
         @command()
-        @random_integer("value", min_value=42, max_value=42)
+        @random_integer("value", min_value=42, max_value=42, seed=1012)
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
@@ -72,7 +75,7 @@ class TestRandomIntegerRanges:
         """Test negative number range."""
 
         @command()
-        @random_integer("value", min_value=-100, max_value=-10)
+        @random_integer("value", min_value=-100, max_value=-10, seed=1013)
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
@@ -85,7 +88,7 @@ class TestRandomIntegerRanges:
         """Test range crossing zero."""
 
         @command()
-        @random_integer("value", min_value=-50, max_value=50)
+        @random_integer("value", min_value=-50, max_value=50, seed=1014)
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
@@ -98,7 +101,7 @@ class TestRandomIntegerRanges:
         """Test very large range."""
 
         @command()
-        @random_integer("value", min_value=0, max_value=1_000_000)
+        @random_integer("value", min_value=0, max_value=1_000_000, seed=1015)
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
@@ -115,7 +118,7 @@ class TestRandomIntegerErrors:
         """Test that min > max raises ValueError."""
 
         @command()
-        @random_integer("value", min_value=100, max_value=10)
+        @random_integer("value", min_value=100, max_value=10, seed=1016)
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
@@ -130,14 +133,15 @@ class TestRandomIntegerDistribution:
     def test_includes_boundaries(self, cli_runner: CliRunner) -> None:
         """Test that both min and max values can be generated."""
 
-        @command()
-        @random_integer("value", min_value=1, max_value=3)
-        def cmd(value: int) -> None:
-            click.echo(f"{value}")
-
         # Run multiple times to likely hit boundaries
         values = set()
-        for _ in range(50):
+        for i in range(50):
+
+            @command()
+            @random_integer("value", min_value=1, max_value=3, seed=1050 + i)
+            def cmd(value: int) -> None:
+                click.echo(f"{value}")
+
             result = cli_runner.invoke(cmd)
             value = int(result.output.strip())
             values.add(value)
@@ -148,14 +152,15 @@ class TestRandomIntegerDistribution:
     def test_reasonable_distribution(self, cli_runner: CliRunner) -> None:
         """Test that distribution is reasonably uniform."""
 
-        @command()
-        @random_integer("value", min_value=0, max_value=9)
-        def cmd(value: int) -> None:
-            click.echo(f"{value}")
-
         # Collect sample
         values = []
-        for _ in range(100):
+        for i in range(100):
+
+            @command()
+            @random_integer("value", min_value=0, max_value=9, seed=1100 + i)
+            def cmd(value: int) -> None:
+                click.echo(f"{value}")
+
             result = cli_runner.invoke(cmd)
             value = int(result.output.strip())
             values.append(value)
@@ -172,8 +177,8 @@ class TestRandomIntegerIntegration:
         """Test multiple random_integer decorators."""
 
         @command()
-        @random_integer("age", min_value=18, max_value=65)
-        @random_integer("score", min_value=0, max_value=100)
+        @random_integer("age", min_value=18, max_value=65, seed=1200)
+        @random_integer("score", min_value=0, max_value=100, seed=1201)
         def cmd(age: int, score: int) -> None:
             click.echo(f"Age: {age}, Score: {score}")
 
