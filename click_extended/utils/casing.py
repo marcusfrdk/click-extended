@@ -1,104 +1,169 @@
 """Class to process strings and transform to different casings."""
 
 import re
+import unicodedata
 
 NON_ALPHABETIC_PATTERN = re.compile(r"[^A-Za-z]+")
-NON_ALPHANUMERIC_PATTERN = re.compile(r"[^A-Za-z0-9]+")
-LOWER_TO_UPPER_PATTERN = re.compile(r"([a-z])([A-Z])")
+NON_ALPHANUMERIC_PATTERN = re.compile(r"[^\w]+", re.UNICODE)
+LOWER_TO_UPPER_PATTERN = re.compile(r"([a-z\d])([A-Z])")
 UPPER_TO_UPPER_LOWER_PATTERN = re.compile(r"([A-Z]+)([A-Z][a-z])")
-NUMBER_TO_LETTER_PATTERN = re.compile(r"(\d)([a-zA-Z])")
+NUMBER_TO_LETTER_PATTERN = re.compile(r"(\d)([^\W\d_])", re.UNICODE)
 
 
 class Casing:
     """Class to process strings and transform to different casings."""
 
     @staticmethod
-    def normalize(value: str, sep: str) -> str:
-        """Normalize a value with a separator."""
-        value = LOWER_TO_UPPER_PATTERN.sub(r"\1" + sep + r"\2", value)
-        value = UPPER_TO_UPPER_LOWER_PATTERN.sub(r"\1" + sep + r"\2", value)
-        value = NUMBER_TO_LETTER_PATTERN.sub(r"\1" + sep + r"\2", value)
-        value = NON_ALPHANUMERIC_PATTERN.sub(sep, value)
-        value = re.sub(f"({re.escape(sep)})+", sep, value)
-        return value.strip(sep)
+    def _normalize_unicode(value: str) -> str:
+        """Normalize Unicode characters to ASCII equivalents."""
+        nfd = unicodedata.normalize("NFD", value)
+        return nfd.encode("ascii", "ignore").decode("ascii")
+
+    @staticmethod
+    def _split_into_words(value: str) -> list[str]:
+        """
+        Split a string into words, handling various
+        delimiters and case transitions.
+        """
+        if not value:
+            return []
+
+        value = value.strip()
+        value = value.replace("_", " ")
+        value = re.sub(r"([a-z\d])([A-Z](?=[a-z]))", r"\1 \2", value)
+        value = UPPER_TO_UPPER_LOWER_PATTERN.sub(r"\1 \2", value)
+        value = re.sub(r"(\d)([A-Za-z])", r"\1 \2", value)
+        value = re.sub(r"[^\w]+", " ", value, flags=re.UNICODE)
+
+        words = [word for word in value.split() if word]
+
+        normalized_words: list[str] = []
+        for word in words:
+            normalized = Casing._normalize_unicode(word)
+            if normalized:
+                normalized_words.append(normalized)
+            else:
+                normalized_words.append(word)
+
+        return normalized_words
+
+    @staticmethod
+    def _split_into_words_preserve_case(value: str) -> list[str]:
+        """
+        Split a string into words while preserving
+        original capitalization.
+        """
+        if not value:
+            return []
+
+        value = value.strip()
+        value = value.replace("_", " ")
+        value = re.sub(r"([a-z\d])([A-Z](?=[a-z]))", r"\1 \2", value)
+        value = UPPER_TO_UPPER_LOWER_PATTERN.sub(r"\1 \2", value)
+        value = re.sub(r"(\d)([A-Za-z])", r"\1 \2", value)
+        value = re.sub(r"[^\w]+", " ", value, flags=re.UNICODE)
+
+        return [word for word in value.split() if word]
 
     @staticmethod
     def to_lower_case(value: str) -> str:
         """Convert the value to lower case."""
-        return value.strip(" ").lower()
+        value = value.strip()
+        value = re.sub(r"[\[\]]", "", value).strip()
+        value = value.replace("\t", " ")
+        return value.lower()
 
     @staticmethod
     def to_upper_case(value: str) -> str:
         """Convert the value to upper case."""
-        return value.strip(" ").upper()
+        value = value.strip()
+        value = re.sub(r"[\[\]]", "", value).strip()
+        value = value.replace("\t", " ")
+        return value.upper()
 
     @staticmethod
     def to_meme_case(value: str) -> str:
         """Convert the value to mEmE cAsE."""
-        value = Casing.normalize(value, " ")
-        value = NON_ALPHABETIC_PATTERN.sub(" ", value)
-        return " ".join(
-            "".join(
-                v.upper() if i % 2 == 0 else v.lower()
-                for i, v in enumerate(word)
-            )
-            for word in value.strip().split(" ")
-        )
+        if not value:
+            return ""
+
+        value = value.strip()
+
+        result: list[str] = []
+        char_index = 0
+
+        for char in value:
+            if char.isalpha():
+                if char_index % 2 == 0:
+                    result.append(char.lower())
+                else:
+                    result.append(char.upper())
+                char_index += 1
+            else:
+                result.append(char)
+
+        return "".join(result)
 
     @staticmethod
     def to_snake_case(value: str) -> str:
         """Convert the value to snake_case."""
-        normalized = Casing.normalize(value, "_")
-        return normalized.lower()
+        words = Casing._split_into_words(value)
+        return "_".join(word.lower() for word in words)
 
     @staticmethod
     def to_screaming_snake_case(value: str) -> str:
         """Convert the value to SCREAMING_SNAKE_CASE."""
-        return Casing.to_snake_case(value).upper()
+        words = Casing._split_into_words(value)
+        return "_".join(word.upper() for word in words)
 
     @staticmethod
     def to_camel_case(value: str) -> str:
         """Convert the value to camelCase."""
-        value = Casing.to_pascal_case(value)
-        return value[:1].lower() + value[1:]
+        words = Casing._split_into_words(value)
+        if not words:
+            return ""
+        return words[0].lower() + "".join(
+            word.capitalize() for word in words[1:]
+        )
 
     @staticmethod
     def to_pascal_case(value: str) -> str:
         """Convert the value to PascalCase."""
-        value = Casing.normalize(value, " ")
-        return "".join(word.capitalize() for word in value.split(" "))
+        words = Casing._split_into_words(value)
+        return "".join(word.capitalize() for word in words)
 
     @staticmethod
     def to_kebab_case(value: str) -> str:
         """Convert the value to kebab-case."""
-        normalized = Casing.normalize(value, "-")
-        return normalized.lower()
+        words = Casing._split_into_words(value)
+        return "-".join(word.lower() for word in words)
 
     @staticmethod
     def to_train_case(value: str) -> str:
         """Convert the value to Train-Case."""
-        value = Casing.normalize(value, "-")
-        return "-".join(word.capitalize() for word in value.split("-"))
+        words = Casing._split_into_words(value)
+        return "-".join(word.capitalize() for word in words)
 
     @staticmethod
     def to_flat_case(value: str) -> str:
         """Convert the value to flatcase."""
-        value = Casing.normalize(value, " ")
-        return "".join(value.lower().split(" "))
+        words = Casing._split_into_words(value)
+        return "".join(word.lower() for word in words)
 
     @staticmethod
     def to_dot_case(value: str) -> str:
         """Convert the value to dot.case."""
-        normalized = Casing.normalize(value, ".")
-        return normalized.lower()
+        words = Casing._split_into_words(value)
+        return ".".join(word.lower() for word in words)
 
     @staticmethod
     def to_title_case(value: str) -> str:
         """Convert the value to Title Case."""
-        value = Casing.normalize(value, " ")
-        return " ".join(word.capitalize() for word in value.split(" "))
+        words = Casing._split_into_words(value)
+        return " ".join(word.capitalize() for word in words)
 
     @staticmethod
     def to_path_case(value: str) -> str:
         """Convert the value to path/case."""
-        return Casing.normalize(value, "/")
+        words = Casing._split_into_words(value)
+        return "/".join(word.lower() for word in words)
