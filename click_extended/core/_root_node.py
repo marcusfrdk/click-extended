@@ -393,6 +393,12 @@ class RootNode(Node):
                                         )
                                         parent_node.was_provided = was_provided
 
+                                        Tree.update_scope(
+                                            context,
+                                            "parent",
+                                            parent_node=parent_node,
+                                        )
+
                                         if asyncio.iscoroutinefunction(
                                             parent_node.load
                                         ):
@@ -411,6 +417,13 @@ class RootNode(Node):
                                         parent_node = cast(
                                             "ParentNode", parent_node
                                         )
+
+                                        Tree.update_scope(
+                                            context,
+                                            "parent",
+                                            parent_node=parent_node,
+                                        )
+
                                         raw_value = (
                                             await parent_node.load(
                                                 custom_context,
@@ -510,6 +523,13 @@ class RootNode(Node):
                                         and raw_value != parent_node.default
                                     )
                                     parent_node.was_provided = was_provided
+
+                                    Tree.update_scope(
+                                        context,
+                                        "parent",
+                                        parent_node=parent_node,
+                                    )
+
                                     raw_value = parent_node.load(
                                         raw_value,
                                         custom_context,
@@ -519,6 +539,13 @@ class RootNode(Node):
                                     parent_node = cast(
                                         "ParentNode", parent_node
                                     )
+
+                                    Tree.update_scope(
+                                        context,
+                                        "parent",
+                                        parent_node=parent_node,
+                                    )
+
                                     raw_value = parent_node.load(
                                         custom_context,
                                         **parent_node.decorator_kwargs,
@@ -573,6 +600,8 @@ class RootNode(Node):
                         **call_kwargs,
                         **parent_values,
                     }
+
+                    Tree.update_scope(context, "root")
 
                     return func(*call_args, **merged_kwargs)
                 except ContextAwareError as e:
@@ -669,7 +698,7 @@ class RootNode(Node):
 
                             # Next:
                             children_len = len(parent_from_meta.children)
-                            has_next = current_index < children_len
+                            has_next = current_index < children_len - 1
                             if has_next:
                                 next_node = parent_from_meta.children[
                                     current_index + 1
@@ -679,7 +708,14 @@ class RootNode(Node):
                             lines.append(f"Next: {repr(next_node)}")
 
                         elif parent_from_meta is not None:
-                            pass
+                            lines.append(f"Parent: {repr(parent_from_meta)}")
+
+                            if (
+                                hasattr(parent_from_meta, "decorator_kwargs")
+                                and parent_from_meta.decorator_kwargs
+                            ):
+                                deckwargs = parent_from_meta.decorator_kwargs
+                                lines.append(f"Parameters: {deckwargs}")
 
                         elif root_node is not None:
                             pass
@@ -728,14 +764,33 @@ class RootNode(Node):
                             hint = f"Help: Try '{cmd} --help' for instructions."
                             echo(hint, file=sys.stderr, color=context.color)
 
+                        node = ""
+                        if child_node is not None:
+                            handler_method = getattr(
+                                child_node,
+                                meta.get("handler_method", ""),
+                                None,
+                            )
+                            handler_method_name = (
+                                handler_method.__name__
+                                if handler_method is not None
+                                else "unknown"
+                            )
+
+                            node = f".{child_node.name}.{handler_method_name}"
+                        elif parent_from_meta is not None:
+                            node = f".{parent_from_meta.name}.load"
+
                         if exc_value == "":
                             template = (
-                                f"Error ({node_name}): "
+                                f"Error ({node_name}{node}): "
                                 f"Exception '{exc_name}' was raised."
                             )
                             message = template
                         else:
-                            message = f"{exc_name} ({node_name}): {exc_value}"
+                            message = (
+                                f"{exc_name} ({node_name}{node}): {exc_value}"
+                            )
 
                         echo(
                             "\n" + message,
