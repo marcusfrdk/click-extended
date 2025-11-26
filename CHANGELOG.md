@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v0.4.1
+
+### Added
+
+- **`@random_string`**: Added parent node decorator for generating random strings.
+
 ## v0.4.0
 
 ### Added
