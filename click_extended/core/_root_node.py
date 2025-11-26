@@ -779,7 +779,7 @@ class RootNode(Node):
 
                             node = f".{child_node.name}.{handler_method_name}"
                         elif parent_from_meta is not None:
-                            node = f".{parent_from_meta.name}.load"
+                            node = f".{parent_from_meta.name}"
 
                         if exc_value == "":
                             template = (
