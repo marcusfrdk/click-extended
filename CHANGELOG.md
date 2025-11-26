@@ -6,6 +6,9 @@
 
 ### Added
 
+- **`@random_uuid`**: Added parent node decorator for generating random `UUID` objects with unit tests.
+- **`@random_choice`**: Added parent node decorator for selecting a random choice from a sequence with unit tests.
+- **`@random_datetime`**: Added parent node decorator for generating random `datetime` objects with unit tests.
 - **`@random_string`**: Added parent node decorator for generating random strings with unit tests.
 - **`@random_integer`**: Added parent node decorator for generating a random integer with unit tests.
 - **`@random_float`**: Added parent node decorator for generating a random floating point value with unit tests.
