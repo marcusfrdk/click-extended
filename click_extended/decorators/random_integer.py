@@ -41,6 +41,10 @@ def random_integer(
             The upper value in the range. Defaults to 100.
         seed (int | None):
             Optional seed for reproducible randomness.
+
+    Returns:
+        Decorator:
+            The decorator function.
     """
     return RandomInteger.as_decorator(
         name=name,

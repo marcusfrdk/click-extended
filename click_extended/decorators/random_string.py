@@ -59,6 +59,10 @@ def random_string(
             Whether to include symbols.
         seed (int | None):
             Optional seed for reproducible randomness.
+
+    Returns:
+        Decorator:
+            The decorator function.
     """
     return RandomString.as_decorator(
         name=name,

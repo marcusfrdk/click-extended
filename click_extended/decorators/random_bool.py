@@ -35,6 +35,10 @@ def random_bool(
             be in the range 0.0 to 1.0.
         seed (int | None):
             Optional seed for reproducible randomness.
+
+    Returns:
+        Decorator:
+            The decorator function.
     """
     return RandomBool.as_decorator(
         name=name,

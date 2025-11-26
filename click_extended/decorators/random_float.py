@@ -46,6 +46,10 @@ def random_float(
             The number of decimal places to round to. Defaults to 3.
         seed (int | None):
             Optional seed for reproducible randomness.
+
+    Returns:
+        Decorator:
+            The decorator function.
     """
     return RandomFloat.as_decorator(
         name=name,
