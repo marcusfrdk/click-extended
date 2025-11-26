@@ -3,6 +3,7 @@
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-nested-blocks
 # pylint: disable=broad-exception-caught
 # pylint: disable=protected-access
 # pylint: disable=invalid-name
@@ -818,40 +819,52 @@ class RootNode(Node):
             if root.tree.root is not None:
                 most_recent_parent = None
                 most_recent_tag = None
-                for node_type, node in pending:
-                    if node_type == "parent":
-                        node = cast("ParentNode", node)
-                        if node.name in root.tree.root.children:
-                            from click_extended.errors import ParentExistsError
-
-                            raise ParentExistsError(node.name)
-                        root.tree.root[node.name] = node
-                        most_recent_parent = node
-                    elif node_type == "child":
-                        node = cast("ChildNode", node)
-                        if most_recent_tag is not None:
-                            if not root.tree.has_handle_tag_implemented(node):
-                                print(
-                                    (
-                                        f"Error ({most_recent_tag.name}): "
-                                        f"Child node '{node.name}' can not be "
-                                        "used on a tag node.\n"
-                                        "Tip: Children attached to @tag "
-                                        "decorators must implement the "
-                                        "handle_tag(...) method."
-                                    )
+                try:
+                    for node_type, node in pending:
+                        if node_type == "parent":
+                            node = cast("ParentNode", node)
+                            if node.name in root.tree.root.children:
+                                from click_extended.errors import (
+                                    ParentExistsError,
                                 )
-                                sys.exit(2)
 
-                            most_recent_tag[len(most_recent_tag)] = node
-                        elif most_recent_parent is not None:
-                            parent_len = len(most_recent_parent)
-                            most_recent_parent[parent_len] = node
-                    elif node_type == "tag":
-                        tag_inst = cast(Tag, node)
-                        root.tree.tags[tag_inst.name] = tag_inst
-                        most_recent_tag = tag_inst
-                        root.tree.recent_tag = tag_inst
+                                raise ParentExistsError(node.name)
+                            root.tree.root[node.name] = node
+                            most_recent_parent = node
+                        elif node_type == "child":
+                            node = cast("ChildNode", node)
+                            if most_recent_tag is not None:
+                                if not root.tree.has_handle_tag_implemented(
+                                    node
+                                ):
+                                    print(
+                                        (
+                                            f"Error ({most_recent_tag.name}): "
+                                            f"Child node '{node.name}' can not "
+                                            "be used on a tag node.\n"
+                                            "Tip: Children attached to @tag "
+                                            "decorators must implement the "
+                                            "handle_tag(...) method."
+                                        )
+                                    )
+                                    sys.exit(2)
+
+                                most_recent_tag[len(most_recent_tag)] = node
+                            elif most_recent_parent is not None:
+                                parent_len = len(most_recent_parent)
+                                most_recent_parent[parent_len] = node
+                        elif node_type == "tag":
+                            tag_inst = cast(Tag, node)
+                            root.tree.tags[tag_inst.name] = tag_inst
+                            most_recent_tag = tag_inst
+                            root.tree.recent_tag = tag_inst
+                except ContextAwareError as e:
+                    echo(
+                        f"{e.__class__.__name__}: {e.message}", file=sys.stderr
+                    )
+                    if e.tip:
+                        echo(f"Tip: {e.tip}", file=sys.stderr)
+                    sys.exit(1)
 
             return cls.wrap(wrapper, node_name, root, **kwargs)
 
