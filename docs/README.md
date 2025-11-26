@@ -15,3 +15,4 @@
 ## Guides
 
 - [Migrating From Click](./guides/MIGRATING_FROM_CLICK.md): A guide on how to migrate your codebase from `click` to `click-extended`.
+- [Splitting Files](./guides/SPLITTING_FILES.md): A guide how to organize your files and how to build a single file and multi file command line interface.
