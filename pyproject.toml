@@ -106,6 +106,7 @@ omit = [
     "*/.venv/*",
     "click_extended/classes.py",
     "click_extended/decorators/__init__.py",
+    "click_extended/decorators/to_case.py",
 ]
 
 [tool.coverage.report]
