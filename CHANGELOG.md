@@ -2,10 +2,24 @@
 
 # Changelog
 
-## v0.4.1
+## v1.0.0
 
 ### Added
 
+- **`@to_lower_case`**: A child decorator that converts a string to `lower case`.
+- **`@to_upper_case`**: A child decorator that converts a string to `UPPER CASE`.
+- **`@to_meme_case`**: A child decorator that converts a string to `mEmE cASe`.
+- **`@to_snake_case`**: A child decorator that converts a string to `snake_case`.
+- **`@to_screaming_snake_case`**: A child decorator that converts a string to `SCREAMING_SNAKE_CASE`.
+- **`@to_camel_case`**: A child decorator that converts a string to `camelCase`.
+- **`@to_pascal_case`**: A child decorator that converts a string to `PascalCase`.
+- **`@to_kebab_case`**: A child decorator that converts a string to `kebab-case`.
+- **`@to_train_case`**: A child decorator that converts a string to `Train-Case`.
+- **`@to_flat_case`**: A child decorator that converts a string to `flatcase`.
+- **`@to_dot_case`**: A child decorator that converts a string to `dot.case`.
+- **`@to_title_case`**: A child decorator that converts a string to `Title Case`.
+- **`@to_path_case`**: A child decorator that converts a string to `path/case`.
+- **`@random_prime`**: Added parent node decorator for generating a random prime number with unit tests.
 - **`@random_uuid`**: Added parent node decorator for generating random `UUID` objects with unit tests.
 - **`@random_choice`**: Added parent node decorator for selecting a random choice from a sequence with unit tests.
 - **`@random_datetime`**: Added parent node decorator for generating random `datetime` objects with unit tests.
