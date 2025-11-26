@@ -821,6 +821,10 @@ class RootNode(Node):
                 for node_type, node in pending:
                     if node_type == "parent":
                         node = cast("ParentNode", node)
+                        if node.name in root.tree.root.children:
+                            from click_extended.errors import ParentExistsError
+
+                            raise ParentExistsError(node.name)
                         root.tree.root[node.name] = node
                         most_recent_parent = node
                     elif node_type == "child":

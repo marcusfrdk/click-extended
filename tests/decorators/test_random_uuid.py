@@ -24,7 +24,6 @@ class TestRandomUUIDVersion1:
         """Test that version 1 UUID is generated correctly."""
 
         @command()
-        @option("--uuid", type=str, default=None)
         @random_uuid("uuid", version=1)
         def cmd(uuid: UUID) -> None:
             click.echo(f"UUID: {uuid}")
@@ -78,7 +77,6 @@ class TestRandomUUIDVersion3:
         """Test that version 3 UUID is generated correctly."""
 
         @command()
-        @option("--uuid", type=str, default=None)
         @random_uuid(
             "uuid", version=3, namespace=NAMESPACE_DNS, uuid_name="example.com"
         )
@@ -220,7 +218,6 @@ class TestRandomUUIDVersion4:
         """Test that version 4 is the default."""
 
         @command()
-        @option("--uuid", type=str, default=None)
         @random_uuid("uuid", seed=42)
         def cmd(uuid: UUID) -> None:
             click.echo(f"UUID: {uuid}")
@@ -305,7 +302,6 @@ class TestRandomUUIDVersion5:
         """Test that version 5 UUID is generated correctly."""
 
         @command()
-        @option("--uuid", type=str, default=None)
         @random_uuid(
             "uuid", version=5, namespace=NAMESPACE_DNS, uuid_name="example.com"
         )
@@ -496,8 +492,6 @@ class TestRandomUUIDIntegration:
         """Test multiple random_uuid decorators on same command."""
 
         @command()
-        @option("--id1", type=str, default=None)
-        @option("--id2", type=str, default=None)
         @random_uuid("id1", version=4, seed=100)
         @random_uuid("id2", version=4, seed=200)
         def cmd(id1: UUID, id2: UUID) -> None:
@@ -518,8 +512,6 @@ class TestRandomUUIDIntegration:
         """Test mixing different UUID versions."""
 
         @command()
-        @option("--random-id", type=str, default=None)
-        @option("--deterministic-id", type=str, default=None)
         @random_uuid("random_id", version=4, seed=300)
         @random_uuid(
             "deterministic_id",

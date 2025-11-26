@@ -6,7 +6,6 @@ import click
 from click.testing import CliRunner
 
 from click_extended.core.command import command
-from click_extended.core.option import option
 from click_extended.decorators.random_string import random_string
 
 
@@ -17,7 +16,6 @@ class TestRandomStringBasic:
         """Test that default length is 8 characters."""
 
         @command()
-        @option("--token", type=str, default=None)
         @random_string("token", seed=42)
         def cmd(token: str) -> None:
             click.echo(f"Token: {token}")
@@ -32,7 +30,6 @@ class TestRandomStringBasic:
         """Test custom length parameter."""
 
         @command()
-        @option("--code", type=str, default=None)
         @random_string("code", length=16, seed=100)
         def cmd(code: str) -> None:
             click.echo(f"Code: {code}")
@@ -49,7 +46,6 @@ class TestRandomStringBasic:
         for i in range(5):
 
             @command()
-            @option("--value", type=str, default=None)
             @random_string("value", length=16, seed=200 + i)
             def cmd(value: str) -> None:
                 click.echo(f"Value: {value}")
@@ -68,7 +64,6 @@ class TestRandomStringCharacterSets:
         """Test lowercase only option."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string(
             "value",
             length=20,
@@ -91,7 +86,6 @@ class TestRandomStringCharacterSets:
         """Test uppercase only option."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string(
             "value",
             length=20,
@@ -113,7 +107,6 @@ class TestRandomStringCharacterSets:
         """Test numbers only option."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string(
             "value",
             length=20,
@@ -135,7 +128,6 @@ class TestRandomStringCharacterSets:
         """Test symbols only option."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string(
             "value",
             length=20,
@@ -157,7 +149,6 @@ class TestRandomStringCharacterSets:
         """Test alphanumeric without symbols."""
 
         @command()
-        @option("--token", type=str, default=None)
         @random_string("token", length=100, symbols=False, seed=304)
         def cmd(token: str) -> None:
             click.echo(f"Token: {token}")
@@ -176,7 +167,6 @@ class TestRandomStringCharacterSets:
         """Test with all character types enabled (default)."""
 
         @command()
-        @option("--password", type=str, default=None)
         @random_string("password", length=50, seed=305)
         def cmd(password: str) -> None:
             click.echo(f"Password: {password}")
@@ -200,7 +190,6 @@ class TestRandomStringEdgeCases:
         """Test minimum length of 1."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string("value", length=1, seed=400)
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
@@ -214,7 +203,6 @@ class TestRandomStringEdgeCases:
         """Test generating a very long string."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string("value", length=1000, seed=401)
         def cmd(value: str) -> None:
             click.echo(f"Length: {len(value)}")
@@ -227,7 +215,6 @@ class TestRandomStringEdgeCases:
         """Test combination of lowercase and numbers."""
 
         @command()
-        @option("--code", type=str, default=None)
         @random_string(
             "code",
             length=20,
@@ -254,8 +241,6 @@ class TestRandomStringIntegration:
         """Test multiple random_string decorators on same command."""
 
         @command()
-        @option("--token", type=str, default=None)
-        @option("--password", type=str, default=None)
         @random_string("token", length=16, symbols=False, seed=500)
         @random_string("password", length=20, seed=501)
         def cmd(token: str, password: str) -> None:
@@ -292,7 +277,6 @@ class TestRandomStringIntegration:
         """Test that generated strings have good randomness."""
 
         @command()
-        @option("--value", type=str, default=None)
         @random_string("value", length=100, seed=503)
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")

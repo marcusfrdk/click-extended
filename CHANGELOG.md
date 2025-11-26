@@ -32,6 +32,7 @@
 ### Fixed
 
 - **Typing Issue**: Fixed typing issues for `Group.command()` and `Group.group()` methods.
+- **Existing Parents**: Fixed issue where duplicate parents were allowed.
 
 ## v0.4.0
 
