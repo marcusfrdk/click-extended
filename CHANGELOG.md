@@ -28,6 +28,10 @@
 - **`@random_float`**: Added parent node decorator for generating a random floating point value with unit tests.
 - **`@random_bool`**: Added parent node decorator for generating a random boolean with unit tests.
 
+### Fixed
+
+- **Typing Issue**: Fixed typing issues for `Group.command()` and `Group.group()` methods.
+
 ## v0.4.0
 
 ### Added

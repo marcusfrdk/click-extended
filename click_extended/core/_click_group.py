@@ -3,11 +3,14 @@
 # pylint: disable=cyclic-import
 # pylint: disable=redefined-builtin
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Callable
 
 import click
 
 if TYPE_CHECKING:
+    from click_extended.core._click_command import ClickCommand
     from click_extended.core._root_node import RootNode
 
 
@@ -157,7 +160,7 @@ class ClickGroup(click.Group):
         aliases: str | list[str] | None = None,
         help: str | None = None,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Callable[[Callable[..., Any]], ClickCommand]:
         """
         A decorator to create and add a child command.
 
@@ -182,7 +185,7 @@ class ClickGroup(click.Group):
         if help is not None:
             kwargs["help"] = help
 
-        def decorator(func: Callable[..., Any]) -> Any:
+        def decorator(func: Callable[..., Any]) -> ClickCommand:
             from click_extended.core.command import Command
 
             if help is None and func.__doc__:
@@ -203,7 +206,7 @@ class ClickGroup(click.Group):
         aliases: str | list[str] | None = None,
         help: str | None = None,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Callable[[Callable[..., Any]], ClickGroup]:
         """
         A decorator to create and add a child group.
 
@@ -228,7 +231,7 @@ class ClickGroup(click.Group):
         if help is not None:
             kwargs["help"] = help
 
-        def decorator(func: Callable[..., Any]) -> Any:
+        def decorator(func: Callable[..., Any]) -> ClickGroup:
             from click_extended.core.group import Group
 
             if help is None and func.__doc__:

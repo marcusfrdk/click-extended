@@ -26,6 +26,32 @@ class Group(RootNode):
         """Return the ClickGroup class."""
         return ClickGroup
 
+    @classmethod
+    def wrap(
+        cls,
+        wrapped_func: Callable[..., Any],
+        name: str,
+        instance: RootNode,
+        **kwargs: Any,
+    ) -> ClickGroup:
+        """Override to return proper ClickGroup type."""
+        return super().wrap(
+            wrapped_func,
+            name,
+            instance,
+            **kwargs,
+        )  # type: ignore[return-value]
+
+    @classmethod
+    def as_decorator(
+        cls, name: str | None = None, /, **kwargs: Any
+    ) -> Callable[[Callable[..., Any]], ClickGroup]:
+        """Override to return proper ClickGroup type."""
+        return super().as_decorator(
+            name,
+            **kwargs,
+        )  # type: ignore[return-value]
+
 
 def group(
     name: str | None = None,
@@ -33,7 +59,7 @@ def group(
     aliases: str | list[str] | None = None,
     help: str | None = None,
     **kwargs: Any,
-) -> Callable[[Callable[..., Any]], Any]:
+) -> Callable[[Callable[..., Any]], ClickGroup]:
     """
     Decorator to create a click group with value injection from parent nodes.
 
@@ -59,7 +85,7 @@ def group(
     if help is not None:
         kwargs["help"] = help
 
-    def decorator(func: Callable[..., Any]) -> Any:
+    def decorator(func: Callable[..., Any]) -> ClickGroup:
         if help is None and func.__doc__:
             first_line = func.__doc__.strip().split("\n")[0].strip()
             if first_line:

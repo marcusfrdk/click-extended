@@ -23,6 +23,32 @@ class Command(RootNode):
         """Return the ClickCommand class."""
         return ClickCommand
 
+    @classmethod
+    def wrap(
+        cls,
+        wrapped_func: Callable[..., Any],
+        name: str,
+        instance: RootNode,
+        **kwargs: Any,
+    ) -> ClickCommand:
+        """Override to return proper ClickCommand type."""
+        return super().wrap(
+            wrapped_func,
+            name,
+            instance,
+            **kwargs,
+        )  # type: ignore[return-value]
+
+    @classmethod
+    def as_decorator(
+        cls, name: str | None = None, /, **kwargs: Any
+    ) -> Callable[[Callable[..., Any]], ClickCommand]:
+        """Override to return proper ClickCommand type."""
+        return super().as_decorator(
+            name,
+            **kwargs,
+        )  # type: ignore[return-value]
+
 
 def command(
     name: str | None = None,
@@ -30,7 +56,7 @@ def command(
     aliases: str | list[str] | None = None,
     help: str | None = None,
     **kwargs: Any,
-) -> Callable[[Callable[..., Any]], Any]:
+) -> Callable[[Callable[..., Any]], ClickCommand]:
     """
     Decorator to create a click command with value injection from parent nodes.
 
@@ -56,7 +82,7 @@ def command(
     if help is not None:
         kwargs["help"] = help
 
-    def decorator(func: Callable[..., Any]) -> Any:
+    def decorator(func: Callable[..., Any]) -> ClickCommand:
         if help is None and func.__doc__:
             first_line = func.__doc__.strip().split("\n")[0].strip()
             if first_line:

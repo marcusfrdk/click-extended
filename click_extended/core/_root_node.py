@@ -5,12 +5,13 @@
 # pylint: disable=too-many-statements
 # pylint: disable=broad-exception-caught
 # pylint: disable=protected-access
+# pylint: disable=invalid-name
 
 import asyncio
 import sys
 import traceback
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, cast, get_type_hints
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast, get_type_hints
 
 import click
 from click.utils import echo
@@ -40,6 +41,8 @@ if TYPE_CHECKING:
     from click_extended.core._click_group import ClickGroup
     from click_extended.core.child_node import ChildNode
     from click_extended.core.parent_node import ParentNode
+
+ClickType = TypeVar("ClickType", bound=click.Command)
 
 
 class RootNode(Node):
@@ -200,7 +203,7 @@ class RootNode(Node):
     @classmethod
     def as_decorator(
         cls, name: str | None = None, /, **kwargs: Any
-    ) -> Callable[[Callable[..., Any]], Any]:
+    ) -> Callable[[Callable[..., Any]], click.Command]:
         """
         Return a decorator representation of the root node.
 
@@ -846,7 +849,7 @@ class RootNode(Node):
         name: str,
         instance: "RootNode",
         **kwargs: Any,
-    ) -> click.Command:
+    ) -> click.Command:  # type: ignore[return]
         """
         Create the Click command/group object.
 
