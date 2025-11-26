@@ -6,7 +6,10 @@
 
 ### Added
 
-- **`@random_string`**: Added parent node decorator for generating random strings.
+- **`@random_string`**: Added parent node decorator for generating random strings with unit tests.
+- **`@random_integer`**: Added parent node decorator for generating a random integer with unit tests.
+- **`@random_float`**: Added parent node decorator for generating a random floating point value with unit tests.
+- **`@random_bool`**: Added parent node decorator for generating a random boolean with unit tests.
 
 ## v0.4.0
 

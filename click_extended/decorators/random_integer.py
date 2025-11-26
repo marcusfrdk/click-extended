@@ -1,4 +1,4 @@
-"""Parent node for generating a random string."""
+"""Parent node for generating a random integer."""
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
