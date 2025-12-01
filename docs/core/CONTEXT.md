@@ -80,6 +80,7 @@ value = context.data["my_key"]
 | `get_provided_options()`        | `list[Option]`                | Get all provided keyword arguments.                                                                           |
 | `get_provided_envs()`           | `list[Env]`                   | Get all provided environment variables.                                                                       |
 | `get_provided_value(name: str)` | `Any`                         | Get the provided value of a parent node.                                                                      |
+| `get_provided_values()`         | `dict[str, Any]`              | Get the provided values in the context.                                                                       |
 | `get_missing_arguments()`       | `list[Argument]`              | Get all missing positional arguments.                                                                         |
 | `get_missing_options()`         | `list[Option]`                | Get all missing keyword arguments.                                                                            |
 | `get_missing_envs()`            | `list[Env]`                   | Get all missing environment variables.                                                                        |

@@ -346,6 +346,20 @@ class Context:
             return parent.cached_value  # type: ignore
         return None
 
+    def get_provided_values(self) -> dict[str, Any]:
+        """
+        Get the provided values in the context.
+
+        Returns:
+            dict[str, Any]:
+                The provided values in the context.
+        """
+        provided: dict[str, Any] = {}
+        for name, parent in self.parents.items():
+            if parent.was_provided:
+                provided[name] = parent.get_value()
+        return provided
+
     def get_missing_arguments(self) -> list["Argument"]:
         """
         Get all missing positional arguments.

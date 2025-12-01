@@ -645,6 +645,103 @@ class TestContextProvided:
         value = basic_context.get_provided_value("nonexistent")
         assert value is None
 
+    def test_get_provided_values_all_provided(
+        self,
+        mock_option: Any,
+        mock_argument: Any,
+        mock_env: Any,
+        mock_click_context: Any,
+    ) -> None:
+        """Test get_provided_values() returns all provided parent values."""
+        mock_option.was_provided = True
+        mock_option.get_value = Mock(return_value="opt_value")
+        mock_argument.was_provided = True
+        mock_argument.get_value = Mock(return_value="arg_value")
+        mock_env.was_provided = True
+        mock_env.get_value = Mock(return_value="env_value")
+
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=None,
+            current=None,
+            click_context=mock_click_context,
+            nodes={},
+            parents={
+                "test_opt": mock_option,
+                "test_arg": mock_argument,
+                "test_env": mock_env,
+            },
+            tags={},
+            children={},
+            data={},
+        )
+
+        values = context.get_provided_values()
+        assert len(values) == 3
+        assert values["test_opt"] == "opt_value"
+        assert values["test_arg"] == "arg_value"
+        assert values["test_env"] == "env_value"
+        mock_option.get_value.assert_called_once()
+        mock_argument.get_value.assert_called_once()
+        mock_env.get_value.assert_called_once()
+
+    def test_get_provided_values_some_provided(
+        self, mock_option: Any, mock_argument: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_provided_values() filters out unprovided parents."""
+        mock_option.was_provided = True
+        mock_option.get_value = Mock(return_value="opt_value")
+        mock_argument.was_provided = False
+        mock_argument.get_value = Mock(return_value="arg_value")
+
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=None,
+            current=None,
+            click_context=mock_click_context,
+            nodes={},
+            parents={"test_opt": mock_option, "test_arg": mock_argument},
+            tags={},
+            children={},
+            data={},
+        )
+
+        values = context.get_provided_values()
+        assert len(values) == 1
+        assert values["test_opt"] == "opt_value"
+        assert "test_arg" not in values
+        mock_option.get_value.assert_called_once()
+        mock_argument.get_value.assert_not_called()
+
+    def test_get_provided_values_none_provided(
+        self, mock_option: Any, mock_argument: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_provided_values() returns empty dict when nothing provided."""
+        mock_option.was_provided = False
+        mock_argument.was_provided = False
+
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=None,
+            current=None,
+            click_context=mock_click_context,
+            nodes={},
+            parents={"test_opt": mock_option, "test_arg": mock_argument},
+            tags={},
+            children={},
+            data={},
+        )
+
+        values = context.get_provided_values()
+        assert values == {}
+
+    def test_get_provided_values_empty_parents(
+        self, basic_context: Context
+    ) -> None:
+        """Test get_provided_values() with no parents."""
+        values = basic_context.get_provided_values()
+        assert values == {}
+
 
 class TestContextMissing:
     """Test get_missing_* methods."""
