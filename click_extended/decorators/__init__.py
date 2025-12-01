@@ -1,5 +1,6 @@
 """Initialization file for the `click_extended.decorators` module."""
 
+from click_extended.decorators.exclusive import exclusive
 from click_extended.decorators.random_bool import random_bool
 from click_extended.decorators.random_choice import random_choice
 from click_extended.decorators.random_datetime import random_datetime
@@ -25,6 +26,7 @@ from click_extended.decorators.to_case import (
 )
 
 __all__ = [
+    "exclusive",
     "random_bool",
     "random_choice",
     "random_datetime",
