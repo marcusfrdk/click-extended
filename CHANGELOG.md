@@ -33,6 +33,7 @@
 
 ### Fixed
 
+- **Name and Tag Naming Conflict**: Added validation so nodes cannot have a tag of the same name as the node itself.
 - **Typing Issue**: Fixed typing issues for `Group.command()` and `Group.group()` methods.
 - **Existing Parents**: Fixed issue where duplicate parents were allowed.
 - **Error output**: Improved user-friendliness of exceptions raised outside context

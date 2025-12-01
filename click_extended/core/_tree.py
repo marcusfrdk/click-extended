@@ -336,7 +336,8 @@ class Tree:
         Validate that all names are unique.
 
         Checks for collisions between options, arguments, envs, tags,
-        and globals.
+        and globals. Also checks that parent nodes don't use their own
+        name as a tag.
 
         Raises:
             NameExistsError: If duplicate names found.
@@ -351,6 +352,14 @@ class Tree:
             if parent_node.name in seen_names:
                 raise NameExistsError(parent_node.name)
             seen_names.add(parent_node.name)
+
+            if parent_node.name in cast("ParentNode", parent_node).tags:
+                raise NameExistsError(
+                    parent_node.name,
+                    tip=f"Parameter '{parent_node.name}' cannot use its own "
+                    "name as a tag. Rename either the parameter or the tag "
+                    "to avoid the conflict.",
+                )
 
         # Check tags
         for tag_name in self.tags:

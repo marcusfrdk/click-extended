@@ -1208,8 +1208,48 @@ class TestTreeNameValidation:
         root = Command(name="test_cmd")
         tree.register_root(root)
 
-        # Should not raise error with empty tree
         tree._validate_names()  # type: ignore[attr-defined]
+
+    def test_validate_names_detects_parent_using_own_name_as_tag(self) -> None:
+        """Test _validate_names() detects when a parent uses its own name as a tag."""
+        from click_extended.core.command import Command
+        from click_extended.errors import NameExistsError
+
+        tree = Tree()
+        root = Command(name="test_cmd")
+        tree.register_root(root)
+
+        parent = ConcreteParentNode(name="symbol", tags="symbol")
+        root["symbol"] = parent
+
+        with pytest.raises(NameExistsError) as exc_info:
+            tree._validate_names()  # type: ignore[attr-defined]
+
+        assert "symbol" in str(exc_info.value)
+        assert "cannot use its own name as a tag" in str(exc_info.value.tip)
+
+    def test_validate_names_detects_parent_with_own_name_in_tag_list(
+        self,
+    ) -> None:
+        """Test _validate_names() detects when a parent's name is in its tag list."""
+        from click_extended.core.command import Command
+        from click_extended.errors import NameExistsError
+
+        tree = Tree()
+        root = Command(name="test_cmd")
+        tree.register_root(root)
+
+        # Create a parent with its own name in tags list
+        parent = ConcreteParentNode(
+            name="identifier", tags=["validation", "identifier", "custom"]
+        )
+        root["identifier"] = parent
+
+        with pytest.raises(NameExistsError) as exc_info:
+            tree._validate_names()  # type: ignore[attr-defined]
+
+        assert "identifier" in str(exc_info.value)
+        assert "cannot use its own name as a tag" in str(exc_info.value.tip)
 
 
 class TestTreeVisualization:

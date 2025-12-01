@@ -147,6 +147,17 @@ class TestParentNodeInit:
         # Node's tags should be unaffected
         assert node.tags == ["tag1", "tag2"]
 
+    def test_init_allows_name_matching_tag_during_init(self) -> None:
+        """Test that node name matching a tag is allowed during init.
+
+        Note: The actual validation happens later during Tree._validate_names().
+        """
+        # Should not raise during initialization
+        node = ConcreteParentNode(name="symbol", tags="symbol")
+
+        assert node.name == "symbol"
+        assert node.tags == ["symbol"]
+
     def test_init_with_extra_kwargs(self) -> None:
         """Test that extra kwargs are accepted (for subclasses)."""
         # Should not raise an error
