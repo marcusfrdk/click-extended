@@ -6,6 +6,7 @@
 
 ### Added
 
+- **`@selection`**: Added a new parent node decorator for selecting one or more values from a carousel.
 - **`@prompt`**: Added a parent node decorator to prompt the user for a value.
 - **`@to_lower_case`**: A child decorator that converts a string to `lower case`.
 - **`@to_upper_case`**: A child decorator that converts a string to `UPPER CASE`.

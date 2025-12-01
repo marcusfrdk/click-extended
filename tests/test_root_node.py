@@ -205,7 +205,7 @@ class TestRootNodeDecorator:
             """Test function."""
             pass
 
-        assert my_func.callback.__name__ == "my_func"  # type: ignore[attr-defined]
+        assert my_func.callback.__name__ == "my_func"  # type: ignore[union-attr]
 
     def test_command_preserves_function_docstring(self) -> None:
         """Test that decorator preserves function __doc__."""
@@ -215,7 +215,7 @@ class TestRootNodeDecorator:
             """This is a documented function."""
             pass
 
-        assert "documented function" in documented.callback.__doc__  # type: ignore[attr-defined]
+        assert "documented function" in documented.callback.__doc__  # type: ignore[union-attr, operator]
 
     def test_async_command_wrapped_to_sync(self, cli_runner: Any) -> None:
         """Test that async functions are wrapped to sync."""

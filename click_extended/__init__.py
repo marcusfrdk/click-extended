@@ -6,6 +6,7 @@ from click_extended.core.env import env
 from click_extended.core.group import group
 from click_extended.core.option import option
 from click_extended.core.prompt import prompt
+from click_extended.core.selection import selection
 from click_extended.core.tag import tag
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "group",
     "option",
     "prompt",
+    "selection",
     "tag",
 ]
