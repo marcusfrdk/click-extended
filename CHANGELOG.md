@@ -6,6 +6,9 @@
 
 ### Added
 
+- **Code Snippets**: Python code snippets.
+- **`@at_most`**: Child decorator to check if at most `n` arguments are provided.
+- **`@at_least`**: Child decorator to check if at least `n` arguments are provided.
 - **`ValidationNode`**: Added new node type for validation only in the global context with lifecycle methods.
 - **`@exclusive`**: Added decorator to check for exclusivity between parents and tags.
 - **`@selection`**: Added a new parent node decorator for selecting one or more values from a carousel.

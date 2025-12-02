@@ -1,0 +1,29 @@
+{
+  "New Child Decorator": {
+    "scope": "python",
+    "description": "Create a new child decorator.",
+    "prefix": "child_decorator",
+    "body": [
+      "\"\"\"${1}\"\"\"",
+      "",
+      "from typing import Any",
+      "",
+      "from click_extended.core.child_node import ChildNode",
+      "from click_extended.core.context import Context",
+      "from click_extended.types import Decorator",
+      "",
+      "class ${2}(ChildNode):",
+      "\t\"\"\"${1}\"\"\"",
+      "",
+      "\t${4}",
+      "",
+      "def ${3}() -> Decorator:",
+      "\t\"\"\"",
+      "\tReturns:",
+      "\t\tDecorator:",
+      "\t\t\tThe decorated function.",
+      "\t\"\"\"",
+      "\treturn ${2}.as_decorator()"
+    ]
+  }
+}

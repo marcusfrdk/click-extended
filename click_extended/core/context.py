@@ -6,7 +6,7 @@
 # pylint: disable=protected-access
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 if TYPE_CHECKING:
     from click import Context as ClickContext
@@ -186,12 +186,13 @@ class Context:
         """
         from click_extended.core.child_node import ChildNode
         from click_extended.core.parent_node import ParentNode
+        from click_extended.core.tag import Tag
 
         if name is not None:
-            parent = self.get_parent(name)
+            parent: "ParentNode | Tag | None" = self.get_parent(name)
             if parent is None:
                 return []
-        elif isinstance(self.parent, ParentNode):
+        elif isinstance(self.parent, (ParentNode, Tag)):
             parent = self.parent
         else:
             return []
@@ -264,21 +265,40 @@ class Context:
         """
         return self.tags.get(name)
 
-    def get_tagged(self) -> dict[str, list["ParentNode"]]:
+    @overload
+    def get_tagged(self) -> dict[str, list["ParentNode"]]: ...
+
+    @overload
+    def get_tagged(self, name: str) -> list["ParentNode"]: ...
+
+    def get_tagged(
+        self, name: str | None = None
+    ) -> dict[str, list["ParentNode"]] | list["ParentNode"]:
         """
-        Get a dictionary of tagged `ParentNode` instances.
+        Get tagged parent nodes, either all tags or a specific tag.
+
+        Args:
+            name (str | None, optional):
+                The tag name to get parents for. If `None`, returns all tags.
 
         Returns:
-            dict[str, list[ParentNode]]:
-                Dictionary mapping tag names to lists of parent nodes.
+            dict[str, list[ParentNode]] | list[ParentNode]:
+                If `name` is `None`, returns a dictionary mapping tag names to
+                lists of parent nodes. If `name` is provided, returns a list
+                of parent nodes with that tag.
         """
         result: dict[str, list["ParentNode"]] = {}
+
         for parent in self.parents.values():
             for tag in parent.tags:
                 if tag not in result:
                     result[tag] = []
                 result[tag].append(parent)
-        return result
+
+        if name is None:
+            return result
+
+        return result.get(name, [])
 
     def get_provided_arguments(self) -> list["Argument"]:
         """
