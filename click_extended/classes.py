@@ -8,6 +8,7 @@ from click_extended.core.node import Node
 from click_extended.core.option_node import OptionNode
 from click_extended.core.parent_node import ParentNode
 from click_extended.core.tag import Tag
+from click_extended.core.validation_node import ValidationNode
 
 __all__ = [
     "Node",
@@ -18,4 +19,5 @@ __all__ = [
     "Command",
     "Group",
     "Tag",
+    "ValidationNode",
 ]
