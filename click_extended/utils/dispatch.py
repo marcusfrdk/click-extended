@@ -13,6 +13,7 @@ automatic detection and routing.
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=import-outside-toplevel
+# pylint: disable=too-many-lines
 
 import asyncio
 from datetime import date, datetime, time
@@ -60,6 +61,33 @@ SIMPLE_TYPES = (
     bytes,
     bytearray,
 )
+
+TYPE_SPECIFIC_HANDLERS = [
+    "handle_string",
+    "handle_int",
+    "handle_float",
+    "handle_bool",
+    "handle_numeric",
+    "handle_list",
+    "handle_dict",
+    "handle_tuple",
+    "handle_flat_tuple",
+    "handle_nested_tuple",
+    "handle_path",
+    "handle_uuid",
+    "handle_datetime",
+    "handle_date",
+    "handle_time",
+    "handle_bytes",
+    "handle_decimal",
+]
+
+ALL_HANDLER_NAMES = [
+    "handle_all",
+    "handle_none",
+    *TYPE_SPECIFIC_HANDLERS,
+    "handle_tag",
+]
 
 
 def _classify_tuple(
@@ -182,25 +210,18 @@ def _validate_handler_type(
     if type_hint is Any:
         return True, ""
 
-    if handler_name == "handle_primitive":
-        if not isinstance(value, PRIMITIVE_TYPES):
-            return False, f"Expected primitive type, got {type(value).__name__}"
-
-        expected_types = _extract_inner_types(type_hint)
-        if expected_types and not any(
-            isinstance(value, t) for t in expected_types
-        ):
-            type_names = " | ".join(sorted(t.__name__ for t in expected_types))
+    if isinstance(type_hint, type) and origin is None:
+        if not isinstance(value, type_hint):
+            expected_name = type_hint.__name__
             actual_type = type(value).__name__
             suggestion = ""
 
-            if actual_type == "str" and int in expected_types:
+            if actual_type == "str" and type_hint in (int, float):
                 suggestion = (
                     "\nTip: Add type=int to your option/argument "
                     "to convert strings to integers."
                 )
-
-            elif actual_type == "int" and str in expected_types:
+            elif actual_type == "int" and type_hint == str:
                 suggestion = (
                     "\nTip: Change type=int to type=str in "
                     "your option/argument."
@@ -208,7 +229,51 @@ def _validate_handler_type(
 
             return (
                 False,
-                f"Expected {type_names}, got {actual_type}.{suggestion}",
+                f"Expected {expected_name}, got {actual_type}.{suggestion}",
+            )
+
+    if handler_name in (
+        "handle_string",
+        "handle_int",
+        "handle_float",
+        "handle_bool",
+        "handle_numeric",
+    ):
+        expected_type_map: dict[str, type | tuple[type, ...]] = {
+            "handle_string": str,
+            "handle_int": int,
+            "handle_float": float,
+            "handle_bool": bool,
+            "handle_numeric": (int, float),
+        }
+        expected = expected_type_map[handler_name]
+
+        if not isinstance(value, expected):
+            if handler_name == "handle_numeric":
+                return (
+                    False,
+                    f"Expected int or float, got {type(value).__name__}",
+                )
+            expected_name = (
+                expected.__name__ if isinstance(expected, type) else "number"
+            )
+            actual_type = type(value).__name__
+            suggestion = ""
+
+            if actual_type == "str" and expected in (int, (int, float)):
+                suggestion = (
+                    "\nTip: Add type=int to your option/argument "
+                    "to convert strings to integers."
+                )
+            elif actual_type == "int" and expected == str:
+                suggestion = (
+                    "\nTip: Change type=int to type=str in "
+                    "your option/argument."
+                )
+
+            return (
+                False,
+                f"Expected {expected_name}, got {actual_type}.{suggestion}",
             )
 
     elif handler_name == "handle_flat_tuple":
@@ -470,6 +535,21 @@ def dispatch_to_child(
             except NotImplementedError:
                 pass
 
+        for handler_name in TYPE_SPECIFIC_HANDLERS:
+            if _is_handler_implemented(child, handler_name):
+                if _should_call_handler(child, handler_name, value):
+                    try:
+                        handler = getattr(child, handler_name)
+                        result = handler(
+                            value,
+                            context,
+                            *child.process_args,
+                            **child.process_kwargs,
+                        )
+                        return value if result is None else result
+                    except NotImplementedError:
+                        pass
+
         # Handle all
         try:
             if _should_call_handler(child, "handle_all", value):
@@ -480,22 +560,13 @@ def dispatch_to_child(
         except NotImplementedError:
             pass
 
-        if _is_handler_implemented(child, "handle_primitive"):
-            try:
-                if _should_call_handler(child, "handle_primitive", value):
-                    result = child.handle_primitive(
-                        value,  # type: ignore[arg-type]
-                        context,
-                        *child.process_args,
-                        **child.process_kwargs,
-                    )
-                    return value if result is None else result
-            except NotImplementedError:
-                pass
-
         return None
 
-    handler_name = _determine_handler(child, value, context)
+    handler_name = _determine_handler(
+        child,
+        value,
+        context,
+    )  # type: ignore[assignment]
 
     # Handle specific
     if handler_name:
@@ -504,7 +575,7 @@ def dispatch_to_child(
                 if "click_extended" in context.click_context.meta:
                     context.click_context.meta["click_extended"][
                         "handler_method"
-                    ] = handler_name
+                    ] = handler_name  # type: ignore[assignment]
 
                 handler = getattr(child, handler_name)
                 hints = get_type_hints(handler)
@@ -588,9 +659,15 @@ def _determine_handler(
     elif isinstance(value, Decimal):
         if _is_handler_implemented(child, "handle_decimal"):
             return "handle_decimal"
-    elif isinstance(value, (datetime, date, time)):
+    elif isinstance(value, datetime):
         if _is_handler_implemented(child, "handle_datetime"):
             return "handle_datetime"
+    elif isinstance(value, date):
+        if _is_handler_implemented(child, "handle_date"):
+            return "handle_date"
+    elif isinstance(value, time):
+        if _is_handler_implemented(child, "handle_time"):
+            return "handle_time"
     elif isinstance(value, UUID):
         if _is_handler_implemented(child, "handle_uuid"):
             return "handle_uuid"
@@ -600,9 +677,24 @@ def _determine_handler(
     elif isinstance(value, dict):
         if _is_handler_implemented(child, "handle_dict"):
             return "handle_dict"
-    elif isinstance(value, PRIMITIVE_TYPES):
-        if _is_handler_implemented(child, "handle_primitive"):
-            return "handle_primitive"
+    elif isinstance(value, str):
+        if _is_handler_implemented(child, "handle_string"):
+            return "handle_string"
+    elif isinstance(
+        value, bool
+    ):  # Must check bool before int since bool is subclass of int
+        if _is_handler_implemented(child, "handle_bool"):
+            return "handle_bool"
+    elif isinstance(value, int):
+        if _is_handler_implemented(child, "handle_int"):
+            return "handle_int"
+        if _is_handler_implemented(child, "handle_numeric"):
+            return "handle_numeric"
+    elif isinstance(value, float):
+        if _is_handler_implemented(child, "handle_float"):
+            return "handle_float"
+        if _is_handler_implemented(child, "handle_numeric"):
+            return "handle_numeric"
     elif isinstance(value, list):
         if _is_handler_implemented(child, "handle_list"):
             return "handle_list"
@@ -716,24 +808,8 @@ def _get_implemented_handlers(child: "ChildNode") -> list[str]:
             that are implemented.
     """
     handlers: list[str] = []
-    handler_names = [
-        "handle_all",
-        "handle_none",
-        "handle_primitive",
-        "handle_flat_tuple",
-        "handle_tuple",
-        "handle_list",
-        "handle_nested_tuple",
-        "handle_dict",
-        "handle_tag",
-        "handle_datetime",
-        "handle_uuid",
-        "handle_path",
-        "handle_bytes",
-        "handle_decimal",
-    ]
 
-    for handler_name in handler_names:
+    for handler_name in ALL_HANDLER_NAMES:
         for cls in type(child).__mro__:
             if handler_name in cls.__dict__:
                 if cls is not ChildNode:
@@ -755,24 +831,7 @@ def has_async_handlers(child: "ChildNode") -> bool:
         bool:
             `True` if any handler is async, `False` otherwise.
     """
-    handler_names = [
-        "handle_all",
-        "handle_none",
-        "handle_primitive",
-        "handle_flat_tuple",
-        "handle_tuple",
-        "handle_list",
-        "handle_nested_tuple",
-        "handle_dict",
-        "handle_tag",
-        "handle_datetime",
-        "handle_uuid",
-        "handle_path",
-        "handle_bytes",
-        "handle_decimal",
-    ]
-
-    for handler_name in handler_names:
+    for handler_name in ALL_HANDLER_NAMES:
         if _is_handler_implemented(child, handler_name):
             handler = getattr(child, handler_name)
             if asyncio.iscoroutinefunction(handler):
@@ -827,6 +886,29 @@ async def dispatch_to_child_async(
             except NotImplementedError:
                 pass
 
+        for handler_name in TYPE_SPECIFIC_HANDLERS:
+            if _is_handler_implemented(child, handler_name):
+                if _should_call_handler(child, handler_name, value):
+                    try:
+                        handler = getattr(child, handler_name)
+                        if asyncio.iscoroutinefunction(handler):
+                            result = await handler(
+                                value,
+                                context,
+                                *child.process_args,
+                                **child.process_kwargs,
+                            )
+                        else:
+                            result = handler(
+                                value,
+                                context,
+                                *child.process_args,
+                                **child.process_kwargs,
+                            )
+                        return value if result is None else result
+                    except NotImplementedError:
+                        pass
+
         # Handle all
         try:
             if _should_call_handler(child, "handle_all", value):
@@ -849,31 +931,13 @@ async def dispatch_to_child_async(
         except NotImplementedError:
             pass
 
-        if _is_handler_implemented(child, "handle_primitive"):
-            try:
-                if _should_call_handler(child, "handle_primitive", value):
-                    primitive_handler = child.handle_primitive
-                    if asyncio.iscoroutinefunction(primitive_handler):
-                        result = await primitive_handler(
-                            value,  # type: ignore[arg-type]
-                            context,
-                            *child.process_args,
-                            **child.process_kwargs,
-                        )
-                    else:
-                        result = primitive_handler(
-                            value,  # type: ignore[arg-type]
-                            context,
-                            *child.process_args,
-                            **child.process_kwargs,
-                        )
-                    return value if result is None else result
-            except NotImplementedError:
-                pass
-
         return None
 
-    handler_name = _determine_handler(child, value, context)
+    handler_name = _determine_handler(
+        child,
+        value,
+        context,
+    )  # type: ignore[assignment]
 
     # Handle specific
     if handler_name:
@@ -882,7 +946,7 @@ async def dispatch_to_child_async(
                 if "click_extended" in context.click_context.meta:
                     context.click_context.meta["click_extended"][
                         "handler_method"
-                    ] = handler_name
+                    ] = handler_name  # type: ignore[assignment]
 
                 handler = getattr(child, handler_name)
                 hints = get_type_hints(handler)

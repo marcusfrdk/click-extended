@@ -64,7 +64,7 @@ class TestPhase3Validation:
         from click_extended.core.context import Context
 
         class IntChild(ChildNode):
-            def handle_primitive(self, value: int, context: Context) -> int:
+            def handle_int(self, value: int, context: Context) -> int:
                 return value * 2
 
         @command()
@@ -123,11 +123,11 @@ class TestPhase4Runtime:
         scopes: list[str] = []
 
         class TrackingChild(SimpleChild):
-            def handle_primitive(self, value: str, context: Context) -> str:
+            def handle_string(self, value: str, context: Context) -> str:
                 ctx = click.get_current_context()
                 scope = ctx.meta["click_extended"]["current_scope"]
                 scopes.append(scope)
-                return super().handle_primitive(value, context)
+                return super().handle_string(value, context)
 
         @command()
         @option("--name", type=str, default="test")

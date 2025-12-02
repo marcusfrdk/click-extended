@@ -35,6 +35,10 @@
 - **`@random_float`**: Added parent node decorator for generating a random floating point value with unit tests.
 - **`@random_bool`**: Added parent node decorator for generating a random boolean with unit tests.
 
+### Updated
+
+- **Granular Handlers**: Replaced `handle_primitive` with more granular `handle_string`, `handle_int`, and more.
+
 ### Fixed
 
 - **Name and Tag Naming Conflict**: Added validation so nodes cannot have a tag of the same name as the node itself.

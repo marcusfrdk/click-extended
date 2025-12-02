@@ -1,5 +1,7 @@
 """ChildNode class for handler-based value processing."""
 
+# pylint: disable=too-many-public-methods
+
 from abc import ABC
 from datetime import date, datetime, time
 from decimal import Decimal
@@ -100,19 +102,150 @@ class ChildNode(Node, ABC):
         """
         raise NotImplementedError
 
-    def handle_primitive(
-        self,
-        value: str | int | float | bool,
-        context: "Context",
-        *args: Any,
-        **kwargs: Any,
+    def handle_string(
+        self, value: str, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
         """
-        Handle primitive types (str, int, float, bool).
+        Handle string values.
 
         Args:
-            value (str | int | float | bool):
-                The primitive value to process.
+            value (str):
+                The string value to process.
+            context (Context):
+                Information about the current context.
+            *args (Any):
+                Additional positional arguments from decorator.
+            **kwargs (Any):
+                Additional keyword arguments from decorator.
+
+        Returns:
+            Any:
+                Processed value, or `None` to pass through unchanged.
+        """
+        raise NotImplementedError
+
+    def handle_int(
+        self, value: int, context: "Context", *args: Any, **kwargs: Any
+    ) -> Any:
+        """
+        Handle integer values.
+
+        Args:
+            value (int):
+                The integer value to process.
+            context (Context):
+                Information about the current context.
+            *args (Any):
+                Additional positional arguments from decorator.
+            **kwargs (Any):
+                Additional keyword arguments from decorator.
+
+        Returns:
+            Any:
+                Processed value, or `None` to pass through unchanged.
+        """
+        raise NotImplementedError
+
+    def handle_float(
+        self, value: float, context: "Context", *args: Any, **kwargs: Any
+    ) -> Any:
+        """
+        Handle float values.
+
+        Args:
+            value (float):
+                The float value to process.
+            context (Context):
+                Information about the current context.
+            *args (Any):
+                Additional positional arguments from decorator.
+            **kwargs (Any):
+                Additional keyword arguments from decorator.
+
+        Returns:
+            Any:
+                Processed value, or `None` to pass through unchanged.
+        """
+        raise NotImplementedError
+
+    def handle_bool(
+        self, value: bool, context: "Context", *args: Any, **kwargs: Any
+    ) -> Any:
+        """
+        Handle boolean values.
+
+        Args:
+            value (bool):
+                The boolean value to process.
+            context (Context):
+                Information about the current context.
+            *args (Any):
+                Additional positional arguments from decorator.
+            **kwargs (Any):
+                Additional keyword arguments from decorator.
+
+        Returns:
+            Any:
+                Processed value, or `None` to pass through unchanged.
+        """
+        raise NotImplementedError
+
+    def handle_numeric(
+        self, value: int | float, context: "Context", *args: Any, **kwargs: Any
+    ) -> Any:
+        """
+        Handle numeric values (int or float).
+
+        This is a union handler that works with both integers and floats.
+        Use this when your decorator logic applies to all numeric types.
+
+        Args:
+            value (int | float):
+                The numeric value to process.
+            context (Context):
+                Information about the current context.
+            *args (Any):
+                Additional positional arguments from decorator.
+            **kwargs (Any):
+                Additional keyword arguments from decorator.
+
+        Returns:
+            Any:
+                Processed value, or `None` to pass through unchanged.
+        """
+        raise NotImplementedError
+
+    def handle_date(
+        self, value: date, context: "Context", *args: Any, **kwargs: Any
+    ) -> Any:
+        """
+        Handle date objects (datetime.date).
+
+        Args:
+            value (date):
+                The date object to process.
+            context (Context):
+                Information about the current context.
+            *args (Any):
+                Additional positional arguments from decorator.
+            **kwargs (Any):
+                Additional keyword arguments from decorator.
+
+        Returns:
+            Any:
+                Processed value, or `None` to pass through unchanged.
+        """
+        raise NotImplementedError
+
+    def handle_time(
+        self, value: time, context: "Context", *args: Any, **kwargs: Any
+    ) -> Any:
+        """
+        Handle time objects (datetime.time).
+
+        Args:
+            value (time):
+                The time object to process.
             context (Context):
                 Information about the current context.
             *args (Any):
@@ -337,17 +470,17 @@ class ChildNode(Node, ABC):
 
     def handle_datetime(
         self,
-        value: datetime | date | time,
+        value: datetime,
         context: "Context",
         *args: Any,
         **kwargs: Any,
     ) -> Any:
         """
-        Handle datetime, date, and time objects.
+        Handle datetime objects (datetime.datetime).
 
         Args:
-            value (datetime | date | time):
-                The datetime, date, or time object to process.
+            value (datetime):
+                The datetime object to process.
             context (Context):
                 Information about the current context.
             *args (Any):

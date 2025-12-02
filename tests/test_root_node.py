@@ -371,7 +371,7 @@ class TestRootNodeTreeBuilding:
         from click_extended.core.option import option
 
         class Uppercase(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()
@@ -657,7 +657,7 @@ class TestRootNodeChildrenProcessing:
         execution_order = []
 
         class TrackedChild(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 execution_order.append("child")
@@ -686,21 +686,21 @@ class TestRootNodeChildrenProcessing:
         execution_order = []
 
         class First(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 execution_order.append("first")
                 return value + "1"
 
         class Second(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 execution_order.append("second")
                 return value + "2"
 
         class Third(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 execution_order.append("third")
@@ -727,7 +727,7 @@ class TestRootNodeChildrenProcessing:
         from click_extended.errors import ContextAwareError
 
         class FailingChild(ChildNode):
-            def handle_primitive(
+            def handle_int(
                 self, value: int, context: Context, *args: Any, **kwargs: Any
             ) -> int:
                 if value < 0:
@@ -753,13 +753,13 @@ class TestRootNodeChildrenProcessing:
         from click_extended.core.option import option
 
         class Double(ChildNode):
-            def handle_primitive(
+            def handle_int(
                 self, value: int, context: Context, *args: Any, **kwargs: Any
             ) -> int:
                 return value * 2
 
         class AddTen(ChildNode):
-            def handle_primitive(
+            def handle_int(
                 self, value: int, context: Context, *args: Any, **kwargs: Any
             ) -> int:
                 return value + 10
@@ -789,7 +789,7 @@ class TestRootNodeAsync:
         from click_extended.core.option import option
 
         class AsyncChild(ChildNode):
-            async def handle_primitive(
+            async def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()
@@ -813,13 +813,13 @@ class TestRootNodeAsync:
         from click_extended.core.option import option
 
         class AsyncFirst(ChildNode):
-            async def handle_primitive(
+            async def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value + "1"
 
         class AsyncSecond(ChildNode):
-            async def handle_primitive(
+            async def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value + "2"
@@ -844,13 +844,13 @@ class TestRootNodeAsync:
         from click_extended.core.option import option
 
         class SyncChild(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value + "sync"
 
         class AsyncChild(ChildNode):
-            async def handle_primitive(
+            async def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value + "async"
@@ -880,7 +880,7 @@ class TestRootNodeErrorHandling:
         from click_extended.errors import ContextAwareError
 
         class FailingChild(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 raise ContextAwareError("Something went wrong")
@@ -901,7 +901,7 @@ class TestRootNodeErrorHandling:
         from click_extended.core.option import option
 
         class FailingChild(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 raise ValueError("Invalid value")
@@ -1119,7 +1119,7 @@ class TestRootNodeEdgeCases:
         from click_extended.core.option import option
 
         class Validate(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.strip().upper()
@@ -1560,7 +1560,7 @@ class TestRootNodeEnvIntegration:
         from click_extended.core.env import env
 
         class Uppercase(ChildNode):
-            def handle_primitive(
+            def handle_string(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()
@@ -1736,7 +1736,7 @@ class TestRootNodeDebugMode:
         from click_extended.errors import ContextAwareError
 
         class Validator(ChildNode):
-            def handle_primitive(
+            def handle_int(
                 self, value: int, context: Context, *args: Any, **kwargs: Any
             ) -> int:
                 if value > 100:

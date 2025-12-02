@@ -142,7 +142,7 @@ from click_extended.classes import ChildNode
 from click_extended.types import Context, Decorator
 
 class MyCustomChild(ChildNode):
-    def handle_primitive(
+    def handle_string(
         self,
         value: str,
         context: Context,

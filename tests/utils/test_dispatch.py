@@ -134,27 +134,27 @@ class TestValidateHandlerType:
         assert is_valid
         assert msg == ""
 
-    def test_handle_primitive_with_correct_type(self) -> None:
-        """Test handle_primitive with correct primitive type."""
-        is_valid, msg = _validate_handler_type("handle_primitive", 42, int)
+    def test_handle_int_with_correct_type(self) -> None:
+        """Test handle_int with correct int type."""
+        is_valid, msg = _validate_handler_type("handle_int", 42, int)
         assert is_valid
         assert msg == ""
 
-    def test_handle_primitive_with_wrong_type(self) -> None:
-        """Test handle_primitive with wrong type."""
-        is_valid, msg = _validate_handler_type("handle_primitive", "hello", int)
+    def test_handle_int_with_wrong_type(self) -> None:
+        """Test handle_int with wrong type."""
+        is_valid, msg = _validate_handler_type("handle_int", "hello", int)
         assert not is_valid
         assert "Expected int, got str" in msg
 
-    def test_handle_primitive_string_to_int_suggestion(self) -> None:
+    def test_handle_int_string_to_int_suggestion(self) -> None:
         """Test suggestion when string is provided but int expected."""
-        is_valid, msg = _validate_handler_type("handle_primitive", "123", int)
+        is_valid, msg = _validate_handler_type("handle_int", "123", int)
         assert not is_valid
         assert "type=int" in msg
 
-    def test_handle_primitive_int_to_string_suggestion(self) -> None:
+    def test_handle_string_int_to_string_suggestion(self) -> None:
         """Test suggestion when int is provided but str expected."""
-        is_valid, msg = _validate_handler_type("handle_primitive", 123, str)
+        is_valid, msg = _validate_handler_type("handle_string", 123, str)
         assert not is_valid
         assert "type=str" in msg
 
@@ -254,17 +254,17 @@ class TestIsHandlerImplemented:
     def test_not_implemented_returns_false(self) -> None:
         """Test that base ChildNode handlers return False."""
         child = MockChildNode()
-        assert not _is_handler_implemented(child, "handle_primitive")
+        assert not _is_handler_implemented(child, "handle_string")
 
     def test_implemented_handler_returns_true(self) -> None:
         """Test that implemented handler returns True."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
-        assert _is_handler_implemented(child, "handle_primitive")
+        assert _is_handler_implemented(child, "handle_int")
 
     def test_nonexistent_handler_returns_false(self) -> None:
         """Test that non-existent handler returns False."""
@@ -285,18 +285,18 @@ class TestGetImplementedHandlers:
         """Test child with one handler implemented."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
         handlers = _get_implemented_handlers(child)
-        assert "primitive" in handlers
+        assert "int" in handlers
 
     def test_multiple_handlers_implemented(self) -> None:
         """Test child with multiple handlers implemented."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
             def handle_list(self, value: list[int], context: Any) -> list[int]:
@@ -304,7 +304,7 @@ class TestGetImplementedHandlers:
 
         child = CustomChild()
         handlers = _get_implemented_handlers(child)
-        assert "primitive" in handlers
+        assert "int" in handlers
         assert "list" in handlers
 
 
@@ -321,21 +321,21 @@ class TestShouldCallHandler:
         """Test None value with Optional type hint."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int | None, context: Any) -> int:
+            def handle_int(self, value: int | None, context: Any) -> int:
                 return value or 0
 
         child = CustomChild()
-        assert _should_call_handler(child, "handle_primitive", None)
+        assert _should_call_handler(child, "handle_int", None)
 
     def test_none_value_without_optional_type(self) -> None:
         """Test None value without Optional in type hint."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
-        assert not _should_call_handler(child, "handle_primitive", None)
+        assert not _should_call_handler(child, "handle_string", None)
 
 
 class TestDetermineHandler:
@@ -384,7 +384,7 @@ class TestDetermineHandler:
         assert handler == "handle_decimal"
 
     def test_datetime_returns_handle_datetime(self) -> None:
-        """Test that datetime/date/time returns handle_datetime."""
+        """Test that datetime returns handle_datetime."""
 
         class CustomChild(MockChildNode):
             def handle_datetime(
@@ -399,8 +399,33 @@ class TestDetermineHandler:
         handler = _determine_handler(child, datetime.now(), context)
         assert handler == "handle_datetime"
 
+    def test_date_returns_handle_date(self) -> None:
+        """Test that date returns handle_date."""
+
+        class CustomChild(MockChildNode):
+            def handle_date(self, value: date, context: Any) -> date:
+                return value
+
+        child = CustomChild()
+        context = Mock()
+        context.is_tag.return_value = False
+
         handler = _determine_handler(child, date.today(), context)
-        assert handler == "handle_datetime"
+        assert handler == "handle_date"
+
+    def test_time_returns_handle_time(self) -> None:
+        """Test that time returns handle_time."""
+
+        class CustomChild(MockChildNode):
+            def handle_time(self, value: time, context: Any) -> time:
+                return value
+
+        child = CustomChild()
+        context = Mock()
+        context.is_tag.return_value = False
+
+        handler = _determine_handler(child, time(12, 0), context)
+        assert handler == "handle_time"
 
     def test_uuid_returns_handle_uuid(self) -> None:
         """Test that UUID returns handle_uuid."""
@@ -448,19 +473,19 @@ class TestDetermineHandler:
         handler = _determine_handler(child, {"key": "value"}, context)
         assert handler == "handle_dict"
 
-    def test_primitive_returns_handle_primitive(self) -> None:
-        """Test that primitives return handle_primitive."""
+    def test_string_returns_handle_string(self) -> None:
+        """Test that strings return handle_string."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_string(self, value: str, context: Any) -> str:
                 return value
 
         child = CustomChild()
         context = Mock()
         context.is_tag.return_value = False
 
-        handler = _determine_handler(child, 42, context)
-        assert handler == "handle_primitive"
+        handler = _determine_handler(child, "hello", context)
+        assert handler == "handle_string"
 
     def test_flat_tuple_returns_handle_flat_tuple(self) -> None:
         """Test that flat tuple returns handle_flat_tuple."""
@@ -532,7 +557,7 @@ class TestHasAsyncHandlers:
         """Test child with no async handlers."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
@@ -542,7 +567,7 @@ class TestHasAsyncHandlers:
         """Test child with async handler."""
 
         class CustomChild(MockChildNode):
-            async def handle_primitive(self, value: int, context: Any) -> int:
+            async def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
@@ -555,7 +580,7 @@ class TestHasAsyncHandlers:
             def handle_list(self, value: list[int], context: Any) -> list[int]:
                 return value
 
-            async def handle_primitive(self, value: int, context: Any) -> int:
+            async def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
@@ -596,7 +621,7 @@ class TestDispatchToChild:
         """Test dispatching primitive value."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
@@ -641,7 +666,7 @@ class TestDispatchToChild:
         """Test that handler returning None preserves original value."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> None:
+            def handle_int(self, value: int, context: Any) -> None:
                 # Return None to preserve original value
                 return None
 
@@ -675,7 +700,7 @@ class TestDispatchToChild:
         """Test that NotImplementedError causes fallback to next handler."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 raise NotImplementedError()
 
             def handle_all(self, value: Any, context: Any) -> str:
@@ -712,8 +737,9 @@ class TestDispatchToChild:
         """Test type mismatch raises ProcessError."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
-                return value * 2
+            def handle_int(self, value: str, context: Any) -> int:
+                # Type hint says str but value passed is int
+                return int(value)
 
         child = CustomChild()
         context = Mock()
@@ -722,7 +748,7 @@ class TestDispatchToChild:
         context.click_context.meta = {"click_extended": {}}
 
         with pytest.raises(ProcessError) as exc_info:
-            dispatch_to_child(child, "not_an_int", context)
+            dispatch_to_child(child, 123, context)
 
         assert "Type mismatch" in str(exc_info.value)
 
@@ -753,7 +779,7 @@ class TestDispatchToChildAsync:
         """Test async dispatching primitive with async handler."""
 
         class CustomChild(MockChildNode):
-            async def handle_primitive(self, value: int, context: Any) -> int:
+            async def handle_int(self, value: int, context: Any) -> int:
                 await asyncio.sleep(0.001)
                 return value * 2
 
@@ -771,7 +797,7 @@ class TestDispatchToChildAsync:
         """Test async dispatch can call sync handlers too."""
 
         class CustomChild(MockChildNode):
-            def handle_primitive(self, value: int, context: Any) -> int:
+            def handle_int(self, value: int, context: Any) -> int:
                 return value * 2
 
         child = CustomChild()
@@ -818,7 +844,7 @@ class TestDispatchToChildAsync:
         """Test async dispatch NotImplementedError causes fallback."""
 
         class CustomChild(MockChildNode):
-            async def handle_primitive(self, value: int, context: Any) -> int:
+            async def handle_int(self, value: int, context: Any) -> int:
                 raise NotImplementedError()
 
             async def handle_all(self, value: Any, context: Any) -> str:
@@ -875,8 +901,9 @@ class TestDispatchToChildAsync:
         """Test async dispatch type mismatch raises ProcessError."""
 
         class CustomChild(MockChildNode):
-            async def handle_primitive(self, value: int, context: Any) -> int:
-                return value * 2
+            async def handle_int(self, value: str, context: Any) -> int:
+                # Type hint says str but value passed is int
+                return int(value)
 
         child = CustomChild()
         context = Mock()
@@ -885,6 +912,6 @@ class TestDispatchToChildAsync:
         context.click_context.meta = {"click_extended": {}}
 
         with pytest.raises(ProcessError) as exc_info:
-            await dispatch_to_child_async(child, "not_an_int", context)
+            await dispatch_to_child_async(child, 123, context)
 
         assert "Type mismatch" in str(exc_info.value)

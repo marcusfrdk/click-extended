@@ -1,7 +1,6 @@
 # TODO
 
 - Remove `(...)` from `Error (...): ...`
-- Split `handle_primitive` into more granular `handle_string`, `handle_number`, `handle_path`, `handle_datetime`, `handle_date`, etc.
 - `@apply(fn)`
 - `@deprecated(message, since, removed_in)`
 - `@expand_vars()`
@@ -24,6 +23,8 @@
 - `@must_end_with(*text)`
 - `@cannot_end_with(*text)`
 - `@divisible_by(n)`
+- `@gcd(n)`
+- `@lcd(n)`
 - `@choice(*values)`
 - `@to_set()`
 - `@to_list()`

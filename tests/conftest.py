@@ -19,7 +19,7 @@ def cli_runner() -> CliRunner:
 class SimpleChild(ChildNode):
     """Reusable child node that uppercases strings."""
 
-    def handle_primitive(self, value: str, context: Context) -> str:
+    def handle_string(self, value: str, context: Context) -> str:
         """Uppercase the input value."""
         return value.upper()
 
@@ -27,7 +27,7 @@ class SimpleChild(ChildNode):
 class MultiplyChild(ChildNode):
     """Reusable child node that multiplies numbers."""
 
-    def handle_primitive(self, value: int, context: Context) -> int:
+    def handle_int(self, value: int, context: Context) -> int:
         """Multiply value by 2."""
         return value * 2
 
@@ -35,7 +35,7 @@ class MultiplyChild(ChildNode):
 class ValidatingChild(ChildNode):
     """Reusable child node that validates positive numbers."""
 
-    def handle_primitive(self, value: int, context: Context) -> int:
+    def handle_int(self, value: int, context: Context) -> int:
         """Validate value is positive."""
         if value <= 0:
             raise ValueError(f"{value} must be positive")

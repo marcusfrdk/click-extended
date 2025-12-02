@@ -726,7 +726,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class MinLength(ChildNode):
-            def handle_primitive(self, value: str, context: Context) -> str:
+            def handle_string(self, value: str, context: Context) -> str:
                 if len(value) < 3:
                     raise ValueError("Must be at least 3 characters")
                 return value
@@ -758,7 +758,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class Uppercase(ChildNode):
-            def handle_primitive(self, value: str, context: Context) -> str:
+            def handle_string(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -783,11 +783,11 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class StripWhitespace(ChildNode):
-            def handle_primitive(self, value: str, context: Context) -> str:
+            def handle_string(self, value: str, context: Context) -> str:
                 return value.strip()
 
         class Uppercase(ChildNode):
-            def handle_primitive(self, value: str, context: Context) -> str:
+            def handle_string(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -811,7 +811,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class Double(ChildNode):
-            def handle_primitive(self, value: int, context: Context) -> int:
+            def handle_int(self, value: int, context: Context) -> int:
                 return value * 2
 
         @command()
@@ -834,9 +834,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class AsyncUpper(ChildNode):
-            async def handle_primitive(
-                self, value: str, context: Context
-            ) -> str:
+            async def handle_string(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -861,7 +859,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class AddPrefix(ChildNode):
-            def handle_primitive(self, value: str, context: Context) -> str:
+            def handle_string(self, value: str, context: Context) -> str:
                 return f"prefix_{value}"
 
         @command()
@@ -884,7 +882,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class Multiply(ChildNode):
-            def handle_primitive(self, value: int, context: Context) -> int:
+            def handle_int(self, value: int, context: Context) -> int:
                 return value * 3
 
         @command()
@@ -909,7 +907,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class PositiveOnly(ChildNode):
-            def handle_primitive(self, value: int, context: Context) -> int:
+            def handle_int(self, value: int, context: Context) -> int:
                 if value <= 0:
                     raise ValueError("Must be positive")
                 return value
