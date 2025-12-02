@@ -29,6 +29,7 @@ from click_extended.errors import (
     NameExistsError,
     NoRootError,
     ProcessError,
+    UnhandledTypeError,
 )
 from click_extended.utils.humanize import humanize_type
 from click_extended.utils.process import (
@@ -803,6 +804,8 @@ class RootNode(Node):
                                 file=sys.stderr,
                                 color=context.color,
                             )
+
+                    # Non-debug
                     else:
                         echo(
                             context.get_usage(),
@@ -815,34 +818,17 @@ class RootNode(Node):
                             hint = f"Help: Try '{cmd} --help' for instructions."
                             echo(hint, file=sys.stderr, color=context.color)
 
-                        method_name = ""
-                        if child_node is not None:
-                            handler_method = getattr(
-                                child_node,
-                                meta.get("handler_method", ""),
-                                None,
+                        if parent_from_meta is not None:
+                            error_prefix = (
+                                f"{exc_name} ({parent_from_meta.name})"
                             )
-                            handler_method_name = (
-                                handler_method.__name__
-                                if handler_method is not None
-                                else "unknown"
-                            )
-
-                            method_name = (
-                                f".{child_node.name}.{handler_method_name}"
-                            )
-                        elif parent_from_meta is not None:
-                            method_name = f".{parent_from_meta.name}"
+                        else:
+                            error_prefix = exc_name
 
                         if exc_value == "":
-                            template = (
-                                f"Error ({node_name}{method_name}): "
-                                f"Exception '{exc_name}' was raised."
-                            )
-                            message = template
+                            message = f"{error_prefix}: Exception was raised."
                         else:
-                            message = f"{exc_name} ({node_name}{method_name}): "
-                            message += exc_value
+                            message = f"{error_prefix}: {exc_value}"
 
                         echo(
                             "\n" + message,
@@ -868,23 +854,25 @@ class RootNode(Node):
                                 raise ParentExistsError(node.name)
                             root.tree.root[node.name] = node
                             most_recent_parent = node
+                            most_recent_tag = None
                         elif node_type == "child":
                             node = cast("ChildNode", node)
                             if most_recent_tag is not None:
                                 if not root.tree.has_handle_tag_implemented(
                                     node
                                 ):
-                                    print(
-                                        (
-                                            f"Error ({most_recent_tag.name}): "
-                                            f"Child node '{node.name}' can not "
-                                            "be used on a tag node.\n"
-                                            "Tip: Children attached to @tag "
-                                            "decorators must implement the "
-                                            "handle_tag(...) method."
-                                        )
+                                    tip = "".join(
+                                        "Children attached to @tag decorators "
+                                        "must implement the handle_tag(...) "
+                                        "method."
                                     )
-                                    sys.exit(2)
+
+                                    raise UnhandledTypeError(
+                                        child_name=node.name,
+                                        value_type="tag",
+                                        implemented_handlers=[],
+                                        tip=tip,
+                                    )
 
                                 most_recent_tag[len(most_recent_tag)] = node
                             elif most_recent_parent is not None:
@@ -902,6 +890,7 @@ class RootNode(Node):
 
                             validation_inst = cast(ValidationNode, node)
                             root.tree.validations.append(validation_inst)
+                            most_recent_tag = None
                 except ContextAwareError as e:
                     echo(
                         f"{e.__class__.__name__}: {e.message}", file=sys.stderr

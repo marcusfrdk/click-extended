@@ -1,6 +1,5 @@
 # TODO
 
-- Remove `(...)` from `Error (...): ...`
 - `@apply(fn)`
 - `@deprecated(message, since, removed_in)`
 - `@expand_vars()`
