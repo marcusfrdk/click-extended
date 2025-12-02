@@ -133,6 +133,7 @@ class Exclusive(ChildNode):
 
 
 def exclusive(
+    *,
     with_parents: str | list[str] | None = None,
     with_tags: str | list[str] | None = None,
 ) -> Decorator:
