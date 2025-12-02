@@ -1,0 +1,60 @@
+# TODO
+
+- Remove `(...)` from `Error (...): ...`
+- Split `handle_primitive` into more granular `handle_string`, `handle_number`, `handle_path`, `handle_datetime`, `handle_date`, etc.
+- `@apply(fn)`
+- `@deprecated(message, since, removed_in)`
+- `@expand_vars()`
+- `@confirm(prompt, truthy)`
+- `@confirm_if(prompt, fn)`
+- `@requires(*name)`
+- `@conflicts(*names)`
+- `@default(value, from_env, from_param)` (value is optional, defaults to None)
+- `@in_range(min, max, inclusive=True)` (supports int, float, datetime)
+- `@more_than(value, inclusive)`
+- `@less_than(value, inclusive)`
+- `@min_length(n)`
+- `@max_length(n)`
+- `@not_empty(n)`
+- `@flatten()`
+- `@must_contain(*text)`
+- `@cannot_contain(*text)`
+- `@must_start_with(*text)`
+- `@cannot_start_with(*text)`
+- `@must_end_with(*text)`
+- `@cannot_end_with(*text)`
+- `@divisible_by(n)`
+- `@choice(*values)`
+- `@to_set()`
+- `@to_list()`
+- `@to_tuple()`
+- `@to_json()`
+- `@to_yaml()`
+- `@to_toml()`
+- `@to_timestamp(length)`
+- `@to_datetime(formats)`
+- `@to_date(formats)`
+- `@to_time(formats)`
+- `@to_path(exists, parents, extensions, include_pattern, exclude_pattern, allow_file, allow_directory, allow_empty_file, allow_empty_directory, allow_symlink, follow_symlink, is_readable, is_writable, is_executable)`
+- `@strip(chars)`
+- `@split(sep, maxsplit)`
+- `@join(sep)`
+- `@replace(old, new, count=-1)`
+- `@regex(pattern)`
+- `@add_timezone(tz)`
+- `@add_prefix(text)`
+- `@add_suffix(text)`
+- `@add_schema(protocol)` (Add schema if missing, e.g. google.com -> https://google.com)
+- `@normalize(min, max)`
+- `@standardize()`
+- `@clamp(min, max)`
+- `@sort(reverse)`
+- `@unique()`
+- `@url()`
+- `@email()`
+- `@ipv4()`
+- `@ipv6()`
+- `@port()`
+- `@positive()`
+- `@negative()`
+- `@non_zero()`
