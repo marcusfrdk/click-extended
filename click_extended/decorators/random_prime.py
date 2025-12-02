@@ -170,7 +170,7 @@ def random_prime(
     seed: int | None = None,
 ) -> Decorator:
     """
-    Parent node to generate a random prime number.
+    A `ParentNode` decorator to generate a random prime number.
 
     Args:
         name (str):

@@ -189,7 +189,7 @@ def option(
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    Decorator to create a Click option with value injection.
+    A `ParentNode` decorator to create a Click option with value injection.
 
     Args:
         name (str):

@@ -33,7 +33,7 @@ def random_float(
     seed: int | None = None,
 ) -> Decorator:
     """
-    Parent node to generate a random floating point values.
+    A `ParentNode` decorator to generate a random floating point values.
 
     Args:
         name (str):

@@ -85,7 +85,8 @@ def env(
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    Decorator to inject an environment variable value into a command.
+    A `ParentNode` decorator to inject an environment variable value
+    into a command.
 
     If name is not provided, it defaults to env_name converted to snake_case.
 

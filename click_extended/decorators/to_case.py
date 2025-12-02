@@ -23,7 +23,7 @@ class ToCase(ChildNode):
 
 def to_lower_case() -> Decorator:
     """
-    Child node that converts a string to lowercase.
+    A `ChildNode` decorator that converts a string to lowercase.
 
     Returns:
         Decorator:
@@ -34,7 +34,7 @@ def to_lower_case() -> Decorator:
 
 def to_upper_case() -> Decorator:
     """
-    Child node that converts a string to UPPERCASE.
+    A `ChildNode` decorator that converts a string to UPPERCASE.
 
     Returns:
         Decorator:
@@ -45,7 +45,7 @@ def to_upper_case() -> Decorator:
 
 def to_meme_case() -> Decorator:
     """
-    Child node that converts a string to mEmEcAsE.
+    A `ChildNode` decorator that converts a string to mEmEcAsE.
 
     Returns:
         Decorator:
@@ -56,7 +56,7 @@ def to_meme_case() -> Decorator:
 
 def to_snake_case() -> Decorator:
     """
-    Child node that converts a string to snake_case.
+    A `ChildNode` decorator that converts a string to snake_case.
 
     Returns:
         Decorator:
@@ -67,7 +67,7 @@ def to_snake_case() -> Decorator:
 
 def to_screaming_snake_case() -> Decorator:
     """
-    Child node that converts a string to SCREAMING_SNAKE_CASE.
+    A `ChildNode` decorator that converts a string to SCREAMING_SNAKE_CASE.
 
     Returns:
         Decorator:
@@ -78,7 +78,7 @@ def to_screaming_snake_case() -> Decorator:
 
 def to_camel_case() -> Decorator:
     """
-    Child node that converts a string to camelCase.
+    A `ChildNode` decorator that converts a string to camelCase.
 
     Returns:
         Decorator:
@@ -89,7 +89,7 @@ def to_camel_case() -> Decorator:
 
 def to_pascal_case() -> Decorator:
     """
-    Child node that converts a string to PascalCase.
+    A `ChildNode` decorator that converts a string to PascalCase.
 
     Returns:
         Decorator:
@@ -100,7 +100,7 @@ def to_pascal_case() -> Decorator:
 
 def to_kebab_case() -> Decorator:
     """
-    Child node that converts a string to kebab-case.
+    A `ChildNode` decorator that converts a string to kebab-case.
 
     Returns:
         Decorator:
@@ -111,7 +111,7 @@ def to_kebab_case() -> Decorator:
 
 def to_train_case() -> Decorator:
     """
-    Child node that converts a string to Train-Case.
+    A `ChildNode` decorator that converts a string to Train-Case.
 
     Returns:
         Decorator:
@@ -122,7 +122,7 @@ def to_train_case() -> Decorator:
 
 def to_flat_case() -> Decorator:
     """
-    Child node that converts a string to flatcase.
+    A `ChildNode` decorator that converts a string to flatcase.
 
     Returns:
         Decorator:
@@ -133,7 +133,7 @@ def to_flat_case() -> Decorator:
 
 def to_dot_case() -> Decorator:
     """
-    Child node that converts a string to dot.case.
+    A `ChildNode` decorator that converts a string to dot.case.
 
     Returns:
         Decorator:
@@ -144,7 +144,7 @@ def to_dot_case() -> Decorator:
 
 def to_title_case() -> Decorator:
     """
-    Child node that converts a string to Title Case.
+    A `ChildNode` decorator that converts a string to Title Case.
 
     Returns:
         Decorator:
@@ -155,7 +155,7 @@ def to_title_case() -> Decorator:
 
 def to_path_case() -> Decorator:
     """
-    Child node that converts a string to path/case.
+    A `ChildNode` decorator that converts a string to path/case.
 
     Returns:
         Decorator:

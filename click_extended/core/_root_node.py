@@ -347,18 +347,31 @@ class RootNode(Node):
                         raise ProcessError(error_msg)
 
                     meta = context.meta.get("click_extended", {})
+
+                    parents: dict[str, "ParentNode"] = {}
+                    for name, node in root.tree.root.children.items():
+                        if isinstance(name, str):
+                            parents[name] = cast("ParentNode", node)
+
                     custom_context = Context(
                         root=root,
                         parent=None,
                         current=None,
                         click_context=context,
                         nodes={},
-                        parents={},
+                        parents=parents,
                         tags=root.tree.tags,
                         children={},
                         data=meta.get("data", {}),
                         debug=meta.get("debug", False),
                     )
+
+                    for validation_node in root.tree.validations:
+                        validation_node.on_init(
+                            custom_context,
+                            *validation_node.process_args,
+                            **validation_node.process_kwargs,
+                        )
 
                     assert root.tree.root is not None
                     needs_async = False
@@ -507,6 +520,22 @@ class RootNode(Node):
                                         context,
                                     )
 
+                            for validation_node in root.tree.validations:
+                                if asyncio.iscoroutinefunction(
+                                    validation_node.on_finalize
+                                ):
+                                    await validation_node.on_finalize(
+                                        custom_context,
+                                        *validation_node.process_args,
+                                        **validation_node.process_kwargs,
+                                    )
+                                else:
+                                    validation_node.on_finalize(
+                                        custom_context,
+                                        *validation_node.process_args,
+                                        **validation_node.process_kwargs,
+                                    )
+
                             return async_parent_values
 
                         try:
@@ -610,6 +639,13 @@ class RootNode(Node):
                                     tags_dict,
                                     context,
                                 )
+
+                    for validation_node in root.tree.validations:
+                        validation_node.on_finalize(
+                            custom_context,
+                            *validation_node.process_args,
+                            **validation_node.process_kwargs,
+                        )
 
                     merged_kwargs: dict[str, Any] = {
                         **call_kwargs,
@@ -779,7 +815,7 @@ class RootNode(Node):
                             hint = f"Help: Try '{cmd} --help' for instructions."
                             echo(hint, file=sys.stderr, color=context.color)
 
-                        node = ""
+                        method_name = ""
                         if child_node is not None:
                             handler_method = getattr(
                                 child_node,
@@ -792,20 +828,21 @@ class RootNode(Node):
                                 else "unknown"
                             )
 
-                            node = f".{child_node.name}.{handler_method_name}"
+                            method_name = (
+                                f".{child_node.name}.{handler_method_name}"
+                            )
                         elif parent_from_meta is not None:
-                            node = f".{parent_from_meta.name}"
+                            method_name = f".{parent_from_meta.name}"
 
                         if exc_value == "":
                             template = (
-                                f"Error ({node_name}{node}): "
+                                f"Error ({node_name}{method_name}): "
                                 f"Exception '{exc_name}' was raised."
                             )
                             message = template
                         else:
-                            message = (
-                                f"{exc_name} ({node_name}{node}): {exc_value}"
-                            )
+                            message = f"{exc_name} ({node_name}{method_name}): "
+                            message += exc_value
 
                         echo(
                             "\n" + message,
@@ -858,6 +895,13 @@ class RootNode(Node):
                             root.tree.tags[tag_inst.name] = tag_inst
                             most_recent_tag = tag_inst
                             root.tree.recent_tag = tag_inst
+                        elif node_type == "validation":
+                            from click_extended.core.validation_node import (
+                                ValidationNode,
+                            )
+
+                            validation_inst = cast(ValidationNode, node)
+                            root.tree.validations.append(validation_inst)
                 except ContextAwareError as e:
                     echo(
                         f"{e.__class__.__name__}: {e.message}", file=sys.stderr

@@ -45,7 +45,7 @@ def prompt(
     name: str, text: str = "", hide: bool = False, allow_empty: bool = False
 ) -> Decorator:
     """
-    Prompt the user for input.
+    A `ParentNode` decorator to prompt the user for input.
 
     Args:
         name (str):

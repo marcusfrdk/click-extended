@@ -81,7 +81,7 @@ class Tag(Node):
 
 def tag(name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    Decorator to create a tag for grouping parent nodes.
+    A special `Tag` decorator to create a tag for grouping parent nodes.
 
     Tags allow you to apply child nodes to multiple parent nodes at once
     and perform cross-node validation.

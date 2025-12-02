@@ -6,7 +6,8 @@
 
 ### Added
 
-- \*_`@exclusive`_: Added decorator to check for exclusivity between parents and tags.
+- **`ValidationNode`**: Added new node type for validation only in the global context with lifecycle methods.
+- **`@exclusive`**: Added decorator to check for exclusivity between parents and tags.
 - **`@selection`**: Added a new parent node decorator for selecting one or more values from a carousel.
 - **`@prompt`**: Added a parent node decorator to prompt the user for a value.
 - **`@to_lower_case`**: A child decorator that converts a string to `lower case`.

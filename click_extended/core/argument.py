@@ -133,7 +133,7 @@ def argument(
     **kwargs: Any,
 ) -> Decorator:
     """
-    Decorator to create a Click argument with value injection.
+    A `ParentNode` decorator to create a Click argument with value injection.
 
     Args:
         name (str):

@@ -24,7 +24,7 @@ def random_bool(
     seed: int | None = None,
 ) -> Decorator:
     """
-    Parent node to generate a random boolean.
+    A `ParentNode` decorator to generate a random boolean.
 
     Args:
         name (str):

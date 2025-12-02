@@ -74,7 +74,7 @@ def random_uuid(
     seed: int | None = None,
 ) -> Decorator:
     """
-    Parent decorator for generating a random UUID.
+    A `ParentNode` decorator for generating a random UUID.
 
     Args:
         name (str):

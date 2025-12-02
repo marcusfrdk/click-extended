@@ -61,7 +61,8 @@ def group(
     **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickGroup]:
     """
-    Decorator to create a click group with value injection from parent nodes.
+    A `RootNode` decorator to create a click group with value injection
+    from parent nodes.
 
     Args:
         name (str, optional):

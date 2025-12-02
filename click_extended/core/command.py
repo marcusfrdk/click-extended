@@ -58,7 +58,8 @@ def command(
     **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickCommand]:
     """
-    Decorator to create a click command with value injection from parent nodes.
+    A `ParentNode` decorator to create a click command with value injection
+    from parent nodes.
 
     Args:
         name (str, optional):

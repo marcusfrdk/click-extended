@@ -68,7 +68,8 @@ def selection(
     tags: str | list[str] | None = None,
 ) -> Decorator:
     """
-    Interactive selection prompt with arrow key navigation.
+    A `ParentNode` decorator for an interactive selection prompt
+    with arrow key navigation.
 
     Creates an interactive terminal prompt that allows users to select one or
     more options using arrow keys (or j/k vim-style keys). The list wraps around

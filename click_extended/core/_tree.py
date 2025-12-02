@@ -12,6 +12,8 @@ Phases:
     Parameters are processed with scope tracking.
 """
 
+# pylint: disable=import-outside-toplevel
+
 import os
 import sys
 from typing import TYPE_CHECKING, Any, Literal, cast
@@ -31,6 +33,7 @@ if TYPE_CHECKING:
     from click_extended.core.child_node import ChildNode
     from click_extended.core.parent_node import ParentNode
     from click_extended.core.tag import Tag
+    from click_extended.core.validation_node import ValidationNode
 
 
 class Tree:
@@ -67,16 +70,16 @@ class Tree:
 
     _pending_nodes: list[
         tuple[
-            Literal["parent", "child", "tag"],
-            "ParentNode | ChildNode | Tag",
+            Literal["parent", "child", "tag", "validation"],
+            "ParentNode | ChildNode | Tag | ValidationNode",
         ]
     ] = []
 
     @staticmethod
     def get_pending_nodes() -> list[
         tuple[
-            Literal["parent", "child", "tag"],
-            "ParentNode | ChildNode | Tag",
+            Literal["parent", "child", "tag", "validation"],
+            "ParentNode | ChildNode | Tag | ValidationNode",
         ]
     ]:
         """
@@ -124,12 +127,24 @@ class Tree:
         """
         Tree._pending_nodes.append(("tag", node))
 
+    @staticmethod
+    def queue_validation(node: "ValidationNode") -> None:
+        """
+        Queue a validation node for registration.
+
+        Args:
+            node (ValidationNode):
+                The validation node to queue.
+        """
+        Tree._pending_nodes.append(("validation", node))
+
     def __init__(self) -> None:
         """Initialize a new Tree instance."""
         self.root: "RootNode | None" = None
         self.recent: "ParentNode | None" = None
         self.recent_tag: "Tag | None" = None
         self.tags: dict[str, "Tag"] = {}
+        self.validations: list["ValidationNode"] = []
         self.data: dict[str, Any] = {}
         self.is_validated: bool = False
 
@@ -262,6 +277,10 @@ class Tree:
                     self._register_child_node(cast("ChildNode", node_inst))
                 elif node_type == "tag":
                     self._register_tag_node(cast("Tag", node_inst))
+                elif node_type == "validation":
+                    self._register_validation_node(
+                        cast("ValidationNode", node_inst)
+                    )
 
         self._validate_names()
         self.is_validated = True
@@ -311,9 +330,12 @@ class Tree:
         self.tags[node.name] = node
         self.recent_tag = node
 
+    def _register_validation_node(self, node: "ValidationNode") -> None:
+        """Register a validation node during validation phase."""
+        self.validations.append(node)
+
     def has_handle_tag_implemented(self, node: "ChildNode") -> bool:
         """Check if a child node has `handle_tag` implemented."""
-        # pylint: disable=import-outside-toplevel
         from click_extended.core.child_node import ChildNode
 
         handle_tag_method = getattr(type(node), "handle_tag", None)
