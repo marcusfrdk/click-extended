@@ -3,6 +3,7 @@
 from click_extended.decorators.apply import apply
 from click_extended.decorators.at_least import at_least
 from click_extended.decorators.at_most import at_most
+from click_extended.decorators.default import default
 from click_extended.decorators.deprecated import deprecated
 from click_extended.decorators.exclusive import exclusive
 from click_extended.decorators.experimental import experimental
@@ -34,6 +35,7 @@ __all__ = [
     "apply",
     "at_least",
     "at_most",
+    "default",
     "deprecated",
     "exclusive",
     "experimental",

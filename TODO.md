@@ -9,7 +9,6 @@
 - `@confirm_if(prompt, fn)`
 - `@requires(*name)`
 - `@conflicts(*names)`
-- `@default(value, from_env, from_param)` (value is optional, defaults to None)
 - `@in_range(min, max, inclusive=True)` (supports int, float, datetime)
 - `@more_than(value, inclusive)`
 - `@less_than(value, inclusive)`

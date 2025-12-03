@@ -8,6 +8,7 @@
 
 - **Check Utilities**: Added `is_argument`, `is_option`, and `is_tag` utility functions with type guards.
 - **Code Snippets**: Python code snippets.
+- **`@default`**: Child decorator to default to a value if not provided.
 - **`@experimental`**: Child decorator to warn the user a parent is experimental.
 - **`@deprecated`**: Child decorator to warn the user a parent is deprecated.
 - **`@apply`**: Child decorator to apply an arbitrary function to a value.
