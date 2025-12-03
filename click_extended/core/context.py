@@ -300,6 +300,18 @@ class Context:
 
         return result.get(name, [])
 
+    def get_values(self) -> dict[str, Any]:
+        """
+        Get the processed value of all source nodes.
+
+        Returns:
+            dict[str, Any]:
+                Dictionary mapping parent names to their processed values.
+        """
+        return {
+            name: parent.get_value() for name, parent in self.parents.items()
+        }
+
     def get_provided_arguments(self) -> list["Argument"]:
         """
         Get all provided positional arguments.
@@ -442,14 +454,43 @@ class Context:
             return list(self.current.tags)
         return []
 
-    def get_current_values(self) -> dict[str, Any]:
+    def get_current_parent_as_parent(self) -> "ParentNode":
         """
-        Get the processed value of all source nodes.
+        Get the current parent node as a `ParentNode`.
 
         Returns:
-            dict[str, Any]:
-                Dictionary mapping parent names to their processed values.
+            ParentNode:
+                The current parent node.
+
+        Raises:
+            RuntimeError:
+                If called outside child node context or the parent is a `Tag`.
         """
-        return {
-            name: parent.get_value() for name, parent in self.parents.items()
-        }
+        from click_extended.core.tag import Tag
+
+        if self.parent is None:
+            raise RuntimeError("No parent node in current context")
+        if isinstance(self.parent, Tag):
+            raise RuntimeError("Parent node is not a ParentNode instance.")
+        return self.parent
+
+    def get_current_parent_as_tag(self) -> "Tag":
+        """
+        Get the current parent node as a `Tag`.
+
+        Returns:
+            Tag:
+                The current parent node.
+
+        Raises:
+            RuntimeError:
+                If called outside child node context or
+                the parent is a `ParentNode`.
+        """
+        from click_extended.core.parent_node import ParentNode
+
+        if self.parent is None:
+            raise RuntimeError("No parent node in current context")
+        if isinstance(self.parent, ParentNode):
+            raise RuntimeError("Parent node is not a Tag instance.")
+        return self.parent

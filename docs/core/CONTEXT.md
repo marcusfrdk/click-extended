@@ -57,32 +57,25 @@ value = context.data["my_key"]
 
 ## Methods
 
-| Name                            | Returns                       | Description                                                                                                   |
-| ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `is_root()`                     | `bool`                        | Check if the current node is a `RootNode` instance.                                                           |
-| `is_parent()`                   | `bool`                        | Check if the current node is a `ParentNode` instance.                                                         |
-| `is_global()`                   | `bool`                        | Check if the current node is a `GlobalNode` instance.                                                         |
-| `is_tag()`                      | `bool`                        | Check if the current node is a `Tag` instance.                                                                |
-| `is_child()`                    | `bool`                        | Check if the current node is a `ChildNode` instance.                                                          |
-| `is_argument()`                 | `bool`                        | Check if the current node is an `Argument` instance.                                                          |
-| `is_option()`                   | `bool`                        | Check if the current node is an `Option` instance.                                                            |
-| `is_env()`                      | `bool`                        | Check if the current node is an `Env` instance.                                                               |
-| `is_tagged()`                   | `bool`                        | Check if the current instance is tagged.                                                                      |
-| `get_root()`                    | `RootNode`                    | Get the root node.                                                                                            |
-| `get_children(name: str)`       | `list[ChildNode]`             | Get a list of all children defined under the same parent, if `name` is not provided, uses the current parent. |
-| `get_siblings()`                | `list[ChildNode]`             | Get a list of all siblings in the current parent, excluding the current child.                                |
-| `get_parent(name: str)`         | `ParentNode`, `None`          | Get a `ParentNode` with the name if exists.                                                                   |
-| `get_global(name: str)`         | `GlobalNode`, `None`          | Get a `GlobalNode` with the name if exists.                                                                   |
-| `get_node(name: str)`           | `Node`, `None`                | Get a `Node` with the name if exists.                                                                         |
-| `get_tag(name: str)`            | `Tag`, `None`                 | Get a `Tag` with the name if exists.                                                                          |
-| `get_tagged()`                  | `dict[str, list[ParentNode]]` | Get a dictionary of tagged `ParentNode` instances.                                                            |
-| `get_provided_arguments()`      | `list[Argument]`              | Get all provided positional arguments.                                                                        |
-| `get_provided_options()`        | `list[Option]`                | Get all provided keyword arguments.                                                                           |
-| `get_provided_envs()`           | `list[Env]`                   | Get all provided environment variables.                                                                       |
-| `get_provided_value(name: str)` | `Any`                         | Get the provided value of a parent node.                                                                      |
-| `get_provided_values()`         | `dict[str, Any]`              | Get the provided values in the context.                                                                       |
-| `get_missing_arguments()`       | `list[Argument]`              | Get all missing positional arguments.                                                                         |
-| `get_missing_options()`         | `list[Option]`                | Get all missing keyword arguments.                                                                            |
-| `get_missing_envs()`            | `list[Env]`                   | Get all missing environment variables.                                                                        |
-| `get_current_tags()`            | `list[str]`                   | Get a list of the tags of the current node.                                                                   |
-| `get_current_values()`          | `dict[str, Any]`              | Get the processed value of all source nodes.                                                                  |
+| Name                             | Returns                       | Description                                                                                                               |
+| -------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `get_root()`                     | `RootNode`                    | Get the root node.                                                                                                        |
+| `get_children(name: str)`        | `list[ChildNode]`             | Get a list of all children defined under the same parent, if `name` is not provided, uses the current parent.             |
+| `get_siblings()`                 | `list[ChildNode]`             | Get a list of all siblings in the current parent, excluding the current child.                                            |
+| `get_parent(name: str)`          | `ParentNode`, `None`          | Get a `ParentNode` with the name if exists.                                                                               |
+| `get_global(name: str)`          | `GlobalNode`, `None`          | Get a `GlobalNode` with the name if exists.                                                                               |
+| `get_node(name: str)`            | `Node`, `None`                | Get a `Node` with the name if exists.                                                                                     |
+| `get_tag(name: str)`             | `Tag`, `None`                 | Get a `Tag` with the name if exists.                                                                                      |
+| `get_tagged()`                   | `dict[str, list[ParentNode]]` | Get a dictionary of tagged `ParentNode` instances.                                                                        |
+| `get_values()`                   | `dict[str, Any]`              | Get the processed value of all source nodes.                                                                              |
+| `get_provided_arguments()`       | `list[Argument]`              | Get all provided positional arguments.                                                                                    |
+| `get_provided_options()`         | `list[Option]`                | Get all provided keyword arguments.                                                                                       |
+| `get_provided_envs()`            | `list[Env]`                   | Get all provided environment variables.                                                                                   |
+| `get_provided_value(name: str)`  | `Any`                         | Get the provided value of a parent node.                                                                                  |
+| `get_provided_values()`          | `dict[str, Any]`              | Get the provided values in the context.                                                                                   |
+| `get_missing_arguments()`        | `list[Argument]`              | Get all missing positional arguments.                                                                                     |
+| `get_missing_options()`          | `list[Option]`                | Get all missing keyword arguments.                                                                                        |
+| `get_missing_envs()`             | `list[Env]`                   | Get all missing environment variables.                                                                                    |
+| `get_current_tags()`             | `list[str]`                   | Get a list of the tags of the current node.                                                                               |
+| `get_current_parent_as_parent()` | `ParentNode`                  | Get the current parent as a `ParentNode`. Raises `RuntimeError` if called outside a `ChildNode` or the parent is a `Tag`. |
+| `get_current_parent_as_tag()`    | `Tag`                         | Get the current parent as a `Tag`. Raises `RuntimeError` if called outside a `ChildNode` or the parent is a `ParentNode`. |

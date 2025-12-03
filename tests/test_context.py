@@ -162,175 +162,6 @@ def full_context(
     )
 
 
-def _replace_current(context: Context, current: Any) -> Context:
-    """Helper to create a new Context with a different current node."""
-    return Context(
-        root=context.root,
-        current=current,
-        parent=context.parent,
-        click_context=context.click_context,
-        nodes=context.nodes,
-        parents=context.parents,
-        tags=context.tags,
-        children=context.children,
-        data=context.data,
-        debug=context.debug,
-    )
-
-
-class TestContextCheckMethods:
-    """Test is_* methods for node type checking."""
-
-    def test_is_root_with_root_node(
-        self, basic_context: Context, mock_root_node: Any
-    ) -> None:
-        """Test is_root() returns True when current is RootNode."""
-        context = _replace_current(basic_context, mock_root_node)
-        assert context.is_root() is True
-
-    def test_is_root_with_non_root_node(
-        self, basic_context: Context, mock_command: Any
-    ) -> None:
-        """Test is_root() returns False when current is not RootNode."""
-        context = _replace_current(basic_context, mock_command)
-        assert context.is_root() is False
-
-    def test_is_root_with_none(self, basic_context: Context) -> None:
-        """Test is_root() returns False when current is None."""
-        assert basic_context.is_root() is False
-
-    def test_is_parent_with_parent_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_parent() returns True when current is ParentNode."""
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_parent() is True
-
-    def test_is_parent_with_non_parent_node(
-        self, basic_context: Context, mock_command: Any
-    ) -> None:
-        """Test is_parent() returns False when current is not ParentNode."""
-        context = _replace_current(basic_context, mock_command)
-        assert context.is_parent() is False
-
-    def test_is_tag_with_tag_parent(
-        self, basic_context: Context, mock_tag: Any, mock_command: Any
-    ) -> None:
-        """Test is_tag() returns True when parent is Tag."""
-        context = _replace_current(basic_context, mock_command)
-        context = Context(
-            root=context.root,
-            parent=mock_tag,
-            current=context.current,
-            click_context=context.click_context,
-            nodes=context.nodes,
-            parents=context.parents,
-            tags=context.tags,
-            children=context.children,
-            data=context.data,
-            debug=context.debug,
-        )
-        assert context.is_tag() is True
-
-    def test_is_tag_with_non_tag_parent(
-        self, basic_context: Context, mock_option: Any, mock_command: Any
-    ) -> None:
-        """Test is_tag() returns False when parent is not Tag."""
-        context = _replace_current(basic_context, mock_command)
-        context = Context(
-            root=context.root,
-            parent=mock_option,
-            current=context.current,
-            click_context=context.click_context,
-            nodes=context.nodes,
-            parents=context.parents,
-            tags=context.tags,
-            children=context.children,
-            data=context.data,
-            debug=context.debug,
-        )
-        assert context.is_tag() is False
-
-    def test_is_child_with_child_node(
-        self, basic_context: Context, mock_command: Any
-    ) -> None:
-        """Test is_child() returns True when current is ChildNode."""
-        context = _replace_current(basic_context, mock_command)
-        assert context.is_child() is True
-
-    def test_is_child_with_non_child_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_child() returns False when current is not ChildNode."""
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_child() is False
-
-    def test_is_argument_with_argument_node(
-        self, basic_context: Context, mock_argument: Any
-    ) -> None:
-        """Test is_argument() returns True when current is Argument."""
-        context = _replace_current(basic_context, mock_argument)
-        assert context.is_argument() is True
-
-    def test_is_argument_with_non_argument_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_argument() returns False when current is not Argument."""
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_argument() is False
-
-    def test_is_option_with_option_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_option() returns True when current is Option."""
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_option() is True
-
-    def test_is_option_with_non_option_node(
-        self, basic_context: Context, mock_argument: Any
-    ) -> None:
-        """Test is_option() returns False when current is not Option."""
-        context = _replace_current(basic_context, mock_argument)
-        assert context.is_option() is False
-
-    def test_is_env_with_env_node(
-        self, basic_context: Context, mock_env: Any
-    ) -> None:
-        """Test is_env() returns True when current is Env."""
-        context = _replace_current(basic_context, mock_env)
-        assert context.is_env() is True
-
-    def test_is_env_with_non_env_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_env() returns False when current is not Env."""
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_env() is False
-
-    def test_is_tagged_with_tagged_parent_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_tagged() returns True when current has tags."""
-        mock_option.tags = ["tag1", "tag2"]
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_tagged() is True
-
-    def test_is_tagged_with_untagged_parent_node(
-        self, basic_context: Context, mock_option: Any
-    ) -> None:
-        """Test is_tagged() returns False when current has no tags."""
-        mock_option.tags = []
-        context = _replace_current(basic_context, mock_option)
-        assert context.is_tagged() is False
-
-    def test_is_tagged_with_non_parent_node(
-        self, basic_context: Context, mock_command: Any
-    ) -> None:
-        """Test is_tagged() returns False when current is not ParentNode."""
-        context = _replace_current(basic_context, mock_command)
-        assert context.is_tagged() is False
-
-
 class TestContextGetters:
     """Test get_* methods for retrieving nodes."""
 
@@ -382,7 +213,6 @@ class TestContextChildren:
         self, mock_option: Any, mock_click_context: Any
     ) -> None:
         """Test get_children() from current parent."""
-        from click_extended.core.parent_node import ParentNode
 
         child1 = StubChildNode(name="child1")
         child2 = StubChildNode(name="child2")
@@ -889,10 +719,10 @@ class TestContextCurrent:
         tags = basic_context.get_current_tags()
         assert tags == []
 
-    def test_get_current_values(
+    def test_get_values(
         self, mock_option: Any, mock_argument: Any, mock_click_context: Any
     ) -> None:
-        """Test get_current_values() returns all parent values."""
+        """Test get_values() returns all parent values."""
         mock_option.get_value = Mock(return_value="opt_value")
         mock_argument.get_value = Mock(return_value="arg_value")
 
@@ -908,16 +738,16 @@ class TestContextCurrent:
             data={},
         )
 
-        values = context.get_current_values()
+        values = context.get_values()
         assert len(values) == 2
         assert values["test_opt"] == "opt_value"
         assert values["test_arg"] == "arg_value"
         mock_option.get_value.assert_called_once()
         mock_argument.get_value.assert_called_once()
 
-    def test_get_current_values_empty(self, basic_context: Context) -> None:
-        """Test get_current_values() with no parents."""
-        values = basic_context.get_current_values()
+    def test_get_values_empty(self, basic_context: Context) -> None:
+        """Test get_values() with no parents."""
+        values = basic_context.get_values()
         assert values == {}
 
 
@@ -956,6 +786,212 @@ class TestContextTagged:
         """Test get_tagged() with no tagged parents."""
         tagged = basic_context.get_tagged()
         assert tagged == {}
+
+
+class TestContextCurrentParentTyped:
+    """Test get_current_parent_as_parent() and get_current_parent_as_tag()."""
+
+    def test_get_current_parent_as_parent_with_option(
+        self, mock_option: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_parent() with Option parent."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_option,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        parent = context.get_current_parent_as_parent()
+        assert parent == mock_option
+
+    def test_get_current_parent_as_parent_with_argument(
+        self, mock_argument: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_parent() with Argument parent."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_argument,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        parent = context.get_current_parent_as_parent()
+        assert parent == mock_argument
+
+    def test_get_current_parent_as_parent_with_env(
+        self, mock_env: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_parent() with Env parent."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_env,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        parent = context.get_current_parent_as_parent()
+        assert parent == mock_env
+
+    def test_get_current_parent_as_parent_with_tag_raises(
+        self, mock_tag: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_parent() raises when parent is Tag."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_tag,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            RuntimeError, match="Parent node is not a ParentNode instance"
+        ):
+            context.get_current_parent_as_parent()
+
+    def test_get_current_parent_as_parent_no_parent_raises(
+        self, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_parent() raises when no parent."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=None,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            RuntimeError, match="No parent node in current context"
+        ):
+            context.get_current_parent_as_parent()
+
+    def test_get_current_parent_as_tag_success(
+        self, mock_tag: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_tag() with Tag parent."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_tag,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        tag = context.get_current_parent_as_tag()
+        assert tag == mock_tag
+
+    def test_get_current_parent_as_tag_with_option_raises(
+        self, mock_option: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_tag() raises when parent is Option."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_option,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            RuntimeError, match="Parent node is not a Tag instance"
+        ):
+            context.get_current_parent_as_tag()
+
+    def test_get_current_parent_as_tag_with_argument_raises(
+        self, mock_argument: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_tag() raises when parent is Argument."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_argument,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            RuntimeError, match="Parent node is not a Tag instance"
+        ):
+            context.get_current_parent_as_tag()
+
+    def test_get_current_parent_as_tag_with_env_raises(
+        self, mock_env: Any, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_tag() raises when parent is Env."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=mock_env,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            RuntimeError, match="Parent node is not a Tag instance"
+        ):
+            context.get_current_parent_as_tag()
+
+    def test_get_current_parent_as_tag_no_parent_raises(
+        self, mock_click_context: Any
+    ) -> None:
+        """Test get_current_parent_as_tag() raises when no parent."""
+        context = Context(
+            root=Mock(),  # type: ignore[arg-type]
+            parent=None,
+            current=StubChildNode(name="child"),
+            click_context=mock_click_context,
+            nodes={},
+            parents={},
+            tags={},
+            children={},
+            data={},
+        )
+
+        with pytest.raises(
+            RuntimeError, match="No parent node in current context"
+        ):
+            context.get_current_parent_as_tag()
 
 
 class TestContextEdgeCases:
