@@ -30,7 +30,9 @@ def random_integer(
     seed: int | None = None,
 ) -> Decorator:
     """
-    A `ParentNode` decorator to generate a random integers.
+    Generate a random integers.
+
+    Type: `ParentNode`
 
     Args:
         name (str):

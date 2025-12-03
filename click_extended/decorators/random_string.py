@@ -42,7 +42,9 @@ def random_string(
     seed: int | None = None,
 ) -> Decorator:
     """
-    A `ParentNode` decorator to generate a random string.
+    Generate a random string.
+
+    Type: `ParentNode`
 
     Args:
         name (str):

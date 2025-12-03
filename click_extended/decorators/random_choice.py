@@ -37,8 +37,9 @@ def random_choice(
     seed: int | None = None,
 ) -> Decorator:
     """
-    A `ParentNode` decorator to select a random element from an iterable
-    with the option to add weights.
+    Select a random element from an iterable with the option to add weights.
+
+    Type: `ParentNode`
 
     Args:
         name (str):

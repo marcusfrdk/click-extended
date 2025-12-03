@@ -96,7 +96,9 @@ def random_datetime(
     seed: int | None = None,
 ) -> Decorator:
     """
-    A `ParentNode` decorator to generate a random datetime.
+    Generate a random datetime.
+
+    Type: `ParentNode`
 
     Args:
         name (str):

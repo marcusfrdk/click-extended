@@ -39,10 +39,12 @@ class AtLeast(ChildNode):
 
 def at_least(n: int) -> Decorator:
     """
-    A `ChildNode` that checks if at least `n` number of arguments
+    Checks if at least `n` number of arguments
     are provided.
 
-    Can only be used on `@tag` decorators.
+    Type: `ChildNode`
+
+    Supports: `Tag`
 
     Args:
         n (int):

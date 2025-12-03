@@ -18,7 +18,11 @@ class Apply(ChildNode):
 
 def apply(fn: Callable[[Any], Any]) -> Decorator:
     """
-    A `ChildNode` decorator to apply an arbitrary function to all input.
+    A decorator to apply an arbitrary function to all input.
+
+    Type: `ChildNode`
+
+    Supports: `Any`
 
     Args:
         fn (Callable[[Any], Any]):

@@ -33,13 +33,9 @@ class ExclusiveGroup(ValidationNode):
 
 def exclusive(*names: str) -> Decorator:
     """
-    A `ValidationNode` to enforce mutual exclusivity between
-    multiple parameters.
+    Enforce mutual exclusivity between multiple parameters.
 
-    Creates a validation that ensures at most one of the specified parameters
-    is provided by the user. Unlike the `@exclusive` decorator which requires
-    marking each parameter individually, this decorator declares the entire
-    exclusive group in one place.
+    Type: `ValidationNode`
 
     Args:
         *names (str):
