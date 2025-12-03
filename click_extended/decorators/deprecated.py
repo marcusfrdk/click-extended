@@ -1,0 +1,108 @@
+"""Show a deprecation warning for a parent node."""
+
+from typing import Any
+
+from click import echo
+
+from click_extended.core.child_node import ChildNode
+from click_extended.core.context import Context
+from click_extended.types import Decorator
+
+OLD_ONLY = "The parameter '{}' has been deprecated."
+OLD_TO_NEW = "The parameter '{}' has been deprecated. Use '{}' instead."
+OLD_SINCE = "The parameter '{}' has been deprecated since '{}'."
+OLD_REMOVED = (
+    "The parameter '{}' has been deprecated and will be removed in '{}'."
+)
+OLD_TO_NEW_SINCE = (
+    "The parameter '{}' has been deprecated since '{}'. Use '{}' instead."
+)
+OLD_TO_NEW_REMOVED = (
+    "The parameter '{}' has been deprecated and "
+    "will be removed in '{}'. Use '{}' instead."
+)
+
+OLD_SINCE_REMOVED = (
+    "The parameter '{}' was deprecated in '{}' and will be removed in '{}'."
+)
+OLD_TO_NEW_SINCE_REMOVED = (
+    "The parameter '{}' was deprecated in '{}' "
+    "and will be removed in '{}'. Use '{}' instead."
+)
+
+
+class Deprecated(ChildNode):
+    """Show a deprecation warning for a parent node."""
+
+    def handle_all(
+        self, value: Any, context: Context, *args: Any, **kwargs: Any
+    ) -> Any:
+        parent = context.get_current_parent_as_parent()
+
+        if not parent.was_provided:
+            return value
+
+        old_param = kwargs["old_param"]
+        new_param = kwargs["new_param"]
+        since = kwargs["since"]
+        removed = kwargs["removed"]
+
+        key = (new_param is not None, since is not None, removed is not None)
+
+        messages = {
+            (False, False, False): OLD_ONLY.format(old_param),
+            (True, False, False): OLD_TO_NEW.format(old_param, new_param),
+            (False, True, False): OLD_SINCE.format(old_param, since),
+            (False, False, True): OLD_REMOVED.format(old_param, removed),
+            (True, True, False): OLD_TO_NEW_SINCE.format(
+                old_param, since, new_param
+            ),
+            (True, False, True): OLD_TO_NEW_REMOVED.format(
+                old_param, removed, new_param
+            ),
+            (False, True, True): OLD_SINCE_REMOVED.format(
+                old_param, since, removed
+            ),
+            (True, True, True): OLD_TO_NEW_SINCE_REMOVED.format(
+                old_param, since, removed, new_param
+            ),
+        }
+
+        echo(f"DeprecationWarning: {messages[key]}", err=True)
+
+        return value
+
+
+def deprecated(
+    old_param: str,
+    new_param: str | None = None,
+    since: str | None = None,
+    removed: str | None = None,
+) -> Decorator:
+    """
+    Show a deprecation warning when using a parameter.
+
+    Type: `ChildNode`
+
+    Supports: `Any`
+
+    Args:
+        old_param (str):
+            The old parameter, e.g. `Name`, `--option`, `argument`, etc.
+        new_param (str):
+            The new parameter, e.g. `Name`, `--option`, `argument`, etc.
+        since (str):
+            The version in which the parameter was deprecated.
+        removed (str):
+            The version the parameter will be removed.
+
+    Returns:
+        Decorator:
+            The decorated function.
+    """
+    return Deprecated.as_decorator(
+        old_param=old_param,
+        new_param=new_param,
+        since=since,
+        removed=removed,
+    )

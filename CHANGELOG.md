@@ -7,6 +7,7 @@
 ### Added
 
 - **Code Snippets**: Python code snippets.
+- **`@deprecated`**: Child decorator to warn the user a parent is deprecated.
 - **`@apply`**: Child decorator to apply an arbitrary function to a value.
 - **`@at_most`**: Child decorator to check if at most `n` arguments are provided.
 - **`@at_least`**: Child decorator to check if at least `n` arguments are provided.
