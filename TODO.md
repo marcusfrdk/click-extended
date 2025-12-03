@@ -4,8 +4,6 @@
 
 ## v1.0.0
 
-- `@deprecated(message, since, removed_in)`
-- `@experimental(message)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`

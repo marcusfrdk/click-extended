@@ -16,7 +16,7 @@ class TestDeprecatedBasic:
 
         @command()
         @option("old_flag", default=None)
-        @deprecated("--old-flag")
+        @deprecated()
         def cmd(old_flag: str | None) -> None:
             click.echo(f"Flag: {old_flag}")
 
@@ -32,9 +32,10 @@ class TestDeprecatedBasic:
         """Test deprecated with new parameter specified."""
 
         @command()
+        @option("new_opt", default=None)
         @option("old_opt", default=None)
-        @deprecated("--old-opt", new_param="--new-opt")
-        def cmd(old_opt: str | None) -> None:
+        @deprecated(name="new_opt")
+        def cmd(new_opt: str | None, old_opt: str | None) -> None:
             click.echo(f"Value: {old_opt}")
 
         result = cli_runner.invoke(cmd, ["--old-opt", "value"])
@@ -49,7 +50,7 @@ class TestDeprecatedBasic:
 
         @command()
         @option("legacy", default=None)
-        @deprecated("--legacy", since="v1.0.0")
+        @deprecated(since="v1.0.0")
         def cmd(legacy: str | None) -> None:
             click.echo(f"Legacy: {legacy}")
 
@@ -63,7 +64,7 @@ class TestDeprecatedBasic:
 
         @command()
         @option("temp", default=None)
-        @deprecated("--temp", removed="v3.0.0")
+        @deprecated(removed="v3.0.0")
         def cmd(temp: str | None) -> None:
             click.echo(f"Temp: {temp}")
 
@@ -82,9 +83,10 @@ class TestDeprecatedCombinations:
         """Test deprecated with since and new parameter."""
 
         @command()
+        @option("new", default=None)
         @option("old", default=None)
-        @deprecated("--old", new_param="--new", since="v2.0.0")
-        def cmd(old: str | None) -> None:
+        @deprecated(name="new", since="v2.0.0")
+        def cmd(new: str | None, old: str | None) -> None:
             click.echo(f"Old: {old}")
 
         result = cli_runner.invoke(cmd, ["--old", "test"])
@@ -99,9 +101,10 @@ class TestDeprecatedCombinations:
         """Test deprecated with removed and new parameter."""
 
         @command()
+        @option("new", default=None)
         @option("old", default=None)
-        @deprecated("--old", new_param="--new", removed="v4.0.0")
-        def cmd(old: str | None) -> None:
+        @deprecated(name="new", removed="v4.0.0")
+        def cmd(new: str | None, old: str | None) -> None:
             click.echo(f"Old: {old}")
 
         result = cli_runner.invoke(cmd, ["--old", "value"])
@@ -115,7 +118,7 @@ class TestDeprecatedCombinations:
 
         @command()
         @option("phase_out", default=None)
-        @deprecated("--phase-out", since="v1.5.0", removed="v2.0.0")
+        @deprecated(since="v1.5.0", removed="v2.0.0")
         def cmd(phase_out: str | None) -> None:
             click.echo(f"PhaseOut: {phase_out}")
 
@@ -129,14 +132,14 @@ class TestDeprecatedCombinations:
         """Test deprecated with all parameters specified."""
 
         @command()
+        @option("replacement", default=None)
         @option("complete", default=None)
         @deprecated(
-            "--complete",
-            new_param="--replacement",
+            name="replacement",
             since="v1.0.0",
             removed="v2.0.0",
         )
-        def cmd(complete: str | None) -> None:
+        def cmd(replacement: str | None, complete: str | None) -> None:
             click.echo(f"Complete: {complete}")
 
         result = cli_runner.invoke(cmd, ["--complete", "test"])
@@ -155,7 +158,7 @@ class TestDeprecatedNoWarning:
 
         @command()
         @option("opt", default="default_value")
-        @deprecated("--opt")
+        @deprecated()
         def cmd(opt: str) -> None:
             click.echo(f"Opt: {opt}")
 
@@ -171,7 +174,7 @@ class TestDeprecatedNoWarning:
 
         @command()
         @option("opt", default="default")
-        @deprecated("--opt")
+        @deprecated()
         def cmd(opt: str) -> None:
             click.echo(f"Opt: {opt}")
 
@@ -189,7 +192,7 @@ class TestDeprecatedValuePassthrough:
 
         @command()
         @option("text", default=None)
-        @deprecated("--text")
+        @deprecated()
         def cmd(text: str | None) -> None:
             click.echo(f"Text: {text}")
 
@@ -202,7 +205,7 @@ class TestDeprecatedValuePassthrough:
 
         @command()
         @option("count", type=int, default=0)
-        @deprecated("--count")
+        @deprecated()
         def cmd(count: int) -> None:
             click.echo(f"Count: {count}")
 
@@ -215,7 +218,7 @@ class TestDeprecatedValuePassthrough:
 
         @command()
         @option("flag", is_flag=True, default=False)
-        @deprecated("--flag")
+        @deprecated()
         def cmd(flag: bool) -> None:
             click.echo(f"Flag: {flag}")
 
@@ -233,11 +236,18 @@ class TestDeprecatedMultipleOptions:
         """Test multiple deprecated options in same command."""
 
         @command()
-        @option("old1", default=None)
-        @deprecated("--old1", new_param="--new1")
+        @option("new2", default=None)
         @option("old2", default=None)
-        @deprecated("--old2", new_param="--new2")
-        def cmd(old1: str | None, old2: str | None) -> None:
+        @deprecated(name="new2")
+        @option("new1", default=None)
+        @option("old1", default=None)
+        @deprecated(name="new1")
+        def cmd(
+            new2: str | None,
+            old2: str | None,
+            new1: str | None,
+            old1: str | None,
+        ) -> None:
             click.echo(f"Old1: {old1}, Old2: {old2}")
 
         result = cli_runner.invoke(cmd, ["--old1", "a", "--old2", "b"])
@@ -252,9 +262,9 @@ class TestDeprecatedMultipleOptions:
 
         @command()
         @option("dep1", default=None)
-        @deprecated("--dep1")
+        @deprecated()
         @option("dep2", default=None)
-        @deprecated("--dep2")
+        @deprecated()
         def cmd(dep1: str | None, dep2: str | None) -> None:
             click.echo(f"Dep1: {dep1}, Dep2: {dep2}")
 
@@ -271,15 +281,14 @@ class TestDeprecatedPractical:
         """Test deprecating old API key format."""
 
         @command()
+        @option("token", default=None)
         @option("api_key", default=None)
         @deprecated(
-            "--api-key",
-            new_param="--token",
+            name="token",
             since="v3.0.0",
             removed="v4.0.0",
         )
-        @option("token", default=None)
-        def cmd(api_key: str | None, token: str | None) -> None:
+        def cmd(token: str | None, api_key: str | None) -> None:
             actual_key = token or api_key
             click.echo(f"Using key: {actual_key}")
 
@@ -296,8 +305,6 @@ class TestDeprecatedPractical:
         @command()
         @option("json", is_flag=True, default=False)
         @deprecated(
-            "--json",
-            new_param="--format=json",
             since="v2.5.0",
             removed="v3.0.0",
         )
@@ -311,14 +318,13 @@ class TestDeprecatedPractical:
         assert result.exit_code == 0
         assert "Format: JSON" in result.output
         assert "DeprecationWarning" in result.output
-        assert "--format=json" in result.output
 
     def test_short_option_deprecation(self, cli_runner: CliRunner) -> None:
         """Test deprecating short option form."""
 
         @command()
         @option("verbose", short="-v", default=False, is_flag=True)
-        @deprecated("-v", new_param="--verbose", removed="v5.0.0")
+        @deprecated(removed="v5.0.0")
         def cmd(verbose: bool) -> None:
             click.echo(f"Verbose: {verbose}")
 
@@ -327,7 +333,6 @@ class TestDeprecatedPractical:
         assert "Verbose: True" in result.output
         assert "DeprecationWarning" in result.output
         assert "-v" in result.output
-        assert "--verbose" in result.output
 
 
 class TestDeprecatedEdgeCases:
@@ -338,7 +343,7 @@ class TestDeprecatedEdgeCases:
 
         @command()
         @option("opt", default=None)
-        @deprecated("--opt")
+        @deprecated()
         def cmd(opt: str | None) -> None:
             click.echo(f"Opt: {opt}")
 
@@ -355,8 +360,6 @@ class TestDeprecatedEdgeCases:
         @command()
         @option("internal_name", default=None)
         @deprecated(
-            "the legacy flag",
-            new_param="the modern option",
             since="version 2.0",
         )
         def cmd(internal_name: str | None) -> None:
@@ -365,6 +368,5 @@ class TestDeprecatedEdgeCases:
         result = cli_runner.invoke(cmd, ["--internal-name", "test"])
         assert result.exit_code == 0
         assert "DeprecationWarning" in result.output
-        assert "the legacy flag" in result.output
-        assert "the modern option" in result.output
+        assert "--internal-name" in result.output
         assert "version 2.0" in result.output

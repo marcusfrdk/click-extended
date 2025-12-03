@@ -7,6 +7,7 @@ from click import echo
 from click_extended.core.child_node import ChildNode
 from click_extended.core.context import Context
 from click_extended.types import Decorator
+from click_extended.utils import is_option
 
 OLD_ONLY = "The parameter '{}' has been deprecated."
 OLD_TO_NEW = "The parameter '{}' has been deprecated. Use '{}' instead."
@@ -42,12 +43,31 @@ class Deprecated(ChildNode):
         if not parent.was_provided:
             return value
 
-        old_param = kwargs["old_param"]
-        new_param = kwargs["new_param"]
+        old_param = parent.name
+        if is_option(parent):
+            old_param = parent.long
+
+        new_name = kwargs["name"]
+        new_param = None
+
+        if new_name is not None:
+            new_parent = context.get_parent(new_name)
+            if new_parent is None:
+                raise RuntimeError(f"Parent '{new_name}' does not exist.")
+
+            new_param = new_parent.name
+            if is_option(new_parent):
+                new_param = new_parent.long
+
+            if parent == new_parent:
+                raise ValueError(
+                    f"The parent '{new_parent.name}' cannot replace itself."
+                )
+
         since = kwargs["since"]
         removed = kwargs["removed"]
 
-        key = (new_param is not None, since is not None, removed is not None)
+        key = (new_name is not None, since is not None, removed is not None)
 
         messages = {
             (False, False, False): OLD_ONLY.format(old_param),
@@ -74,8 +94,7 @@ class Deprecated(ChildNode):
 
 
 def deprecated(
-    old_param: str,
-    new_param: str | None = None,
+    name: str | None = None,
     since: str | None = None,
     removed: str | None = None,
 ) -> Decorator:
@@ -87,10 +106,8 @@ def deprecated(
     Supports: `Any`
 
     Args:
-        old_param (str):
-            The old parameter, e.g. `Name`, `--option`, `argument`, etc.
-        new_param (str):
-            The new parameter, e.g. `Name`, `--option`, `argument`, etc.
+        name (str):
+            The name of the new parameter.
         since (str):
             The version in which the parameter was deprecated.
         removed (str):
@@ -101,8 +118,7 @@ def deprecated(
             The decorated function.
     """
     return Deprecated.as_decorator(
-        old_param=old_param,
-        new_param=new_param,
+        name=name,
         since=since,
         removed=removed,
     )

@@ -6,7 +6,9 @@
 
 ### Added
 
+- **Check Utilities**: Added `is_argument`, `is_option`, and `is_tag` utility functions with type guards.
 - **Code Snippets**: Python code snippets.
+- **`@experimental`**: Child decorator to warn the user a parent is experimental.
 - **`@deprecated`**: Child decorator to warn the user a parent is deprecated.
 - **`@apply`**: Child decorator to apply an arbitrary function to a value.
 - **`@at_most`**: Child decorator to check if at most `n` arguments are provided.
