@@ -1,5 +1,6 @@
 """Initialization file for the `click_extended.decorators` module."""
 
+from click_extended.decorators.apply import apply
 from click_extended.decorators.at_least import at_least
 from click_extended.decorators.at_most import at_most
 from click_extended.decorators.exclusive import exclusive
@@ -28,6 +29,7 @@ from click_extended.decorators.to_case import (
 )
 
 __all__ = [
+    "apply",
     "at_least",
     "at_most",
     "exclusive",

@@ -7,6 +7,7 @@
 ### Added
 
 - **Code Snippets**: Python code snippets.
+- **`@apply`**: Child decorator to apply an arbitrary function to a value.
 - **`@at_most`**: Child decorator to check if at most `n` arguments are provided.
 - **`@at_least`**: Child decorator to check if at least `n` arguments are provided.
 - **`ValidationNode`**: Added new node type for validation only in the global context with lifecycle methods.

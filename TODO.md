@@ -1,7 +1,7 @@
 # TODO
 
-- `@apply(fn)`
 - `@deprecated(message, since, removed_in)`
+- `@experimental(message)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`
