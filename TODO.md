@@ -1,4 +1,8 @@
-# TODO
+![Banner](./assets/click-extended-todo-banner.png)
+
+# Todo
+
+## v1.0.0
 
 - `@deprecated(message, since, removed_in)`
 - `@experimental(message)`
@@ -28,9 +32,9 @@
 - `@to_set()`
 - `@to_list()`
 - `@to_tuple()`
-- `@to_json()`
-- `@to_yaml()`
-- `@to_toml()`
+- `@load_json()`
+- `@load_yaml()`
+- `@load_toml()`
 - `@to_timestamp(length)`
 - `@to_datetime(formats)`
 - `@to_date(formats)`
