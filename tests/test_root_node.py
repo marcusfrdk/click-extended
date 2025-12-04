@@ -428,8 +428,8 @@ class TestRootNodeTreeBuilding:
         with pytest.raises(NameExistsError):
 
             @command()
-            @option("port", short="-p")
-            @option("path", short="-p")
+            @option("port", "-p")
+            @option("path", "-p")
             def serve(port: int, path: str) -> None:
                 pass
 
@@ -444,7 +444,7 @@ class TestRootNodeTreeBuilding:
         from click_extended.core.option import option
 
         @command()
-        @option("verbose", short="-v", is_flag=True)
+        @option("verbose", "-v", is_flag=True)
         def run(verbose: bool) -> None:
             pass
 
@@ -457,7 +457,7 @@ class TestRootNodeTreeBuilding:
         from click_extended.core.option import option
 
         @command()
-        @option("host", short="-h")
+        @option("host", "-h")
         def serve(host: str) -> None:
             import click
 

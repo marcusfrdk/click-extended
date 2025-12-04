@@ -4,6 +4,8 @@
 
 ## v1.0.0
 
+- Add documentation for `@option` decorator (concatenated flags, new multiple flags, etc.)
+- Add documentation for `@argument` decorator.
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`

@@ -45,7 +45,10 @@ class Deprecated(ChildNode):
 
         old_param = parent.name
         if is_option(parent):
-            old_param = parent.long
+            if parent.long_flags:
+                old_param = parent.long_flags[0]
+            else:
+                old_param = parent.name
 
         new_name = kwargs["name"]
         new_param = None
@@ -57,7 +60,11 @@ class Deprecated(ChildNode):
 
             new_param = new_parent.name
             if is_option(new_parent):
-                new_param = new_parent.long
+                new_param = (
+                    new_parent.long_flags[0]
+                    if new_parent.long_flags
+                    else new_parent.name
+                )
 
             if parent == new_parent:
                 raise ValueError(

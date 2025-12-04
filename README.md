@@ -25,6 +25,7 @@ An extension of the [Click](https://github.com/pallets/click) library with addit
 - **Environment Variables**: Built-in support for loading and using environment variables as a data source.
 - **Full Type Support**: Built with type-hinting from the ground up, meaning everything is fully typed.
 - **Improved Errors**: Improved error output like tips, debugging, and more.
+- **Short Flag Concatenation**: Automatically support concatenating short hand flags where `-r -f` is the same as `-rf`.
 
 ## Installation
 

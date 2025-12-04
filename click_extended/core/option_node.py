@@ -32,8 +32,8 @@ class OptionNode(ParentNode, ABC):
         self,
         name: str,
         param: str | None = None,
-        short: str | None = None,
-        long: str | None = None,
+        short_flags: list[str] | None = None,
+        long_flags: list[str] | None = None,
         is_flag: bool = False,
         type: Type[Any] | None = None,
         nargs: int = 1,
@@ -53,10 +53,11 @@ class OptionNode(ParentNode, ABC):
             param (str, optional):
                 Custom parameter name for the function.
                 If not provided, uses `name`.
-            short (str, optional):
-                The short flag for the option (e.g., "-p").
-            long (str, optional):
-                The long flag for the option (e.g., "--port").
+            short_flags (list[str], optional):
+                Short flags for the option (e.g., ["-p", "-P"]).
+            long_flags (list[str], optional):
+                Long flags for the option (e.g., ["--port", "--p"]).
+                If not provided, auto-generates ["--kebab-case(name)"].
             is_flag (bool):
                 Whether this is a boolean flag (no value needed).
                 Defaults to `False`.
@@ -87,9 +88,11 @@ class OptionNode(ParentNode, ABC):
             tags=tags,
             **kwargs,
         )
-        self.short = short
-        self.long = (
-            long if long is not None else f"--{Casing.to_kebab_case(name)}"
+        self.short_flags = short_flags if short_flags is not None else []
+        self.long_flags = (
+            long_flags
+            if long_flags is not None and len(long_flags) > 0
+            else [f"--{Casing.to_kebab_case(name)}"]
         )
         self.is_flag = is_flag
         self.type = type
@@ -132,8 +135,8 @@ class OptionNode(ParentNode, ABC):
         *,
         name: str,
         param: str | None = None,
-        short: str | None = None,
-        long: str | None = None,
+        short_flags: list[str] | None = None,
+        long_flags: list[str] | None = None,
         is_flag: bool = False,
         type: Type[Any] | None = None,
         nargs: int = 1,
@@ -153,10 +156,10 @@ class OptionNode(ParentNode, ABC):
             param (str, optional):
                 Custom parameter name for the function.
                 If not provided, uses `name`.
-            short (str, optional):
-                The short flag for the option (e.g., "-p").
-            long (str, optional):
-                The long flag for the option (e.g., "--port").
+            short_flags (list[str], optional):
+                Short flags for the option (e.g., ["-p", "-P"]).
+            long_flags (list[str], optional):
+                Long flags for the option (e.g., ["--port", "--p"]).
             is_flag (bool):
                 Whether this is a boolean flag (no value needed).
                 Defaults to `False`.
@@ -185,8 +188,8 @@ class OptionNode(ParentNode, ABC):
         return super().as_decorator(
             name=name,
             param=param,
-            short=short,
-            long=long,
+            short_flags=short_flags,
+            long_flags=long_flags,
             is_flag=is_flag,
             type=type,
             nargs=nargs,

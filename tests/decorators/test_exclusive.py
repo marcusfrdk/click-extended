@@ -99,8 +99,8 @@ class TestExclusiveTwoParams:
 
         @command()
         @exclusive("p", "q")
-        @option("p", short="-p", default=None)
-        @option("q", short="-q", default=None)
+        @option("p", "-p", default=None)
+        @option("q", "-q", default=None)
         def cmd(p: str | None, q: str | None) -> None:
             click.echo(f"P: {p}, Q: {q}")
 
@@ -117,8 +117,8 @@ class TestExclusiveTwoParams:
 
         @command()
         @exclusive("p", "q")
-        @option("p", short="-p", default=None)
-        @option("q", short="-q", default=None)
+        @option("p", "-p", default=None)
+        @option("q", "-q", default=None)
         def cmd(p: str | None, q: str | None) -> None:
             click.echo(f"P: {p}, Q: {q}")
 

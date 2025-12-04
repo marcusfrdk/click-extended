@@ -2,10 +2,13 @@
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
-# pylint: disable=redefined-builtin
 # pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
+# pylint: disable=redefined-builtin
 
+import asyncio
 from builtins import type as builtins_type
+from functools import wraps
 from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
 from click_extended.core.context import Context
@@ -30,9 +33,7 @@ class Option(OptionNode):
     def __init__(
         self,
         name: str,
-        *,
-        short: str | None = None,
-        long: str | None = None,
+        *flags: str,
         param: str | None = None,
         is_flag: bool = False,
         type: Any = None,
@@ -49,18 +50,14 @@ class Option(OptionNode):
 
         Args:
             name (str):
-                The option name in snake_case, SCREAMING_SNAKE_CASE,
-                or kebab-case. Examples: "config_file", "CONFIG_FILE",
-                "config-file"
-
-                Can also be a long flag directly
-                (e.g., "--config-file"). If a long flag is provided,
-                the parameter name is derived from it.
-            short (str, optional):
-                The short flag for the option (e.g., "-p").
-            long (str, optional):
-                Explicit long flag override (e.g., "--cfg").
-                If not provided, auto-generated from name as "--kebab-case".
+                The option name (parameter name) in snake_case,
+                SCREAMING_SNAKE_CASE, or kebab-case. Examples: \"config_file\",
+                \"CONFIG_FILE\", \"config-file\"
+            *flags (str):
+                Optional flags for the option. Can include any number of short
+                flags (e.g., \"-p\", \"-P\") and long flags (e.g., \"--port\",
+                \"--p\"). If no long flags provided, auto-generates
+                \"--kebab-case(name)\".
             param (str, optional):
                 Custom parameter name for the function.
                 If not provided, derived from name as `snake_case`.
@@ -85,29 +82,48 @@ class Option(OptionNode):
             **kwargs (Any):
                 Additional Click option parameters.
         """
-        if is_long_flag(name):
-            derived_name = name[2:]
-            long_flag = name if long is None else long
-
+        if name.startswith("--"):
+            if is_long_flag(name):
+                derived_name = name[2:]
+                if not flags or not any(f.startswith("--") for f in flags):
+                    flags = (name,) + flags
+            else:
+                raise ValueError(
+                    f"Invalid option name '{name}'. Must follow one of these "
+                    "conventions:\n"
+                    "  - snake_case (e.g., my_option, config_file)\n"
+                    "  - SCREAMING_SNAKE_CASE (e.g., MY_OPTION, CONFIG_FILE)\n"
+                    "  - kebab-case (e.g., my-option, config-file)"
+                )
         else:
             validate_name(name, "option name")
             derived_name = name
-            long_flag = (
-                long if long is not None else f"--{Casing.to_kebab_case(name)}"
-            )
 
-        if not is_long_flag(long_flag):
-            raise ValueError(
-                f"Invalid long flag '{long_flag}'. "
-                "Must be format: --word "
-                "(lowercase, hyphens allowed, e.g., --port, --config-file)"
-            )
+        short_flags_list: list[str] = []
+        long_flags_list: list[str] = []
 
-        if short is not None and not is_short_flag(short):
-            raise ValueError(
-                f"Invalid short flag '{short}'. Must be format: -X "
-                f"(e.g., -p, -v, -h)"
-            )
+        for flag in flags:
+            if not flag.startswith("-"):
+                raise ValueError(
+                    f"Invalid flag '{flag}'. Flags must start with '-' or '--'."
+                )
+
+            if flag.startswith("--"):
+                if not is_long_flag(flag):
+                    raise ValueError(
+                        f"Invalid long flag '{flag}'. "
+                        "Must be format: --word "
+                        "(lowercase, hyphens allowed, e.g., --port, "
+                        "--config-file)"
+                    )
+                long_flags_list.append(flag)
+            else:
+                if not is_short_flag(flag):
+                    raise ValueError(
+                        f"Invalid short flag '{flag}'. Must be format: -X "
+                        f"(single letter, e.g., -p, -v, -h)"
+                    )
+                short_flags_list.append(flag)
 
         param_name = (
             param if param is not None else Casing.to_snake_case(derived_name)
@@ -148,8 +164,8 @@ class Option(OptionNode):
         super().__init__(
             name=derived_name,
             param=param_name,
-            short=short,
-            long=long_flag,
+            short_flags=short_flags_list,
+            long_flags=long_flags_list,
             is_flag=is_flag,
             type=type,
             nargs=nargs,
@@ -190,8 +206,7 @@ class Option(OptionNode):
 
 def option(
     name: str,
-    short: str | None = None,
-    long: str | None = None,
+    *flags: str,
     param: str | None = None,
     is_flag: bool = False,
     type: Type[str | int | float | bool] | None = None,
@@ -208,13 +223,17 @@ def option(
 
     Args:
         name (str):
-            The option name in snake_case, SCREAMING_SNAKE_CASE, or kebab-case.
-            Can also be a long flag (e.g., "--config-file").
-        short (str, optional):
-            The short flag for the option (e.g., "-p", "-c").
-        long (str, optional):
-            Explicit long flag override (e.g., "--cfg").
-            If not provided, auto-generated from name as "--kebab-case".
+            The option name (parameter name) in snake_case,
+            SCREAMING_SNAKE_CASE, or kebab-case. Examples: "verbose",
+            "config_file", "CONFIG_FILE"
+        *flags (str):
+            Optional flags for the option. Can include any number of short flags
+            (e.g., "-v", "-V") and long flags (e.g., "--verbose", "--verb").
+            If no long flags provided, auto-generates "--kebab-case(name)".
+            Examples:
+                @option("verbose", "-v")
+                @option("config", "-c", "--cfg", "--config")
+                @option("verbose", "-v", "-V", "--verbose", "--verb")
         param (str, optional):
             Custom parameter name for the function.
             If not provided, derived from name as snake_case.
@@ -246,40 +265,65 @@ def option(
     Examples:
 
         ```python
-        # Simple: name derives everything
-        @option("port", short="-p", type=int, default=8080)
-        def my_func(port):  # param: port, CLI: --port
+        # Simple: name only (auto-generates --verbose)
+        @option("verbose", is_flag=True)
+        def my_func(verbose):
+            print(f"Verbose: {verbose}")
+
+        # Name with short flag
+        @option("port", "-p", type=int, default=8080)
+        def my_func(port):
             print(f"Port: {port}")
 
-        # Using long flag directly
-        @option("--verbose", short="-v", is_flag=True)
-        def my_func(verbose):  # param: verbose, CLI: --verbose
-            if verbose:
-                print("Verbose mode enabled")
-
-        # Custom long flag
-        @option("config_file", long="--cfg", help="Config file")
-        def my_func(config_file):  # param: config_file, CLI: --cfg
-            print(f"Config: {config_file}")
+        # Multiple short and long flags
+        @option("verbose", "-v", "-V", "--verb", is_flag=True)
+        def my_func(verbose):  # Accepts: -v, -V, --verbose, --verb
+            print("Verbose mode")
 
         # Custom parameter name
-        @option("configuration_file", param="cfg")
-        def my_func(cfg):  # param: cfg, CLI: --configuration-file
+        @option("configuration_file", "-c", param="cfg")
+        def my_func(cfg):  # param: cfg, CLI: -c, --configuration-file
             print(f"Config: {cfg}")
         ```
     """
-    return Option.as_decorator(
-        name=name,
-        short=short,
-        long=long,
-        param=param,
-        is_flag=is_flag,
-        type=type,
-        nargs=nargs,
-        multiple=multiple,
-        help=help,
-        required=required,
-        default=default,
-        tags=tags,
-        **kwargs,
-    )
+
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        """The actual decorator that wraps the function."""
+        from click_extended.core._tree import Tree
+
+        instance = Option(
+            name,
+            *flags,
+            param=param,
+            is_flag=is_flag,
+            type=type,
+            nargs=nargs,
+            multiple=multiple,
+            help=help,
+            required=required,
+            default=default,
+            tags=tags,
+            **kwargs,
+        )
+        Tree.queue_parent(instance)
+
+        if asyncio.iscoroutinefunction(func):
+
+            @wraps(func)
+            async def async_wrapper(
+                *call_args: P.args, **call_kwargs: P.kwargs
+            ) -> T:
+                """Async wrapper that preserves the original function."""
+                result = await func(*call_args, **call_kwargs)
+                return cast(T, result)
+
+            return cast(Callable[P, T], async_wrapper)
+
+        @wraps(func)
+        def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
+            """Wrapper that preserves the original function."""
+            return func(*call_args, **call_kwargs)
+
+        return wrapper
+
+    return decorator

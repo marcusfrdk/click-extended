@@ -39,7 +39,7 @@ class Experimental(ChildNode):
         name = parent.name
 
         if is_option(parent):
-            name = parent.long
+            name = parent.long_flags[0] if parent.long_flags else parent.name
 
         key = (since is not None, stable is not None)
 

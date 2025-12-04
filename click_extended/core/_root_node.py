@@ -143,17 +143,18 @@ class RootNode(Node):
             return func, h_flag_taken
 
         for parent_node in instance.tree.root.children.values():
-            if isinstance(parent_node, OptionNode) and parent_node.short:
-                if parent_node.short == "-h":
-                    h_flag_taken = True
-                if parent_node.short in seen_short_flags:
-                    prev_name = seen_short_flags[parent_node.short]
-                    raise NameExistsError(
-                        parent_node.short,
-                        tip=f"Short flag '{parent_node.short}' is used by both "
-                        f"'{prev_name}' and '{parent_node.name}'",
-                    )
-                seen_short_flags[parent_node.short] = parent_node.name
+            if isinstance(parent_node, OptionNode):
+                for short_flag in parent_node.short_flags:
+                    if short_flag == "-h":
+                        h_flag_taken = True
+                    if short_flag in seen_short_flags:
+                        prev_name = seen_short_flags[short_flag]
+                        raise NameExistsError(
+                            short_flag,
+                            tip=f"Short flag '{short_flag}' is used by both "
+                            f"'{prev_name}' and '{parent_node.name}'",
+                        )
+                    seen_short_flags[short_flag] = parent_node.name
 
         parent_items = list(instance.tree.root.children.items())
 
@@ -169,10 +170,10 @@ class RootNode(Node):
         ]
 
         for _parent_name, parent_node in option_nodes:
-            params: list[str] = [parent_node.name]
-            if parent_node.short:
-                params.append(parent_node.short)
-            params.append(parent_node.long)
+            params: list[str] = []
+            params.extend(parent_node.short_flags)
+            params.extend(parent_node.long_flags)
+            params.append(parent_node.name)
 
             option_kwargs: dict[str, Any] = {
                 "type": parent_node.type,

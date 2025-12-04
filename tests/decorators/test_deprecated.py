@@ -323,7 +323,7 @@ class TestDeprecatedPractical:
         """Test deprecating short option form."""
 
         @command()
-        @option("verbose", short="-v", default=False, is_flag=True)
+        @option("verbose", "-v", default=False, is_flag=True)
         @deprecated(removed="v5.0.0")
         def cmd(verbose: bool) -> None:
             click.echo(f"Verbose: {verbose}")

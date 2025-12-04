@@ -35,8 +35,8 @@ class TestOptionNodeInit:
         assert node.required is False  # Options default to optional
         assert node.default is None
         assert node.tags == []
-        assert node.short is None
-        assert node.long == "--test-opt"  # auto-generated kebab-case
+        assert node.short_flags == []
+        assert node.long_flags == ["--test-opt"]  # auto-generated kebab-case
         assert node.is_flag is False
         assert node.type is None
         assert node.nargs == 1
@@ -56,31 +56,33 @@ class TestOptionNodeInit:
 
     def test_init_with_short_flag(self) -> None:
         """Test initialization with short flag."""
-        node = ConcreteOptionNode(name="verbose", short="-v")
+        node = ConcreteOptionNode(name="verbose", short_flags=["-v"])
 
-        assert node.short == "-v"
-        assert node.long == "--verbose"
+        assert node.short_flags == ["-v"]
+        assert node.long_flags == ["--verbose"]
 
     def test_init_with_long_flag(self) -> None:
         """Test initialization with explicit long flag."""
-        node = ConcreteOptionNode(name="config", long="--cfg")
+        node = ConcreteOptionNode(name="config", long_flags=["--cfg"])
 
-        assert node.long == "--cfg"
-        assert node.short is None
+        assert node.long_flags == ["--cfg"]
+        assert node.short_flags == []
 
     def test_init_with_both_flags(self) -> None:
         """Test initialization with both short and long flags."""
-        node = ConcreteOptionNode(name="port", short="-p", long="--port-num")
+        node = ConcreteOptionNode(
+            name="port", short_flags=["-p"], long_flags=["--port-num"]
+        )
 
-        assert node.short == "-p"
-        assert node.long == "--port-num"
+        assert node.short_flags == ["-p"]
+        assert node.long_flags == ["--port-num"]
 
     def test_init_as_boolean_flag(self) -> None:
         """Test initialization as a boolean flag."""
         node = ConcreteOptionNode(name="verbose", is_flag=True)
 
         assert node.is_flag is True
-        assert node.long == "--verbose"
+        assert node.long_flags == ["--verbose"]
 
     def test_init_with_type(self) -> None:
         """Test initialization with explicit type."""
@@ -137,8 +139,8 @@ class TestOptionNodeInit:
         node = ConcreteOptionNode(
             name="port",
             param="port_num",
-            short="-p",
-            long="--port-number",
+            short_flags=["-p"],
+            long_flags=["--port-number"],
             is_flag=False,
             type=int,
             nargs=1,
@@ -151,8 +153,8 @@ class TestOptionNodeInit:
 
         assert node.name == "port_num"
         assert node.param == "port_num"
-        assert node.short == "-p"
-        assert node.long == "--port-number"
+        assert node.short_flags == ["-p"]
+        assert node.long_flags == ["--port-number"]
         assert node.is_flag is False
         assert node.type == int
         assert node.nargs == 1
@@ -166,7 +168,7 @@ class TestOptionNodeInit:
         """Test that long flag is auto-generated as kebab-case."""
         node = ConcreteOptionNode(name="config_file")
 
-        assert node.long == "--config-file"
+        assert node.long_flags == ["--config-file"]
 
     def test_init_flag_without_explicit_default(self) -> None:
         """Test that flags get default value automatically."""
@@ -305,7 +307,7 @@ class TestOptionNaming:
         opt = Option(name="config_file")
 
         assert opt.param == "config_file"
-        assert opt.long == "--config-file"
+        assert opt.long_flags == ["--config-file"]
 
     def test_kebab_case_name(self) -> None:
         """Test option with kebab-case name."""
@@ -314,7 +316,7 @@ class TestOptionNaming:
         opt = Option(name="config-file")
 
         assert opt.param == "config_file"  # converted to snake_case for param
-        assert opt.long == "--config-file"
+        assert opt.long_flags == ["--config-file"]
 
     def test_screaming_snake_case_name(self) -> None:
         """Test option with SCREAMING_SNAKE_CASE name."""
@@ -323,7 +325,7 @@ class TestOptionNaming:
         opt = Option(name="CONFIG_FILE")
 
         assert opt.param == "config_file"  # converted to snake_case for param
-        assert opt.long == "--config-file"
+        assert opt.long_flags == ["--config-file"]
 
     def test_long_flag_as_name(self) -> None:
         """Test providing long flag directly as name."""
@@ -332,16 +334,16 @@ class TestOptionNaming:
         opt = Option(name="--verbose")
 
         assert opt.param == "verbose"
-        assert opt.long == "--verbose"
+        assert opt.long_flags == ["--verbose"]
 
     def test_long_flag_override(self) -> None:
         """Test explicit long flag override."""
         from click_extended.core.option import Option
 
-        opt = Option(name="configuration", long="--cfg")
+        opt = Option("configuration", "--cfg")
 
         assert opt.param == "configuration"
-        assert opt.long == "--cfg"
+        assert opt.long_flags == ["--cfg"]
 
     def test_param_override(self) -> None:
         """Test custom parameter name."""
@@ -350,44 +352,44 @@ class TestOptionNaming:
         opt = Option(name="configuration_file", param="cfg")
 
         assert opt.param == "cfg"
-        assert opt.long == "--configuration-file"
+        assert opt.long_flags == ["--configuration-file"]
 
     def test_short_flag_valid(self) -> None:
         """Test valid short flag."""
         from click_extended.core.option import Option
 
-        opt = Option(name="port", short="-p")
+        opt = Option("port", "-p")
 
-        assert opt.short == "-p"
-        assert opt.long == "--port"
+        assert opt.short_flags == ["-p"]
+        assert opt.long_flags == ["--port"]
 
     def test_short_flag_invalid_format(self) -> None:
         """Test invalid short flag format raises error."""
         from click_extended.core.option import Option
 
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option(name="port", short="p")  # missing dash
+        with pytest.raises(ValueError, match="Invalid flag"):
+            Option("port", "p")  # missing dash
 
     def test_short_flag_invalid_multiple_chars(self) -> None:
         """Test short flag with multiple characters raises error."""
         from click_extended.core.option import Option
 
         with pytest.raises(ValueError, match="Invalid short flag"):
-            Option(name="port", short="-port")
+            Option("port", "-port")
 
     def test_long_flag_invalid_format(self) -> None:
         """Test invalid long flag format raises error."""
         from click_extended.core.option import Option
 
-        with pytest.raises(ValueError, match="Invalid long flag"):
-            Option(name="port", long="-port")  # single dash
+        with pytest.raises(ValueError, match="Invalid short flag"):
+            Option("port", "-port")  # single dash but multiple chars
 
     def test_long_flag_invalid_uppercase(self) -> None:
         """Test long flag with uppercase raises error."""
         from click_extended.core.option import Option
 
         with pytest.raises(ValueError, match="Invalid long flag"):
-            Option(name="port", long="--Port")
+            Option("port", "--Port")
 
     def test_name_validation_empty(self) -> None:
         """Test empty name raises error."""
@@ -409,26 +411,26 @@ class TestOptionNaming:
 
         opt = Option(name="my_long_option_name")
 
-        assert opt.long == "--my-long-option-name"
+        assert opt.long_flags == ["--my-long-option-name"]
         assert opt.param == "my_long_option_name"
 
     def test_long_flag_with_name_and_explicit_override(self) -> None:
         """Test long flag as name with explicit long override."""
         from click_extended.core.option import Option
 
-        opt = Option(name="--verbose", long="--debug")
+        opt = Option("--verbose", "--debug")
 
         assert opt.param == "verbose"
-        assert opt.long == "--debug"
+        assert opt.long_flags == ["--debug"]
 
     def test_both_flags_specified(self) -> None:
         """Test specifying both short and long flags."""
         from click_extended.core.option import Option
 
-        opt = Option(name="port", short="-p", long="--port-number")
+        opt = Option("port", "-p", "--port-number")
 
-        assert opt.short == "-p"
-        assert opt.long == "--port-number"
+        assert opt.short_flags == ["-p"]
+        assert opt.long_flags == ["--port-number"]
         assert opt.param == "port"
 
     def test_param_validation(self) -> None:
@@ -522,8 +524,8 @@ class TestOptionDecorator:
 
         @option(
             "port",
-            short="-p",
-            long="--port-num",
+            "-p",
+            "--port-num",
             type=int,
             help="Port number",
             default=8080,
@@ -537,8 +539,8 @@ class TestOptionDecorator:
         from click_extended.core.option import Option
 
         assert isinstance(node, Option)
-        assert node.short == "-p"
-        assert node.long == "--port-num"
+        assert node.short_flags == ["-p"]
+        assert node.long_flags == ["--port-num"]
         assert node.type == int
         assert node.help == "Port number"
         assert node.default == 8080
@@ -699,7 +701,7 @@ class TestOptionCommandIntegration:
         from click_extended.core.option import option
 
         @command()
-        @option("port", short="-p", type=int)
+        @option("port", "-p", type=int)
         def serve(port: int) -> None:
             click.echo(f"Port: {port}")
 
@@ -900,7 +902,7 @@ class TestOptionCommandIntegration:
         from click_extended.core.option import option
 
         @command()
-        @option("verbose", short="-v", is_flag=True)
+        @option("verbose", "-v", is_flag=True)
         def run(verbose: bool) -> None:
             if verbose:
                 click.echo("Verbose")
@@ -1219,36 +1221,29 @@ class TestOptionNodeEdgeCases:
         """Test that long flag without dashes raises error."""
         from click_extended.core.option import Option
 
-        with pytest.raises(ValueError, match="Invalid long flag"):
-            Option(name="port", long="port")
+        with pytest.raises(ValueError, match="Invalid flag"):
+            Option("port", "port")
 
     def test_invalid_long_flag_single_dash(self) -> None:
         """Test that long flag with single dash raises error."""
         from click_extended.core.option import Option
 
-        with pytest.raises(ValueError, match="Invalid long flag"):
-            Option(name="port", long="-port")
+        with pytest.raises(ValueError, match="Invalid short flag"):
+            Option("port", "-port")
 
     def test_invalid_short_flag_no_dash(self) -> None:
         """Test that short flag without dash raises error."""
         from click_extended.core.option import Option
 
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option(name="port", short="p")
-
-    def test_invalid_short_flag_two_dashes(self) -> None:
-        """Test that short flag with two dashes raises error."""
-        from click_extended.core.option import Option
-
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option(name="port", short="--p")
+        with pytest.raises(ValueError, match="Invalid flag"):
+            Option("port", "p")
 
     def test_invalid_short_flag_multiple_chars(self) -> None:
         """Test that short flag with multiple chars raises error."""
         from click_extended.core.option import Option
 
         with pytest.raises(ValueError, match="Invalid short flag"):
-            Option(name="port", short="-port")
+            Option("port", "-port")
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises error."""
