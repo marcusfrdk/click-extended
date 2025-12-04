@@ -8,7 +8,6 @@
 - `@to_list()`
 - `@to_tuple()`
 - `@to_timestamp(length)`
-- `@to_datetime(*formats)`
 - `@to_date(*formats)`
 - `@to_time(*formats)`
 - `@expand_vars()`

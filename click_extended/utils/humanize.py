@@ -15,6 +15,7 @@ def humanize_iterable(
     suffix_singular: str | None = None,
     suffix_plural: str | None = None,
     wrap: str | tuple[str, str] | None = None,
+    sep: str = "and",
 ) -> str:
     """
     Format an iterable of primitives to a human-readable format.
@@ -42,6 +43,8 @@ def humanize_iterable(
         wrap (str | tuple[str, str], optional):
             A string to wrap each element with (applied to both sides),
             or a tuple of (left, right) strings for asymmetric wrapping.
+        sep (str, optional):
+            The sep when the length is greater than 2 (X, Y <sep> Z).
     Returns:
         str:
             The formatted string.
@@ -112,11 +115,11 @@ def humanize_iterable(
         prefix = prefix_singular if prefix_singular is not None else ""
         suffix = suffix_singular if suffix_singular is not None else ""
     elif len(str_items) == 2:
-        formatted = f"{str_items[0]} and {str_items[1]}"
+        formatted = f"{str_items[0]} {sep} {str_items[1]}"
         prefix = prefix_plural if prefix_plural is not None else ""
         suffix = suffix_plural if suffix_plural is not None else ""
     else:
-        formatted = ", ".join(str_items[:-1]) + f" and {str_items[-1]}"
+        formatted = ", ".join(str_items[:-1]) + f" {sep} {str_items[-1]}"
         prefix = prefix_plural if prefix_plural is not None else ""
         suffix = suffix_plural if suffix_plural is not None else ""
 
