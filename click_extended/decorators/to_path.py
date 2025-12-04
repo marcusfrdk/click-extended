@@ -142,6 +142,29 @@ class ToPath(ChildNode):
 
         return path
 
+    def handle_flat_tuple(
+        self,
+        value: tuple[Any, ...],
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        return tuple(
+            self.handle_str(v, context, *args, **kwargs) for v in value
+        )
+
+    def handle_nested_tuple(
+        self,
+        value: tuple[Any, ...],
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        return tuple(
+            tuple(self.handle_str(v, context, *args, **kwargs) for v in t)
+            for t in value
+        )
+
 
 def to_path(
     *,

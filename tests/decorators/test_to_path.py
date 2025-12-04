@@ -556,6 +556,271 @@ class TestToPathResolve:
         assert "Has tilde: False" in result.output
 
 
+class TestToPathFlatTuple:
+    """Test to_path with flat tuples."""
+
+    def test_to_path_flat_tuple_existing_files(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path with flat tuple of existing files."""
+        file1 = tmp_path / "file1.txt"
+        file2 = tmp_path / "file2.txt"
+        file3 = tmp_path / "file3.txt"
+        file1.write_text("content1")
+        file2.write_text("content2")
+        file3.write_text("content3")
+
+        @command()
+        @option("paths", default=None, nargs=3)
+        @to_path()
+        def cmd(paths: tuple[Path, ...] | None) -> None:
+            assert paths is not None
+            assert isinstance(paths, tuple)
+            assert len(paths) == 3
+            assert all(isinstance(p, Path) for p in paths)
+            assert paths[0].read_text() == "content1"
+            assert paths[1].read_text() == "content2"
+            assert paths[2].read_text() == "content3"
+            click.echo("Success")
+
+        result = cli_runner.invoke(
+            cmd, ["--paths", str(file1), str(file2), str(file3)]
+        )
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+    def test_to_path_flat_tuple_directories(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path with flat tuple of directories."""
+        dir1 = tmp_path / "dir1"
+        dir2 = tmp_path / "dir2"
+        dir1.mkdir()
+        dir2.mkdir()
+
+        @command()
+        @option("dirs", default=None, nargs=2)
+        @to_path(allow_file=False, allow_directory=True)
+        def cmd(dirs: tuple[Path, ...] | None) -> None:
+            assert dirs is not None
+            assert len(dirs) == 2
+            assert all(p.is_dir() for p in dirs)
+            click.echo("Success")
+
+        result = cli_runner.invoke(cmd, ["--dirs", str(dir1), str(dir2)])
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+    def test_to_path_flat_tuple_with_extensions(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path flat tuple validates extensions."""
+        file1 = tmp_path / "script1.py"
+        file2 = tmp_path / "script2.py"
+        file1.write_text("print('hello')")
+        file2.write_text("print('world')")
+
+        @command()
+        @option("scripts", default=None, nargs=2)
+        @to_path(extensions=[".py"])
+        def cmd(scripts: tuple[Path, ...] | None) -> None:
+            assert scripts is not None
+            assert all(p.suffix == ".py" for p in scripts)
+            click.echo("Success")
+
+        result = cli_runner.invoke(cmd, ["--scripts", str(file1), str(file2)])
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+
+class TestToPathNestedTuple:
+    """Test to_path with nested tuples."""
+
+    def test_to_path_nested_tuple_files(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path with nested tuple of files."""
+        file1 = tmp_path / "file1.txt"
+        file2 = tmp_path / "file2.txt"
+        file3 = tmp_path / "file3.txt"
+        file4 = tmp_path / "file4.txt"
+        file1.write_text("content1")
+        file2.write_text("content2")
+        file3.write_text("content3")
+        file4.write_text("content4")
+
+        @command()
+        @option("paths", multiple=True, nargs=2)
+        @to_path()
+        def cmd(paths: tuple[tuple[Path, ...], ...] | None) -> None:
+            assert paths is not None
+            assert isinstance(paths, tuple)
+            assert len(paths) == 2
+            assert all(isinstance(p, tuple) for p in paths)
+            assert paths[0][0].read_text() == "content1"
+            assert paths[0][1].read_text() == "content2"
+            assert paths[1][0].read_text() == "content3"
+            assert paths[1][1].read_text() == "content4"
+            click.echo("Success")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--paths",
+                str(file1),
+                str(file2),
+                "--paths",
+                str(file3),
+                str(file4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+    def test_to_path_nested_tuple_directories(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path with nested tuple of directories."""
+        dir1 = tmp_path / "dir1"
+        dir2 = tmp_path / "dir2"
+        dir3 = tmp_path / "dir3"
+        dir4 = tmp_path / "dir4"
+        dir1.mkdir()
+        dir2.mkdir()
+        dir3.mkdir()
+        dir4.mkdir()
+
+        @command()
+        @option("dirs", multiple=True, nargs=2)
+        @to_path(allow_file=False, allow_directory=True)
+        def cmd(dirs: tuple[tuple[Path, ...], ...] | None) -> None:
+            assert dirs is not None
+            assert len(dirs) == 2
+            assert dirs[0][0].is_dir()
+            assert dirs[0][1].is_dir()
+            assert dirs[1][0].is_dir()
+            assert dirs[1][1].is_dir()
+            click.echo("Success")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--dirs",
+                str(dir1),
+                str(dir2),
+                "--dirs",
+                str(dir3),
+                str(dir4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+    def test_to_path_nested_tuple_mixed_paths(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path nested tuple with mixed file types."""
+        file1 = tmp_path / "config1.yaml"
+        file2 = tmp_path / "config2.yaml"
+        file3 = tmp_path / "config3.yml"
+        file4 = tmp_path / "config4.yml"
+        file1.write_text("key1: value1")
+        file2.write_text("key2: value2")
+        file3.write_text("key3: value3")
+        file4.write_text("key4: value4")
+
+        @command()
+        @option("configs", multiple=True, nargs=2)
+        @to_path(extensions=[".yaml", ".yml"])
+        def cmd(configs: tuple[tuple[Path, ...], ...] | None) -> None:
+            assert configs is not None
+            assert len(configs) == 2
+            # First group
+            assert configs[0][0].suffix == ".yaml"
+            assert configs[0][1].suffix == ".yaml"
+            # Second group
+            assert configs[1][0].suffix == ".yml"
+            assert configs[1][1].suffix == ".yml"
+            click.echo("Success")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--configs",
+                str(file1),
+                str(file2),
+                "--configs",
+                str(file3),
+                str(file4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+    def test_to_path_nested_tuple_with_parents(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path nested tuple creates parent directories."""
+        file1 = tmp_path / "level1" / "file1.txt"
+        file2 = tmp_path / "level1" / "file2.txt"
+        file3 = tmp_path / "level2" / "file3.txt"
+        file4 = tmp_path / "level2" / "file4.txt"
+
+        @command()
+        @option("outputs", multiple=True, nargs=2)
+        @to_path(exists=False, parents=True)
+        def cmd(outputs: tuple[tuple[Path, ...], ...] | None) -> None:
+            assert outputs is not None
+            assert len(outputs) == 2
+            # Check that parents were created
+            assert outputs[0][0].parent.exists()
+            assert outputs[0][1].parent.exists()
+            assert outputs[1][0].parent.exists()
+            assert outputs[1][1].parent.exists()
+            click.echo("Success")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--outputs",
+                str(file1),
+                str(file2),
+                "--outputs",
+                str(file3),
+                str(file4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+    def test_to_path_nested_tuple_validation(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path nested tuple validates all paths."""
+        file1 = tmp_path / "valid1.py"
+        file2 = tmp_path / "invalid.txt"
+        file1.write_text("# python")
+        file2.write_text("text content")
+
+        @command()
+        @option("scripts", multiple=True, nargs=2)
+        @to_path(extensions=[".py"])
+        def cmd(scripts: tuple[tuple[Path, ...], ...] | None) -> None:
+            click.echo("Success")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--scripts",
+                str(file1),
+                str(file2),
+            ],
+        )
+        # Should fail because file2 doesn't have .py extension
+        assert result.exit_code != 0
+        assert "does not have an allowed extension" in result.output
+
+
 class TestToPathPractical:
     """Test practical use cases for to_path."""
 
@@ -616,3 +881,68 @@ class TestToPathPractical:
         result = cli_runner.invoke(cmd, ["--log-dir", str(log_dir)])
         assert result.exit_code == 0
         assert "Log written" in result.output
+
+    def test_to_path_multiple_input_files(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path with multiple input files (flat tuple)."""
+        file1 = tmp_path / "input1.csv"
+        file2 = tmp_path / "input2.csv"
+        file3 = tmp_path / "input3.csv"
+        file1.write_text("col1,col2\n")
+        file2.write_text("col1,col2\n")
+        file3.write_text("col1,col2\n")
+
+        @command()
+        @option("inputs", default=None, nargs=3)
+        @to_path(extensions=[".csv"], allow_directory=False)
+        def cmd(inputs: tuple[Path, ...] | None) -> None:
+            assert inputs is not None
+            total_size = sum(p.stat().st_size for p in inputs)
+            click.echo(f"Processing {len(inputs)} files, {total_size} bytes")
+
+        result = cli_runner.invoke(
+            cmd, ["--inputs", str(file1), str(file2), str(file3)]
+        )
+        assert result.exit_code == 0
+        assert "Processing 3 files" in result.output
+
+    def test_to_path_batch_processing_nested(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test to_path for batch file processing (nested tuple)."""
+        batch1_file1 = tmp_path / "batch1_file1.txt"
+        batch1_file2 = tmp_path / "batch1_file2.txt"
+        batch2_file1 = tmp_path / "batch2_file1.txt"
+        batch2_file2 = tmp_path / "batch2_file2.txt"
+
+        batch1_file1.write_text("batch1 data1")
+        batch1_file2.write_text("batch1 data2")
+        batch2_file1.write_text("batch2 data1")
+        batch2_file2.write_text("batch2 data2")
+
+        @command()
+        @option("batches", multiple=True, nargs=2)
+        @to_path()
+        def cmd(batches: tuple[tuple[Path, ...], ...] | None) -> None:
+            assert batches is not None
+            for i, batch in enumerate(batches, 1):
+                total_chars = sum(len(p.read_text()) for p in batch)
+                click.echo(
+                    f"Batch {i}: {len(batch)} files, {total_chars} chars"
+                )
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--batches",
+                str(batch1_file1),
+                str(batch1_file2),
+                "--batches",
+                str(batch2_file1),
+                str(batch2_file2),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Batch 1: 2 files" in result.output
+        assert "Batch 2: 2 files" in result.output
