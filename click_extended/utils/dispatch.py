@@ -150,6 +150,9 @@ def _extract_inner_types(type_hint: Any) -> set[type]:
         set[type]:
             Set of expected types.
     """
+    if type_hint is Any:
+        return set()
+
     origin = get_origin(type_hint)
     args = get_args(type_hint)
 
@@ -158,7 +161,7 @@ def _extract_inner_types(type_hint: Any) -> set[type]:
     ):
         result: set[type] = set()
         for arg in args:
-            if arg is type(None):
+            if arg is type(None) or arg is Any:
                 continue
             result.update(_extract_inner_types(arg))
         return result
@@ -170,15 +173,20 @@ def _extract_inner_types(type_hint: Any) -> set[type]:
 
         result = set()
         for arg in args:
-            result.update(_extract_inner_types(arg))
+            if arg is not Any:
+                result.update(_extract_inner_types(arg))
         return result
 
     # list[T], set[T], etc.
     if origin in (list, set, frozenset) and args:
+        if args[0] is Any:
+            return set()
         return _extract_inner_types(args[0])
 
     # dict[K, V]
     if origin is dict and len(args) >= 2:
+        if args[1] is Any:
+            return set()
         return _extract_inner_types(args[1])
 
     if isinstance(type_hint, type):

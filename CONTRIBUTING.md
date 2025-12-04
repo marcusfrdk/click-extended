@@ -53,23 +53,53 @@ git clone https://github.com/YOUR_USERNAME/click-extended.git
 cd click-extended
 ```
 
-### 2. Create Virtual Environment
+### 2. Create Virtual Environments
+
+This project supports testing across multiple Python versions (3.10, 3.11, 3.12, and 3.13). The build system expects separate virtual environments for each version:
 
 ```bash
-make venv
-source .venv/bin/activate
+# Create virtual environments for each Python version
+# The project expects: .310, .311, .312, .313
+
+# Example using pyenv (recommended):
+pyenv install 3.10.x 3.11.x 3.12.x 3.13.x
+python3.10 -m venv .310
+python3.11 -m venv .311
+python3.12 -m venv .312
+python3.13 -m venv .313
+
+# Or use any tool that creates these environments
+# (venv, virtualenv, conda, etc.)
 ```
 
-This will:
-
-- Create a `.venv` virtual environment
-- Install the package in editable mode
-- Install all development dependencies (pytest, black, pylint, mypy, etc.)
-- Install pre-commit hooks
-
-### 3. Install Pre-Commit Hooks (Recommended)
+Then install dependencies in each environment:
 
 ```bash
+# Install in all environments
+make install-all
+
+# Or install in each environment individually:
+.310/bin/pip install -e ".[dev]"
+.311/bin/pip install -e ".[dev]"
+.312/bin/pip install -e ".[dev]"
+.313/bin/pip install -e ".[dev]"
+```
+
+This setup allows you to:
+
+- Run tests across all Python versions with `make test-all`
+- Run coverage, linting, formatting, and type checking across all versions
+- Ensure compatibility with all supported Python versions
+
+### 3. Install Pre-Commit Hooks (Optional)
+
+If you want to use pre-commit hooks for automatic code quality checks:
+
+```bash
+# Activate one of your virtual environments first
+source .310/bin/activate  # or .311, .312, .313
+
+# Install pre-commit hooks
 pre-commit install
 ```
 
@@ -86,10 +116,14 @@ If any check fails, the commit will be blocked until you fix the issues. This en
 ### 4. Verify Setup
 
 ```bash
-# Run tests to ensure everything works
-make test
+# Run tests on all Python versions
+make test-all
 
-# Check code quality tools
+# Or test with a specific version:
+.310/bin/python -m pytest
+.311/bin/python -m pytest
+
+# Check code quality (uses active environment or all versions)
 make lint
 make type
 make format-check
@@ -283,14 +317,23 @@ git commit --no-verify -m "message"
 ### Running Tests
 
 ```bash
-# Run all tests with verbose output
+# Run all tests on all Python versions
+make test-all
+
+# Run tests on a specific Python version:
+.310/bin/python -m pytest
+.311/bin/python -m pytest
+.312/bin/python -m pytest
+.313/bin/python -m pytest
+
+# Run tests with coverage on all versions
+make coverage-all
+
+# Run tests with verbose output (single version)
 make test
 
-# Run tests with concise output
+# Run tests with concise output (single version)
 make test-short
-
-# Run tests with coverage report
-make coverage
 ```
 
 ### Writing Tests
@@ -474,22 +517,28 @@ git push origin vX.Y.Z
 ```bash
 make help           # Show all available commands
 make version        # Show current package version
-make venv           # Create virtual environment and install dependencies
+make install-all    # Install dependencies in all Python environments
 make reset          # Reset project to clean state
 make clean          # Remove caches and artifacts
-make install        # Install package dependencies
-make test           # Run tests with verbose output
-make test-short     # Run tests with concise output
-make coverage       # Run tests with coverage report
-make lint           # Run pylint on source code
-make lint-check     # Check code with pylint (same as lint)
+make install        # Install package dependencies (active environment)
+make test           # Run tests (active environment, verbose)
+make test-all       # Run tests on all Python versions
+make test-short     # Run tests (active environment, concise)
+make coverage       # Run tests with coverage (active environment)
+make coverage-all   # Run coverage on all Python versions
+make lint           # Run pylint (active environment)
+make lint-all       # Run pylint on all Python versions
 make format         # Format code with black and isort
+make format-all     # Format code on all Python versions
 make format-check   # Check formatting without changes
 make type           # Run type checking with mypy
+make type-all       # Run type checking on all Python versions
 make build          # Build distribution packages
 make publish-test   # Publish to Test PyPI
 make publish        # Publish to PyPI
 ```
+
+**Note**: Commands with `-all` suffix run across all Python versions (.310, .311, .312, .313).
 
 ## Pre-Commit Hooks
 
