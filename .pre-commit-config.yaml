@@ -25,7 +25,8 @@ repos:
     rev: v3.3.1
     hooks:
       - id: pylint
-        additional_dependencies: [click>=8.3.0, python-dotenv>=1.2.1, pyyaml>=6.0.3]
+        additional_dependencies:
+          [click>=8.3.0, python-dotenv>=1.2.1, pyyaml>=6.0.3]
         args: [--fail-under=10.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -33,7 +34,13 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          [click>=8.3.0, python-dotenv>=1.2.1, pytest>=7.0.0, pyyaml>=6.0.3, types-PyYAML>=6.0.12.20250915]
+          [
+            click>=8.3.0,
+            python-dotenv>=1.2.1,
+            pytest>=7.0.0,
+            pyyaml>=6.0.3,
+            types-PyYAML>=6.0.12.20250915,
+          ]
         args: [--strict]
 
   - repo: local
