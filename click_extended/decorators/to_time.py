@@ -7,30 +7,7 @@ from click_extended.core.child_node import ChildNode
 from click_extended.core.context import Context
 from click_extended.types import Decorator
 from click_extended.utils import humanize_iterable
-
-
-def _normalize_format(fmt: str) -> str:
-    """
-    Convert simplified format strings to Python strptime format.
-
-    Supports both Python strptime format (%H:%M:%S) and simplified
-    format (HH:mm:SS).
-    """
-    if "%" in fmt:
-        return fmt
-
-    replacements = {
-        "HH": "%H",
-        "mm": "%M",
-        "SS": "%S",
-        "ss": "%S",
-    }
-
-    result = fmt
-    for simple, strp in replacements.items():
-        result = result.replace(simple, strp)
-
-    return result
+from click_extended.utils.time import normalize_datetime_format
 
 
 class ToTime(ChildNode):
@@ -52,7 +29,7 @@ class ToTime(ChildNode):
 
         for fmt in formats:
             try:
-                normalized_fmt = _normalize_format(fmt)
+                normalized_fmt = normalize_datetime_format(fmt)
 
                 dt = datetime.strptime(value, normalized_fmt)
                 return dt.time()

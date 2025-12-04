@@ -34,6 +34,7 @@ from click_extended.decorators.to_case import (
     to_train_case,
     to_upper_case,
 )
+from click_extended.decorators.to_date import to_date
 from click_extended.decorators.to_datetime import to_datetime
 from click_extended.decorators.to_path import to_path
 from click_extended.decorators.to_time import to_time
@@ -71,6 +72,7 @@ __all__ = [
     "to_title_case",
     "to_train_case",
     "to_upper_case",
+    "to_date",
     "to_datetime",
     "to_path",
     "to_time",

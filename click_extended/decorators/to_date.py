@@ -1,8 +1,7 @@
-"""Child decorator to convert a string to a datetime."""
+"""Child decorator to convert a string to a date."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from click_extended.core.child_node import ChildNode
 from click_extended.core.context import Context
@@ -11,8 +10,8 @@ from click_extended.utils import humanize_iterable
 from click_extended.utils.time import normalize_datetime_format
 
 
-class ToDatetime(ChildNode):
-    """Child decorator to convert a string to a datetime."""
+class ToDate(ChildNode):
+    """Child decorator to convert a string to a date."""
 
     def handle_str(
         self,
@@ -20,28 +19,27 @@ class ToDatetime(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> datetime:
+    ) -> date:
         formats = kwargs["formats"] or (
             "%Y-%m-%d",
-            "%H:%M:%S",
-            "%Y-%m-%d %H:%M:%S",
+            "%d/%m/%Y",
+            "%m/%d/%Y",
         )
-        tz = kwargs.get("tz")
 
         for fmt in formats:
             try:
                 normalized_fmt = normalize_datetime_format(fmt)
                 dt = datetime.strptime(value, normalized_fmt)
-                if tz:
-                    dt = dt.replace(tzinfo=ZoneInfo(tz))
-                return dt
+                return dt.date()
             except ValueError:
                 continue
 
-        fmt = "either of the formats" if len(formats) != 1 else "in the format"
+        fmt_text = (
+            "either of the formats" if len(formats) != 1 else "in the format"
+        )
         raise ValueError(
-            f"Invalid datetime '{value}', must be in "
-            f"{fmt} {humanize_iterable(formats, sep='or')}"
+            f"Invalid date '{value}', must be in "
+            f"{fmt_text} {humanize_iterable(formats, sep='or')}"
         )
 
     def handle_flat_tuple(
@@ -50,7 +48,7 @@ class ToDatetime(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> tuple[datetime, ...]:
+    ) -> tuple[date, ...]:
         return tuple(
             self.handle_str(str(v), context, *args, **kwargs) for v in value
         )
@@ -68,12 +66,11 @@ class ToDatetime(ChildNode):
         )
 
 
-def to_datetime(
+def to_date(
     *formats: str,
-    tz: str | None = None,
 ) -> Decorator:
     """
-    Convert a string to a datetime by trying multiple formats.
+    Convert a string to a date by trying multiple formats.
 
     Type: `ChildNode`
 
@@ -81,26 +78,21 @@ def to_datetime(
 
     Args:
         *formats (str):
-            One or more datetime format strings to try. Supports both Python
+            One or more date format strings to try. Supports both Python
             strptime format (e.g., "%Y-%m-%d", "%d/%m/%Y") and simplified format
             (e.g., "YYYY-MM-DD", "DD/MM/YYYY"). The decorator will attempt each
             format in order until one succeeds. Defaults to `"%Y-%m-%d"`,
-            `"%H:%M:%S"` and `"%Y-%m-%d %H:%M:%S"`,
-
-        tz (str | None, optional):
-            Timezone name (e.g., "UTC", "America/New_York", "Europe/Stockholm")
-            to apply to the parsed datetime. Uses zoneinfo.ZoneInfo for timezone
-            handling. Defaults to `None` (naive datetime).
+            `"%d/%m/%Y"`, and `"%m/%d/%Y"`.
 
     Returns:
         Decorator:
             The decorated function.
 
     Example:
-        @to_datetime("YYYY-MM-DD", "DD/MM/YYYY", tz="America/New_York")
+        @to_date("YYYY-MM-DD", "DD/MM/YYYY")
         # Or using Python strptime format:
-        @to_datetime("%Y-%m-%d", "%d/%m/%Y", tz="America/New_York")
-        def process_date(date: datetime):
-            print(date)
+        @to_date("%Y-%m-%d", "%d/%m/%Y")
+        def process_date(date_val: date):
+            print(date_val)
     """
-    return ToDatetime.as_decorator(formats=formats, tz=tz)
+    return ToDate.as_decorator(formats=formats)

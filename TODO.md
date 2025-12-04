@@ -8,7 +8,6 @@
 - `@to_list()`
 - `@to_tuple()`
 - `@to_timestamp(length)`
-- `@to_date(*formats)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`

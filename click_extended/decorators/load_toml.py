@@ -9,7 +9,7 @@ from typing import Any
 if sys.version_info >= (3, 11):
     import tomllib
 else:
-    import tomli as tomllib
+    import tomli as tomllib  # type: ignore[import-not-found]
 
 from click_extended.core.child_node import ChildNode
 from click_extended.core.context import Context
@@ -28,7 +28,8 @@ class LoadToml(ChildNode):
             )
 
         with value.open("rb") as f:
-            return tomllib.load(f)
+            result: dict[str, Any] = tomllib.load(f)
+            return result
 
 
 def load_toml() -> Decorator:
