@@ -8,6 +8,7 @@ from click_extended.decorators.deprecated import deprecated
 from click_extended.decorators.exclusive import exclusive
 from click_extended.decorators.experimental import experimental
 from click_extended.decorators.load_json import load_json
+from click_extended.decorators.load_yaml import load_yaml
 from click_extended.decorators.random_bool import random_bool
 from click_extended.decorators.random_choice import random_choice
 from click_extended.decorators.random_datetime import random_datetime
@@ -42,6 +43,7 @@ __all__ = [
     "exclusive",
     "experimental",
     "load_json",
+    "load_yaml",
     "random_bool",
     "random_choice",
     "random_datetime",
