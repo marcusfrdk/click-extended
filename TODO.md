@@ -31,8 +31,6 @@
 - `@replace(old, new, count=-1)`
 - `@regex(pattern)`
 - `@add_timezone(tz)`
-- `@add_prefix(text)`
-- `@add_suffix(text)`
 - `@add_protocol(protocol)` (Add protocol if missing, e.g. google.com -> https://google.com)
 - `@normalize(min, max)`
 - `@standardize()`

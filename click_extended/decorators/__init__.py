@@ -1,5 +1,7 @@
 """Initialization file for the `click_extended.decorators` module."""
 
+from click_extended.decorators.add_prefix import add_prefix
+from click_extended.decorators.add_suffix import add_suffix
 from click_extended.decorators.apply import apply
 from click_extended.decorators.at_least import at_least
 from click_extended.decorators.at_most import at_most
@@ -40,6 +42,8 @@ from click_extended.decorators.to_path import to_path
 from click_extended.decorators.to_time import to_time
 
 __all__ = [
+    "add_prefix",
+    "add_suffix",
     "apply",
     "at_least",
     "at_most",
