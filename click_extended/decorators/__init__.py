@@ -30,6 +30,7 @@ from click_extended.decorators.to_case import (
     to_train_case,
     to_upper_case,
 )
+from click_extended.decorators.to_path import to_path
 
 __all__ = [
     "apply",
@@ -60,4 +61,5 @@ __all__ = [
     "to_title_case",
     "to_train_case",
     "to_upper_case",
+    "to_path",
 ]

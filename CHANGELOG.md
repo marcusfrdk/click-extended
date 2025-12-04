@@ -8,6 +8,7 @@
 
 - **Check Utilities**: Added `is_argument`, `is_option`, and `is_tag` utility functions with type guards.
 - **Code Snippets**: Python code snippets.
+- **`@to_path`**: Child decorator to validate and convert a string to a `pathlib.Path` object.
 - **`@default`**: Child decorator to default to a value if not provided.
 - **`@experimental`**: Child decorator to warn the user a parent is experimental.
 - **`@deprecated`**: Child decorator to warn the user a parent is deprecated.

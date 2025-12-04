@@ -11,7 +11,6 @@
 - `@to_datetime(formats)`
 - `@to_date(formats)`
 - `@to_time(formats)`
-- `@to_path(exists, parents, extensions, include_pattern, exclude_pattern, allow_file, allow_directory, allow_empty_file, allow_empty_directory, allow_symlink, follow_symlink, is_readable, is_writable, is_executable)`
 - `@load_json(encoding, strict)`
 - `@load_yaml(encoding, loader=safe|full|unsafe)` (requires PyYAML)
 - `@load_toml(encoding)`
