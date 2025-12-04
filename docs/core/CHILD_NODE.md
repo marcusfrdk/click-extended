@@ -90,28 +90,26 @@ All handlers share the same structure of parameters, which are `self`, `value`, 
 
 Here is a table of all supported handler methods that can be implemented:
 
-| Name                  | Type                | Description                                                     |
-| --------------------- | ------------------- | --------------------------------------------------------------- |
-| `handle_none`         | `None`              | Used for handling missing values.                               |
-| `handle_all`          | `Any`               | Used for handling all values                                    |
-| `handle_string`       | `str`               | Used for handling string values.                                |
-| `handle_int`          | `int`               | Used for handling integer values.                               |
-| `handle_float`        | `float`             | Used for handling float values.                                 |
-| `handle_bool`         | `bool`              | Used for handling boolean values.                               |
-| `handle_number`       | `int \| float`      | Used for handling numeric values (int or float).                |
-| `handle_tuple`        | `tuple`             | Used for handling all types of tuples.                          |
-| `handle_flat_tuple`   | `tuple[Any, ...]`   | Used for handling any flat tuple (tuple of simple values).      |
-| `handle_nested_tuple` | `tuple[Any, ...]`   | Used for strictly nested tuples (tuples of complex objects).    |
-| `handle_list`         | `list[Any]`         | Used for handling lists.                                        |
-| `handle_dict`         | `dict[Any, Any]`    | Used for handling dictionaries.                                 |
-| `handle_tag`          | `dict[str, Any]`    | Used for handling the values from a `@tag` decorator.           |
-| `handle_datetime`     | `datetime.datetime` | Used for handling datetime objects.                             |
-| `handle_date`         | `datetime.date`     | Used for handling date objects.                                 |
-| `handle_time`         | `datetime.time`     | Used for handling time objects.                                 |
-| `handle_uuid`         | `uuid.UUID`         | Used for handling values from the `uuid` library.               |
-| `handle_path`         | `pathlib.Path`      | Used for handling `Path` objects from the `pathlib` library.    |
-| `handle_bytes`        | `bytes`             | Used for handling `bytes` objects.                              |
-| `handle_decimal`      | `decimal.Decimal`   | Used for handling `Decimal` objects from the `decimal` library. |
+| Name              | Type                | Description                                                                    |
+| ----------------- | ------------------- | ------------------------------------------------------------------------------ |
+| `handle_none`     | `None`              | Used for handling missing values.                                              |
+| `handle_all`      | `Any`               | Used for handling all values                                                   |
+| `handle_string`   | `str`               | Used for handling string values.                                               |
+| `handle_int`      | `int`               | Used for handling integer values.                                              |
+| `handle_float`    | `float`             | Used for handling float values.                                                |
+| `handle_bool`     | `bool`              | Used for handling boolean values.                                              |
+| `handle_number`   | `int \| float`      | Used for handling numeric values (int or float).                               |
+| `handle_tuple`    | `tuple`             | Used for handling non-container tuples (fallback for manually created tuples). |
+| `handle_list`     | `list[Any]`         | Used for handling lists.                                                       |
+| `handle_dict`     | `dict[Any, Any]`    | Used for handling dictionaries.                                                |
+| `handle_tag`      | `dict[str, Any]`    | Used for handling the values from a `@tag` decorator.                          |
+| `handle_datetime` | `datetime.datetime` | Used for handling datetime objects.                                            |
+| `handle_date`     | `datetime.date`     | Used for handling date objects.                                                |
+| `handle_time`     | `datetime.time`     | Used for handling time objects.                                                |
+| `handle_uuid`     | `uuid.UUID`         | Used for handling values from the `uuid` library.                              |
+| `handle_path`     | `pathlib.Path`      | Used for handling `Path` objects from the `pathlib` library.                   |
+| `handle_bytes`    | `bytes`             | Used for handling `bytes` objects.                                             |
+| `handle_decimal`  | `decimal.Decimal`   | Used for handling `Decimal` objects from the `decimal` library.                |
 
 ### Structure
 

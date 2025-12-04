@@ -21,14 +21,22 @@ Parameters of the `OptionNode` as set in the `as_decorator()` method where the c
 | long       | str                   | The `name` parameter in `kebab-case` | Long option name (e.g., `--port`).                                                                         |
 | is_flag    | bool                  | `False`                              | Whether this option is a boolean flag.                                                                     |
 | type       | str, int, float, bool | `str`                                | The type of the option value.                                                                              |
-| nargs      | int                   | `1`                                  | The number of values to accept.                                                                            |
-| multiple   | bool                  | `False`                              | Whether the option can be specified multiple times.                                                        |
+| nargs      | int                   | `1`                                  | The number of values to accept. When `nargs > 1`, creates a container tuple.                               |
+| multiple   | bool                  | `False`                              | Whether the option can be specified multiple times. When `True`, creates a container tuple.                |
 | help       | str                   |                                      | The help string to display in the help menu.                                                               |
 | required   | bool                  | `False`                              | Whether the option is required.                                                                            |
 | default    | str, int, float, bool |                                      | The default value to use.                                                                                  |
 | tags       | str, list[str]        |                                      | A string or list of strings of tags to tag the option node with.                                           |
 | \*args     | Any                   |                                      | Optional positional arguments passed to the `load()` method.                                               |
 | \*\*kwargs | Any                   |                                      | Optional keyword arguments passed to the `load()` method.                                                  |
+
+### Container Tuples
+
+When `multiple=True` or `nargs > 1`, the option produces a **container tuple**. Container tuples are automatically processed element-wise by child nodes:
+
+- Each element is passed individually to the appropriate type handler (`handle_int`, `handle_str`, etc.)
+- The tuple structure is preserved in the final result
+- Errors include index paths showing where in the tuple the error occurred (e.g., `[0]`, `[2]`)
 
 ## Methods
 

@@ -17,7 +17,6 @@ from click_extended.errors import (
     UnhandledTypeError,
 )
 from click_extended.utils.dispatch import (
-    _classify_tuple,
     _determine_handler,
     _extract_inner_types,
     _get_implemented_handlers,
@@ -28,43 +27,6 @@ from click_extended.utils.dispatch import (
     dispatch_to_child_async,
     has_async_handlers,
 )
-
-
-class TestClassifyTuple:
-    """Test _classify_tuple function."""
-
-    def test_empty_tuple(self) -> None:
-        """Test classifying empty tuple returns flat."""
-        assert _classify_tuple(()) == "flat"
-
-    def test_flat_tuple_primitives(self) -> None:
-        """Test flat tuple with only primitives."""
-        assert _classify_tuple((1, 2, "three", 4.5, True)) == "flat"
-
-    def test_flat_tuple_simple_types(self) -> None:
-        """Test flat tuple with simple non-primitive types."""
-        assert (
-            _classify_tuple(
-                (Path("/tmp"), UUID("12345678-1234-5678-1234-567812345678"))
-            )
-            == "flat"
-        )
-        assert _classify_tuple((datetime.now(), Decimal("10.5"))) == "flat"
-
-    def test_nested_tuple(self) -> None:
-        """Test nested tuple with all iterables."""
-        assert _classify_tuple(((1, 2), (3, 4), [5, 6])) == "nested"
-        assert _classify_tuple(([1], {"a": 1})) == "nested"
-
-    def test_mixed_tuple(self) -> None:
-        """Test mixed tuple with both simple and iterable types."""
-        assert _classify_tuple((1, (2, 3), "four")) == "mixed"
-        assert _classify_tuple(("str", [1, 2], Path("/tmp"))) == "mixed"
-
-    def test_tuple_with_non_categorized_object(self) -> None:
-        """Test tuple with objects that aren't simple or iterable."""
-        # Objects that aren't in SIMPLE_TYPES or ITERABLE_TYPES are treated as simple
-        assert _classify_tuple((object(), object())) == "flat"
 
 
 class TestExtractInnerTypes:
@@ -157,57 +119,6 @@ class TestValidateHandlerType:
         is_valid, msg = _validate_handler_type("handle_str", 123, str)
         assert not is_valid
         assert "type=str" in msg
-
-    def test_handle_flat_tuple_not_tuple(self) -> None:
-        """Test handle_flat_tuple with non-tuple value."""
-        is_valid, msg = _validate_handler_type(
-            "handle_flat_tuple", [1, 2], tuple[int, ...]
-        )
-        assert not is_valid
-        assert "Expected tuple, got list" in msg
-
-    def test_handle_flat_tuple_nested_error(self) -> None:
-        """Test handle_flat_tuple with nested tuple."""
-        is_valid, msg = _validate_handler_type(
-            "handle_flat_tuple", ((1, 2), (3, 4)), tuple[int, ...]
-        )
-        assert not is_valid
-        assert "nested tuple" in msg
-        assert "handle_nested_tuple" in msg
-
-    def test_handle_flat_tuple_mixed_error(self) -> None:
-        """Test handle_flat_tuple with mixed tuple."""
-        is_valid, msg = _validate_handler_type(
-            "handle_flat_tuple", (1, (2, 3)), tuple[int, ...]
-        )
-        assert not is_valid
-        assert "mixed tuple" in msg
-
-    def test_handle_flat_tuple_wrong_inner_type(self) -> None:
-        """Test handle_flat_tuple with wrong inner types."""
-        is_valid, msg = _validate_handler_type(
-            "handle_flat_tuple", ("a", "b", "c"), tuple[int, ...]
-        )
-        assert not is_valid
-        assert "Expected tuple[int, ...]" in msg
-        assert "type=int" in msg
-
-    def test_handle_nested_tuple_flat_error(self) -> None:
-        """Test handle_nested_tuple with flat tuple."""
-        is_valid, msg = _validate_handler_type(
-            "handle_nested_tuple", (1, 2, 3), tuple[tuple[int, ...], ...]
-        )
-        assert not is_valid
-        assert "flat tuple" in msg
-        assert "handle_flat_tuple" in msg
-
-    def test_handle_nested_tuple_mixed_error(self) -> None:
-        """Test handle_nested_tuple with mixed tuple."""
-        is_valid, msg = _validate_handler_type(
-            "handle_nested_tuple", ((1, 2), 3), tuple[tuple[int, ...], ...]
-        )
-        assert not is_valid
-        assert "mixed tuple" in msg
 
     def test_handle_tuple_accepts_any_tuple(self) -> None:
         """Test handle_tuple accepts any tuple."""
@@ -487,40 +398,8 @@ class TestDetermineHandler:
         handler = _determine_handler(child, "hello", context)
         assert handler == "handle_str"
 
-    def test_flat_tuple_returns_handle_flat_tuple(self) -> None:
-        """Test that flat tuple returns handle_flat_tuple."""
-
-        class CustomChild(MockChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[int, ...], context: Any
-            ) -> tuple[int, ...]:
-                return value
-
-        child = CustomChild()
-        context = Mock()
-        context.is_tag.return_value = False
-
-        handler = _determine_handler(child, (1, 2, 3), context)
-        assert handler == "handle_flat_tuple"
-
-    def test_nested_tuple_returns_handle_nested_tuple(self) -> None:
-        """Test that nested tuple returns handle_nested_tuple."""
-
-        class CustomChild(MockChildNode):
-            def handle_nested_tuple(
-                self, value: tuple[tuple[int, ...], ...], context: Any
-            ) -> Any:
-                return value
-
-        child = CustomChild()
-        context = Mock()
-        context.is_tag.return_value = False
-
-        handler = _determine_handler(child, ((1, 2), (3, 4)), context)
-        assert handler == "handle_nested_tuple"
-
-    def test_mixed_tuple_falls_back_to_handle_tuple(self) -> None:
-        """Test that mixed tuple uses handle_tuple if available."""
+    def test_tuple_returns_handle_tuple(self) -> None:
+        """Test that tuple uses handle_tuple if available."""
 
         class CustomChild(MockChildNode):
             def handle_tuple(

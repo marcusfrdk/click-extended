@@ -23,8 +23,6 @@ from types import UnionType
 from typing import (
     TYPE_CHECKING,
     Any,
-    Iterable,
-    Literal,
     Union,
     cast,
     get_args,
@@ -39,28 +37,10 @@ from click_extended.errors import (
     ProcessError,
     UnhandledTypeError,
 )
-from click_extended.utils.humanize import humanize_iterable
 
 if TYPE_CHECKING:
     from click_extended.core.context import Context
 
-
-PRIMITIVE_TYPES = (str, int, float, bool)
-ITERABLE_TYPES = (tuple, list, dict, set, frozenset)
-SIMPLE_TYPES = (
-    str,
-    int,
-    float,
-    bool,
-    Path,
-    UUID,
-    datetime,
-    date,
-    time,
-    Decimal,
-    bytes,
-    bytearray,
-)
 
 TYPE_SPECIFIC_HANDLERS = [
     "handle_str",
@@ -71,8 +51,6 @@ TYPE_SPECIFIC_HANDLERS = [
     "handle_list",
     "handle_dict",
     "handle_tuple",
-    "handle_flat_tuple",
-    "handle_nested_tuple",
     "handle_path",
     "handle_uuid",
     "handle_datetime",
@@ -88,46 +66,6 @@ ALL_HANDLER_NAMES = [
     *TYPE_SPECIFIC_HANDLERS,
     "handle_tag",
 ]
-
-
-def _classify_tuple(
-    value: tuple[Any, ...],
-) -> Literal["flat", "nested", "mixed"]:
-    """
-    Classify tuple as flat (all simple types), nested (all iterables), or mixed.
-
-    Args:
-        value (tuple[Any, ...]):
-            The tuple to classify.
-
-    Returns:
-        str:
-            - `"flat"` if all elements are simple/non-iterable types
-              (str, int, datetime, Path, UUID, etc).
-            - `"nested"` if all elements are iterable/collection types
-              (tuple, list, dict, set).
-            - `"mixed"` if contains both simple and iterable types.
-    """
-    if not value:
-        return "flat"
-
-    has_simple = False
-    has_iterable = False
-
-    for elem in value:
-        if isinstance(elem, SIMPLE_TYPES):
-            has_simple = True
-        elif isinstance(elem, ITERABLE_TYPES):
-            has_iterable = True
-        else:
-            has_simple = True
-
-    if has_simple and has_iterable:
-        return "mixed"
-    if has_iterable:
-        return "nested"
-
-    return "flat"
 
 
 def _extract_inner_types(type_hint: Any) -> set[type]:
@@ -284,183 +222,6 @@ def _validate_handler_type(
                 f"Expected {expected_name}, got {actual_type}.{suggestion}",
             )
 
-    elif handler_name == "handle_flat_tuple":
-        if not isinstance(value, tuple):
-            return False, f"Expected tuple, got {type(value).__name__}"
-
-        # Direct types
-        value = cast(type, value)
-        classification = _classify_tuple(value)
-
-        if classification == "nested":
-            return (
-                False,
-                "".join(
-                    "Expected flat tuple (primitives only), got nested "
-                    "tuple (contains complex types). Use "
-                    "handle_nested_tuple instead."
-                ),
-            )
-        if classification == "mixed":
-            return (
-                False,
-                "".join(
-                    "Expected flat tuple (primitives only), got mixed "
-                    "tuple. Use handle_tuple instead.",
-                ),
-            )
-
-        # Inner types
-        expected_types = _extract_inner_types(type_hint)
-        if expected_types and value:
-            mismatches: list[tuple[int, str, Any]] = []
-            for i, item in enumerate(value):
-                if not any(isinstance(item, t) for t in expected_types):
-                    mismatches.append((i, type(item).__name__, item))
-
-            if mismatches:
-                type_names = " | ".join(
-                    sorted(t.__name__ for t in expected_types)
-                )
-
-                examples: list[str] = []
-                for _, item_type, item_val in mismatches[:3]:
-                    examples.append(f"{repr(item_val)} ({item_type})")
-
-                error_msg = "".join(
-                    f"Expected tuple[{type_names}, ...], but found "
-                    f"{len(mismatches)} item(s) with wrong type. "
-                    f"\nExamples: {humanize_iterable(examples)}"
-                )
-
-                if mismatches[0][1] == "str" and any(
-                    t in expected_types for t in [int, float]
-                ):
-                    error_msg += (
-                        "\nTip: Add type=int (or type=float) "
-                        "to your option/argument."
-                    )
-
-                return False, error_msg
-
-    if handler_name == "handle_nested_tuple":
-        if not isinstance(value, tuple):
-            return False, f"Expected tuple, got {type(value).__name__}"
-
-        value = cast(tuple[Any], value)
-        classification = _classify_tuple(value)
-        if classification == "flat":
-            return (
-                False,
-                "".join(
-                    "Expected nested tuple (contains complex types), "
-                    "got flat tuple (primitives only). "
-                    "Use handle_flat_tuple instead."
-                ),
-            )
-        if classification == "mixed":
-            return (
-                False,
-                "".join(
-                    "Expected nested tuple (all complex types), "
-                    "got mixed tuple. Use handle_tuple instead."
-                ),
-            )
-
-        origin_args = get_args(type_hint)
-        if origin is tuple and origin_args:
-            inner_hint = origin_args[0]
-            inner_origin = get_origin(inner_hint)
-
-            if inner_origin is tuple:
-                expected_types = _extract_inner_types(inner_hint)
-                if expected_types:
-                    inner_mismatches: list[tuple[int, int, str, Any]] = []
-                    for i, inner_value in enumerate(value):
-                        if isinstance(inner_value, tuple):
-                            inner_value = cast(
-                                tuple[str | int | float | bool], inner_value
-                            )
-                            for j, item in enumerate(inner_value):
-                                if not any(
-                                    isinstance(item, t) for t in expected_types
-                                ):
-                                    inner_mismatches.append(
-                                        (i, j, type(item).__name__, item)
-                                    )
-
-                    if inner_mismatches:
-                        type_names = " | ".join(
-                            sorted(t.__name__ for t in expected_types)
-                        )
-
-                        examples = []
-                        for (
-                            _,
-                            _,
-                            item_type,
-                            item_val,
-                        ) in inner_mismatches[:3]:
-                            examples.append(f"{repr(item_val)} ({item_type})")
-
-                        examples_str = ", ".join(examples)
-                        error_msg = (
-                            f"Expected tuple[tuple[{type_names}, ...], ...], "
-                            f"but found {len(inner_mismatches)} item(s) "
-                            f"with wrong type. Examples: {examples_str}"
-                        )
-
-                        if inner_mismatches[0][2] == "str" and any(
-                            t in expected_types for t in [int, float]
-                        ):
-                            error_msg += (
-                                "\nTip: Add type=int (or type=float) "
-                                "to your option/argument to convert "
-                                "strings to numbers."
-                            )
-
-                        return False, error_msg
-
-            elif expected_types := _extract_inner_types(type_hint):
-                outer_mismatches: list[tuple[int, int, str, Any]] = []
-                for i, inner_value in enumerate(value):
-                    if isinstance(inner_value, (tuple, list)):
-                        inner_value = cast(
-                            Iterable[str | int | float | bool], inner_value
-                        )
-
-                        for j, item in enumerate(inner_value):
-                            if not any(
-                                isinstance(item, t) for t in expected_types
-                            ):
-                                outer_mismatches.append(
-                                    (i, j, type(item).__name__, item)
-                                )
-
-                if outer_mismatches:
-                    type_names = " | ".join(
-                        sorted(t.__name__ for t in expected_types)
-                    )
-
-                    examples = []
-                    for (
-                        _,
-                        _,
-                        item_type,
-                        item_val,
-                    ) in outer_mismatches[:3]:
-                        examples.append(f"{repr(item_val)} ({item_type})")
-
-                    examples_str = ", ".join(examples)
-                    error_msg = "".join(
-                        f"Expected nested structure with inner type "
-                        f"{type_names}, but found "
-                        f"{len(outer_mismatches)} item(s) with wrong type. "
-                        f"Examples: {examples_str}"
-                    )
-
-                    return False, error_msg
-
     elif handler_name == "handle_tuple":
         if not isinstance(value, tuple):
             return False, f"Expected tuple, got {type(value).__name__}"
@@ -482,7 +243,7 @@ def _validate_handler_type(
                     sorted(t.__name__ for t in expected_types)
                 )
 
-                examples = []
+                examples: list[str] = []
                 for (
                     _,
                     item_type,
@@ -532,6 +293,17 @@ def dispatch_to_child(
         InvalidHandlerError:
             If `handle_tag` returns a modified dictionary.
     """
+    if isinstance(value, tuple):
+        meta = context.click_context.meta.get("click_extended", {})
+        is_container = meta.get("is_container_tuple", False)
+
+        if is_container:
+            return _process_container_tuple(
+                child,
+                value,  # type: ignore
+                context,
+            )
+
     if value is None:
         # Handle None
         if _is_handler_implemented(child, "handle_none"):
@@ -539,7 +311,7 @@ def dispatch_to_child(
                 result = child.handle_none(
                     context, *child.process_args, **child.process_kwargs
                 )
-                return value if result is None else result
+                return value if result is None else result  # type: ignore
             except NotImplementedError:
                 pass
 
@@ -554,7 +326,10 @@ def dispatch_to_child(
                             *child.process_args,
                             **child.process_kwargs,
                         )
-                        return value if result is None else result
+
+                        if result is None:
+                            return value
+                        return result
                     except NotImplementedError:
                         pass
 
@@ -615,7 +390,7 @@ def dispatch_to_child(
 
                     raise InvalidHandlerError(message=message, tip=tip)
 
-                return value if result is None else result
+                return value if result is None else result  # type: ignore
         except NotImplementedError:
             pass
 
@@ -629,13 +404,13 @@ def dispatch_to_child(
             result = child.handle_all(
                 value, context, *child.process_args, **child.process_kwargs
             )
-            return value if result is None else result
+            return value if result is None else result  # type: ignore
     except NotImplementedError:
         pass
 
     raise UnhandledTypeError(
         child_name=child.name,
-        value_type=type(value).__name__,
+        value_type=type(value).__name__,  # type: ignore
         implemented_handlers=_get_implemented_handlers(child),
     )
 
@@ -707,19 +482,8 @@ def _determine_handler(
         if _is_handler_implemented(child, "handle_list"):
             return "handle_list"
     elif isinstance(value, tuple):
-        value = cast(tuple[Any], value)
-        classification = _classify_tuple(value)
-
-        if classification == "flat":
-            if _is_handler_implemented(child, "handle_flat_tuple"):
-                return "handle_flat_tuple"
-        elif classification == "nested":
-            if _is_handler_implemented(child, "handle_nested_tuple"):
-                return "handle_nested_tuple"
-
         if _is_handler_implemented(child, "handle_tuple"):
             return "handle_tuple"
-
         return None
 
     if _is_handler_implemented(child, "handle_all"):
@@ -827,6 +591,209 @@ def _get_implemented_handlers(child: "ChildNode") -> list[str]:
     return handlers
 
 
+def _process_container_tuple(
+    child: "ChildNode",
+    value: tuple[Any, ...],
+    context: "Context",
+    path: list[int] | None = None,
+) -> tuple[Any, ...]:
+    """
+    Process a container tuple by applying handlers to each element in-place.
+
+    This function recursively processes tuples from options/arguments with
+    `multiple=True` or `nargs>1`, applying appropriate handlers to each
+    leaf element based on its type and preserving the tuple structure.
+
+    Args:
+        child (ChildNode):
+            The child node to dispatch handlers from.
+        value (tuple[Any, ...]):
+            The container tuple to process.
+        context (Context):
+            Processing context.
+        path (list[int] | None):
+            Current path for error reporting. Defaults to empty list.
+
+    Returns:
+        tuple[Any, ...]:
+            New tuple with same structure but processed elements.
+
+    Raises:
+        ValueError:
+            If validation fails, with path information added.
+        TypeError:
+            If type mismatch occurs, with path information added.
+        UnhandledTypeError:
+            If no handler exists for an element's type.
+    """
+    if path is None:
+        path = []
+
+    results: list[Any] = []
+
+    for i, item in enumerate(value):
+        current_path = path + [i]
+
+        try:
+            if isinstance(item, tuple):
+                result = _process_container_tuple(
+                    child,
+                    item,  # type: ignore
+                    context,
+                    current_path,
+                )
+            else:
+                if handler_name := _determine_handler(child, item, context):
+                    if _should_call_handler(child, handler_name, item):
+                        handler = getattr(child, handler_name)
+                        result = handler(
+                            item,
+                            context,
+                            *child.process_args,
+                            **child.process_kwargs,
+                        )
+                    else:
+                        result = item
+                elif _is_handler_implemented(child, "handle_all"):
+                    if _should_call_handler(child, "handle_all", item):
+                        result = child.handle_all(
+                            item,
+                            context,
+                            *child.process_args,
+                            **child.process_kwargs,
+                        )
+                    else:
+                        result = item
+                else:
+                    raise UnhandledTypeError(
+                        child_name=child.name,
+                        value_type=type(item).__name__,  # type: ignore
+                        implemented_handlers=_get_implemented_handlers(child),
+                    )
+
+            results.append(result)
+
+        except (ValueError, TypeError) as e:
+            path_str = "".join(f"[{idx}]" for idx in current_path)
+            error_msg = str(e)
+            if path_str and " at index " not in error_msg:
+                raise type(e)(f"{error_msg} at index {path_str}") from e
+            raise
+
+    return tuple(results)
+
+
+async def _process_container_tuple_async(
+    child: "ChildNode",
+    value: tuple[Any, ...],
+    context: "Context",
+    path: list[int] | None = None,
+) -> tuple[Any, ...]:
+    """
+    Async version of _process_container_tuple for async handler support.
+
+    Process a container tuple by applying handlers to each element in-place.
+
+    This function recursively processes tuples from options/arguments with
+    `multiple=True` or `nargs>1`, applying appropriate handlers to each
+    leaf element based on its type and preserving the tuple structure.
+
+    Args:
+        child (ChildNode):
+            The child node to dispatch handlers from.
+        value (tuple[Any, ...]):
+            The container tuple to process.
+        context (Context):
+            Processing context.
+        path (list[int] | None):
+            Current path for error reporting. Defaults to empty list.
+
+    Returns:
+        tuple[Any, ...]:
+            New tuple with same structure but processed elements.
+
+    Raises:
+        ValueError:
+            If validation fails, with path information added.
+        TypeError:
+            If type mismatch occurs, with path information added.
+        UnhandledTypeError:
+            If no handler exists for an element's type.
+    """
+    if path is None:
+        path = []
+
+    results: list[Any] = []
+
+    for i, item in enumerate(value):
+        current_path = path + [i]
+
+        try:
+            if isinstance(item, tuple):
+                result = await _process_container_tuple_async(
+                    child,
+                    item,  # type: ignore
+                    context,
+                    current_path,
+                )
+            else:
+                if handler_name := _determine_handler(child, item, context):
+                    if _should_call_handler(child, handler_name, item):
+                        handler = getattr(child, handler_name)
+                        if asyncio.iscoroutinefunction(handler):
+                            result = await handler(
+                                item,
+                                context,
+                                *child.process_args,
+                                **child.process_kwargs,
+                            )
+                        else:
+                            result = handler(
+                                item,
+                                context,
+                                *child.process_args,
+                                **child.process_kwargs,
+                            )
+                    else:
+                        result = item
+                elif _is_handler_implemented(child, "handle_all"):
+                    if _should_call_handler(child, "handle_all", item):
+                        handler = child.handle_all
+                        if asyncio.iscoroutinefunction(handler):
+                            result = await handler(
+                                item,
+                                context,
+                                *child.process_args,
+                                **child.process_kwargs,
+                            )
+                        else:
+                            result = handler(
+                                item,
+                                context,
+                                *child.process_args,
+                                **child.process_kwargs,
+                            )
+                    else:
+                        result = item
+                else:
+                    raise UnhandledTypeError(
+                        child_name=child.name,
+                        value_type=type(item).__name__,  # type: ignore
+                        implemented_handlers=_get_implemented_handlers(child),
+                    )
+
+            results.append(result)
+
+        except (ValueError, TypeError) as e:
+            path_str = "".join(f"[{idx}]" for idx in current_path)
+            error_msg = str(e)
+            if path_str and " at index " not in error_msg:
+                raise type(e)(f"{error_msg} at index {path_str}") from e
+            raise
+
+    return tuple(results)
+
+
 def has_async_handlers(child: "ChildNode") -> bool:
     """
     Check if a child node has any async handlers implemented.
@@ -877,6 +844,17 @@ async def dispatch_to_child_async(
         InvalidHandlerError:
             If `handle_tag` returns a modified dictionary.
     """
+    if isinstance(value, tuple):
+        is_container = context.click_context.meta.get("click_extended", {}).get(
+            "is_container_tuple", False
+        )
+        if is_container:
+            return await _process_container_tuple_async(
+                child,
+                value,  # type: ignore
+                context,
+            )
+
     if value is None:
         # Handle None
         if _is_handler_implemented(child, "handle_none"):
@@ -890,7 +868,7 @@ async def dispatch_to_child_async(
                     result = none_handler(
                         context, *child.process_args, **child.process_kwargs
                     )
-                return value if result is None else result
+                return value if result is None else result  # type: ignore
             except NotImplementedError:
                 pass
 
@@ -913,7 +891,10 @@ async def dispatch_to_child_async(
                                 *child.process_args,
                                 **child.process_kwargs,
                             )
-                        return value if result is None else result
+
+                        if result is None:
+                            return value
+                        return result
                     except NotImplementedError:
                         pass
 
@@ -997,7 +978,7 @@ async def dispatch_to_child_async(
 
                     raise InvalidHandlerError(message=message, tip=tip)
 
-                return value if result is None else result
+                return value if result is None else result  # type: ignore
         except NotImplementedError:
             pass
 
@@ -1017,13 +998,13 @@ async def dispatch_to_child_async(
                 result = handler(
                     value, context, *child.process_args, **child.process_kwargs
                 )
-            return value if result is None else result
+            return value if result is None else result  # type: ignore
     except NotImplementedError:
         pass
 
     raise UnhandledTypeError(
         child_name=child.name,
-        value_type=type(value).__name__,
+        value_type=type(value).__name__,  # type: ignore
         implemented_handlers=_get_implemented_handlers(child),
     )
 

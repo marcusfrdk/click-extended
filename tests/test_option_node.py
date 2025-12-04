@@ -1079,67 +1079,6 @@ class TestOptionNodeWithChildren:
         assert result.exit_code == 0
         assert "Quiet: False" in result.output
 
-    def test_option_multiple_with_child(self, cli_runner: Any) -> None:
-        """Test multiple option with child that transforms list."""
-        import click
-
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
-
-        class UppercaseAll(ChildNode):
-            def handle_tuple(
-                self,
-                value: tuple[str, ...],
-                context: Context,
-                *args: Any,
-                **kwargs: Any,
-            ) -> tuple[str, ...]:
-                return tuple(v.upper() for v in value)
-
-        @command()
-        @option("tag", multiple=True)
-        @UppercaseAll.as_decorator()
-        def build(tag: tuple[str, ...]) -> None:
-            for t in tag:
-                click.echo(f"Tag: {t}")
-
-        result = cli_runner.invoke(build, ["--tag", "alpha", "--tag", "beta"])
-        assert result.exit_code == 0
-        assert "Tag: ALPHA" in result.output
-        assert "Tag: BETA" in result.output
-
-    def test_option_nargs_with_child(self, cli_runner: Any) -> None:
-        """Test option with nargs and child transformation."""
-        import click
-
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
-
-        class Double(ChildNode):
-            def handle_tuple(
-                self,
-                value: tuple[int, ...],
-                context: Context,
-                *args: Any,
-                **kwargs: Any,
-            ) -> tuple[int, ...]:
-                return tuple(v * 2 for v in value)
-
-        @command()
-        @option("coords", nargs=3, type=int)
-        @Double.as_decorator()
-        def plot(coords: tuple[int, int, int]) -> None:
-            x, y, z = coords
-            click.echo(f"Coords: {x}, {y}, {z}")
-
-        result = cli_runner.invoke(plot, ["--coords", "1", "2", "3"])
-        assert result.exit_code == 0
-        assert "Coords: 2, 4, 6" in result.output
-
     def test_option_child_execution_order(self, cli_runner: Any) -> None:
         """Test that children execute in correct order."""
         import click

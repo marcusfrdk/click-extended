@@ -34,29 +34,6 @@ class LoadYaml(ChildNode):
         with value.open("r", encoding=kwargs["encoding"]) as f:
             return load(f, Loader=loader)
 
-    def handle_flat_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        return tuple(
-            self.handle_path(v, context, *args, **kwargs) for v in value
-        )
-
-    def handle_nested_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        return tuple(
-            tuple(self.handle_path(v, context, *args, **kwargs) for v in t)
-            for t in value
-        )
-
 
 def load_yaml(
     encoding: str = "utf-8",

@@ -16,7 +16,12 @@ class ToTimestamp(ChildNode):
     ) -> int:
         unit = kwargs["unit"]
 
-        if value.tzinfo is None:
+        if value.date() == date(1900, 1, 1):
+            today = datetime.now(timezone.utc).date()
+            value = datetime.combine(today, value.time())
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=timezone.utc)
+        elif value.tzinfo is None:
             value = value.replace(tzinfo=timezone.utc)
 
         timestamp = value.timestamp()
@@ -49,47 +54,6 @@ class ToTimestamp(ChildNode):
         dt = datetime.combine(today, value)
         return self.handle_datetime(dt, context, *args, **kwargs)
 
-    def handle_flat_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> tuple[int, ...]:
-        return tuple(
-            self._handle_single(v, context, *args, **kwargs) for v in value
-        )
-
-    def handle_nested_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> tuple[tuple[int, ...], ...]:
-        return tuple(
-            tuple(self._handle_single(v, context, *args, **kwargs) for v in t)
-            for t in value
-        )
-
-    def _handle_single(
-        self, value: Any, context: Context, *args: Any, **kwargs: Any
-    ) -> int:
-        """Handle a single value of any supported type."""
-        if isinstance(value, datetime):
-            return self.handle_datetime(value, context, *args, **kwargs)
-
-        if isinstance(value, date):
-            return self.handle_date(value, context, *args, **kwargs)
-
-        if isinstance(value, time):
-            return self.handle_time(value, context, *args, **kwargs)
-
-        raise TypeError(
-            "Expected datetime, date, or "
-            f"time object, got {type(value).__name__}"
-        )
-
 
 def to_timestamp(unit: Literal["s", "ms", "us", "ns"] = "s") -> Decorator:
     """
@@ -97,7 +61,7 @@ def to_timestamp(unit: Literal["s", "ms", "us", "ns"] = "s") -> Decorator:
 
     Type: `ChildNode`
 
-    Supports: `datetime`, `date`, `time`, `flat tuple`, `nested tuple`
+    Supports: `datetime`, `date`, `time`
 
     Args:
         unit (Literal["s", "ms", "us", "ns"], optional):

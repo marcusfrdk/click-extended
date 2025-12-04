@@ -223,7 +223,7 @@ class TestApplyListOperations:
 
         @command()
         @option("items", multiple=True)
-        @apply(lambda x: tuple(item.upper() for item in x))
+        @apply(lambda x: x.upper())
         def cmd(items: tuple[str, ...]) -> None:
             click.echo(f"Items: {','.join(items)}")
 
@@ -232,49 +232,34 @@ class TestApplyListOperations:
         assert "Items: X,Y" in result.output
 
     def test_apply_list_length(self, cli_runner: CliRunner) -> None:
-        """Test getting list length."""
+        """Test applying transformation to each element."""
 
         @command()
         @option("values", multiple=True)
-        @apply(len)
-        def cmd(values: int) -> None:
-            click.echo(f"Count: {values}")
+        @apply(lambda x: len(x))
+        def cmd(values: tuple[int, ...]) -> None:
+            click.echo(f"Lengths: {','.join(map(str, values))}")
 
         result = cli_runner.invoke(
-            cmd, ["--values", "a", "--values", "b", "--values", "c"]
+            cmd, ["--values", "a", "--values", "bb", "--values", "ccc"]
         )
         assert result.exit_code == 0
-        assert "Count: 3" in result.output
+        assert "Lengths: 1,2,3" in result.output
 
     def test_apply_list_sum(self, cli_runner: CliRunner) -> None:
-        """Test summing list values."""
+        """Test transforming each element."""
 
         @command()
         @option("numbers", type=int, multiple=True)
-        @apply(sum)
-        def cmd(numbers: int) -> None:
-            click.echo(f"Sum: {numbers}")
+        @apply(lambda x: x * 2)
+        def cmd(numbers: tuple[int, ...]) -> None:
+            click.echo(f"Doubled: {','.join(map(str, numbers))}")
 
         result = cli_runner.invoke(
             cmd, ["--numbers", "10", "--numbers", "20", "--numbers", "30"]
         )
         assert result.exit_code == 0
-        assert "Sum: 60" in result.output
-
-    def test_apply_list_max(self, cli_runner: CliRunner) -> None:
-        """Test getting max value."""
-
-        @command()
-        @option("scores", type=int, multiple=True, default=[1, 2, 3])
-        @apply(max)
-        def cmd(scores: int) -> None:
-            click.echo(f"Max: {scores}")
-
-        result = cli_runner.invoke(
-            cmd, ["--scores", "42", "--scores", "17", "--scores", "99"]
-        )
-        assert result.exit_code == 0
-        assert "Max: 99" in result.output
+        assert "Doubled: 20,40,60" in result.output
 
 
 class TestApplyChaining:

@@ -18,7 +18,7 @@ class LessThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> int | float | Decimal:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -32,6 +32,8 @@ class LessThan(ChildNode):
                 raise ValueError(
                     f"Value must be less than {threshold}, got {value}"
                 )
+
+        return value
 
     def handle_datetime(
         self,
@@ -39,7 +41,7 @@ class LessThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> datetime:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -53,6 +55,8 @@ class LessThan(ChildNode):
                 raise ValueError(
                     f"Value must be less than {threshold}, got {value}"
                 )
+
+        return value
 
     def handle_date(
         self,
@@ -60,7 +64,7 @@ class LessThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> date:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -74,6 +78,8 @@ class LessThan(ChildNode):
                 raise ValueError(
                     f"Value must be less than {threshold}, got {value}"
                 )
+
+        return value
 
     def handle_time(
         self,
@@ -81,7 +87,7 @@ class LessThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> time:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -96,57 +102,7 @@ class LessThan(ChildNode):
                     f"Value must be less than {threshold}, got {value}"
                 )
 
-    def handle_flat_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        for v in value:
-            self._validate_single(v, context, *args, **kwargs)
-
-    def handle_nested_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        for item in value:
-            if isinstance(item, tuple):
-                self.handle_nested_tuple(
-                    item, context, *args, **kwargs  # type: ignore
-                )
-            else:
-                self._validate_single(item, context, *args, **kwargs)
-
-    def _validate_single(
-        self,
-        value: Any,
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        if isinstance(value, bool):
-            raise TypeError("Cannot compare boolean with threshold")
-
-        if isinstance(value, int):
-            self.handle_numeric(value, context, *args, **kwargs)
-        elif isinstance(value, float):
-            self.handle_numeric(value, context, *args, **kwargs)
-        elif isinstance(value, Decimal):
-            self.handle_numeric(value, context, *args, **kwargs)
-        elif isinstance(value, datetime):
-            self.handle_datetime(value, context, *args, **kwargs)
-        elif isinstance(value, date):
-            self.handle_date(value, context, *args, **kwargs)
-        elif isinstance(value, time):
-            self.handle_time(value, context, *args, **kwargs)
-        else:
-            raise TypeError(
-                f"Cannot compare {type(value).__name__} with threshold"
-            )
+        return value
 
 
 def less_than(
@@ -158,11 +114,10 @@ def less_than(
 
     Type: `ChildNode`
 
-    Supports: `int`, `float`, `Decimal`, `datetime`, `date`, `time`,
-    `flat tuple`, `nested tuple`
+    Supports: `int`, `float`, `Decimal`, `datetime`, `date`, `time`
 
     Args:
-        value (int | float | Decimal | datetime | date | time):
+        threshold (int | float | Decimal | datetime | date | time):
             The threshold value to compare against.
         inclusive (bool):
             If `True`, allows values equal to threshold (<=).
@@ -210,7 +165,7 @@ def less_than(
         >>> # Valid: 2025-12-31, 2025-01-01, 2024-12-31
         >>> # Invalid: 2026-01-01, 2026-12-31
 
-        Tuple validation:
+        Multiple values (automatic handling):
 
         >>> @command()
         >>> @option("scores", type=int, multiple=True)
@@ -220,6 +175,7 @@ def less_than(
 
         >>> # Valid: (90, 85, 100), (50, 60, 70)
         >>> # Invalid: (90, 101, 85), (100, 100, 105)
+        >>> # Note: Validation applies to each score individually
     """
     return LessThan.as_decorator(
         threshold=threshold,

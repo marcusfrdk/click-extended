@@ -2,7 +2,7 @@
 
 # pylint: disable=too-many-locals
 # pylint: disable=broad-exception-caught
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
 
 from typing import TYPE_CHECKING, Any, Mapping, cast
 
@@ -56,14 +56,28 @@ def process_children(
         The processed value after passing through all children.
 
     Raises:
-        UnhandledTypeError: If a child node doesn't implement a handler
-            for the value type.
-        ProcessError: If validation or transformation fails in a child node.
+        UnhandledTypeError:
+            If a child node doesn't implement a handler for the value type.
+        ProcessError:
+            If validation or transformation fails in a child node.
     """
     child_nodes = [cast("ChildNode", child) for child in children.values()]
 
     if tags is None:
         tags = {}
+
+    is_container_tuple = False
+    if isinstance(value, tuple) and parent.__class__.__name__ in (
+        "Option",
+        "Argument",
+    ):
+        parent_cast: click.Option | click.Argument
+        if parent.__class__.__name__ == "Option":
+            parent_cast = cast(click.Option, parent)
+            is_container_tuple = parent_cast.multiple or parent_cast.nargs != 1
+        else:
+            parent_cast = cast(click.Argument, parent)
+            is_container_tuple = parent_cast.nargs != 1
 
     for child in child_nodes:
         if click_context is not None:
@@ -80,6 +94,9 @@ def process_children(
 
             if "click_extended" in click_context.meta:
                 click_context.meta["click_extended"]["handler_value"] = value
+                click_context.meta["click_extended"][
+                    "is_container_tuple"
+                ] = is_container_tuple
 
         root_node: "RootNode | None" = None
         all_nodes: dict[str, Any] = {}
@@ -130,7 +147,7 @@ def process_children(
 
         value = dispatch_to_child(child, value, context)
 
-    return value
+    return value  # type: ignore
 
 
 async def process_children_async(
@@ -177,6 +194,19 @@ async def process_children_async(
     if tags is None:
         tags = {}
 
+    is_container_tuple = False
+    if isinstance(value, tuple) and parent.__class__.__name__ in (
+        "Option",
+        "Argument",
+    ):
+        parent_cast: click.Option | click.Argument
+        if parent.__class__.__name__ == "Option":
+            parent_cast = cast(click.Option, parent)
+            is_container_tuple = parent_cast.multiple or parent_cast.nargs != 1
+        else:
+            parent_cast = cast(click.Argument, parent)
+            is_container_tuple = parent_cast.nargs != 1
+
     for child in child_nodes:
         if click_context is not None:
             Tree.update_scope(
@@ -192,6 +222,9 @@ async def process_children_async(
 
             if "click_extended" in click_context.meta:
                 click_context.meta["click_extended"]["handler_value"] = value
+                click_context.meta["click_extended"][
+                    "is_container_tuple"
+                ] = is_container_tuple
 
         root_node: "RootNode | None" = None
         all_nodes: dict[str, Any] = {}
@@ -242,7 +275,7 @@ async def process_children_async(
 
         value = await dispatch_to_child_async(child, value, context)
 
-    return value
+    return value  # type: ignore
 
 
 def check_has_async_handlers(children: Mapping[Any, Any]) -> bool:

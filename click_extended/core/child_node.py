@@ -259,42 +259,6 @@ class ChildNode(Node, ABC):
         """
         raise NotImplementedError
 
-    def handle_flat_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: "Context",
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        """
-        Handle tuples containing ONLY primitive types.
-
-        Called for:
-            - `(1, 2, 3)`
-            - `("a", "b", "c")`
-            - `(1, "hello", 3.14, True)`
-            - `()` - empty tuple
-
-        Not called for:
-            - `((1, 2), (3, 4))`: use `handle_nested_tuple`
-            - `(1, [2, 3])`: use `handle_tuple` (mixed)
-
-        Args:
-            value (tuple[Any, ...]):
-                The flat tuple to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
-
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
-        """
-        raise NotImplementedError
-
     def handle_tuple(
         self,
         value: tuple[Any, ...],
@@ -349,50 +313,6 @@ class ChildNode(Node, ABC):
         Args:
             value (list[Any]):
                 The list to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
-
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
-        """
-        raise NotImplementedError
-
-    def handle_nested_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: "Context",
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        """
-        Handle tuples containing ONLY complex/collection types.
-
-        Called for:
-
-            - `((1, 2), (3, 4))`: nested tuples
-            - `([1, 2], [3, 4])`: tuple of lists
-            - `({"a": 1}, {"b": 2})`: tuple of dicts
-            - `(Path("a"), Path("b"))`: tuple of Paths
-
-        Not called for:
-
-            - `(1, 2, 3)`: use `handle_flat_tuple`
-            - `(1, [2, 3])`: use `handle_tuple` (mixed)
-
-        Type hints specify the internal structure:
-
-            - `tuple[tuple[int, ...], ...]`: validates nested tuples of ints
-            - `tuple[list[str], ...]`: validates tuple of string lists
-            - `tuple[Path, ...]`: validates tuple of Paths
-
-        Args:
-            value (tuple[Any, ...]):
-                The nested tuple to process.
             context (Context):
                 Information about the current context.
             *args (Any):

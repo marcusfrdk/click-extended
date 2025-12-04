@@ -86,29 +86,6 @@ class TestSyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Flag: False" in result.output
 
-    def test_handle_flat_tuple_with_multiple(
-        self, cli_runner: CliRunner
-    ) -> None:
-        """Test handle_flat_tuple receives and processes tuple from multiple option."""
-
-        class TupleHandler(ChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[int, ...], context: Context
-            ) -> tuple[int, ...]:
-                return tuple(x * 2 for x in value)
-
-        @command()
-        @option("--items", multiple=True, type=int)
-        @TupleHandler.as_decorator()
-        def cmd(items: tuple[int, ...]) -> None:
-            click.echo(f"Items: {list(items)}")
-
-        result = cli_runner.invoke(
-            cmd, ["--items", "1", "--items", "2", "--items", "3"]
-        )
-        assert result.exit_code == 0
-        assert "Items: [2, 4, 6]" in result.output
-
     def test_handle_string_then_dict_parsing(
         self, cli_runner: CliRunner
     ) -> None:
@@ -187,55 +164,6 @@ class TestSyncHandlerDispatch:
         result = cli_runner.invoke(cmd, ["--date", "2025-11-23"])
         assert result.exit_code == 0
         assert "Date: 2025-11-23" in result.output
-
-    def test_handle_flat_tuple(self, cli_runner: CliRunner) -> None:
-        """Test handle_flat_tuple with (1, 2, 3) type tuples."""
-
-        class FlatTupleHandler(ChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[int, ...], context: Context
-            ) -> tuple[int, ...]:
-                return tuple(x * 2 for x in value)
-
-        @command()
-        @option("--coords", nargs=3, type=int)
-        @FlatTupleHandler.as_decorator()
-        def cmd(coords: tuple[int, int, int]) -> None:
-            click.echo(f"Coords: {coords}")
-
-        result = cli_runner.invoke(cmd, ["--coords", "1", "2", "3"])
-        assert result.exit_code == 0
-        assert "Coords: (2, 4, 6)" in result.output
-
-    def test_handle_nested_tuple(self, cli_runner: CliRunner) -> None:
-        """Test handle_nested_tuple with ((1, 2), (3, 4)) type tuples."""
-
-        class StringParser(ChildNode):
-            """First handler: parse string to tuple."""
-
-            def handle_str(
-                self, value: str, context: Context
-            ) -> tuple[tuple[int, ...], ...]:
-                return cast(tuple[tuple[int, ...], ...], eval(value))
-
-        class NestedTupleHandler(ChildNode):
-            """Second handler: transform nested tuple."""
-
-            def handle_nested_tuple(
-                self, value: tuple[tuple[int, ...], ...], context: Context
-            ) -> tuple[tuple[int, ...], ...]:
-                return tuple(tuple(x * 2 for x in inner) for inner in value)
-
-        @command()
-        @option("--data", type=str, default="((1,2),(3,4))")
-        @StringParser.as_decorator()
-        @NestedTupleHandler.as_decorator()
-        def cmd(data: tuple[tuple[int, ...], ...]) -> None:
-            click.echo(f"Data: {data}")
-
-        result = cli_runner.invoke(cmd, ["--data", "((1,2),(3,4))"])
-        assert result.exit_code == 0
-        assert "Data: ((2, 4), (6, 8))" in result.output
 
     def test_handle_tuple_with_mixed_types(self, cli_runner: CliRunner) -> None:
         """Test handle_tuple as fallback for mixed (1, (2, 3)) type tuples."""
@@ -610,30 +538,6 @@ class TestAsyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Flag: False" in result.output
 
-    def test_async_handle_flat_tuple_with_multiple(
-        self, cli_runner: CliRunner
-    ) -> None:
-        """Test async handle_flat_tuple receives and processes tuple from multiple option."""
-
-        class AsyncTupleHandler(ChildNode):
-            async def handle_flat_tuple(
-                self, value: tuple[int, ...], context: Context
-            ) -> tuple[int, ...]:
-                await asyncio.sleep(0.001)
-                return tuple(x * 3 for x in value)
-
-        @command()
-        @option("--items", multiple=True, type=int)
-        @AsyncTupleHandler.as_decorator()
-        def cmd(items: tuple[int, ...]) -> None:
-            click.echo(f"Items: {list(items)}")
-
-        result = cli_runner.invoke(
-            cmd, ["--items", "2", "--items", "3", "--items", "4"]
-        )
-        assert result.exit_code == 0
-        assert "Items: [6, 9, 12]" in result.output
-
     def test_async_handle_string_json_string(
         self, cli_runner: CliRunner
     ) -> None:
@@ -713,58 +617,6 @@ class TestAsyncHandlerDispatch:
         result = cli_runner.invoke(cmd, ["--date", "2025-12-25"])
         assert result.exit_code == 0
         assert "Date: 2025/12/25" in result.output
-
-    def test_async_handle_flat_tuple(self, cli_runner: CliRunner) -> None:
-        """Test async handle_flat_tuple with (1, 2, 3) type tuples."""
-
-        class AsyncFlatTupleHandler(ChildNode):
-            async def handle_flat_tuple(
-                self, value: tuple[int, ...], context: Context
-            ) -> tuple[int, ...]:
-                await asyncio.sleep(0.001)
-                return tuple(x * 3 for x in value)
-
-        @command()
-        @option("--coords", nargs=3, type=int)
-        @AsyncFlatTupleHandler.as_decorator()
-        def cmd(coords: tuple[int, int, int]) -> None:
-            click.echo(f"Coords: {coords}")
-
-        result = cli_runner.invoke(cmd, ["--coords", "2", "3", "4"])
-        assert result.exit_code == 0
-        assert "Coords: (6, 9, 12)" in result.output
-
-    def test_async_handle_nested_tuple(self, cli_runner: CliRunner) -> None:
-        """Test async handle_nested_tuple with ((1, 2), (3, 4)) type tuples."""
-
-        class AsyncStringParser(ChildNode):
-            """First handler: parse string to nested tuple."""
-
-            async def handle_str(
-                self, value: str, context: Context
-            ) -> tuple[tuple[int, ...], ...]:
-                await asyncio.sleep(0.001)
-                return cast(tuple[tuple[int, ...], ...], eval(value))
-
-        class AsyncNestedTupleHandler(ChildNode):
-            """Second handler: transform nested tuple."""
-
-            async def handle_nested_tuple(
-                self, value: tuple[tuple[int, ...], ...], context: Context
-            ) -> tuple[tuple[int, ...], ...]:
-                await asyncio.sleep(0.001)
-                return tuple(tuple(x * 3 for x in inner) for inner in value)
-
-        @command()
-        @option("--data", type=str, default="((2,3),(4,5))")
-        @AsyncStringParser.as_decorator()
-        @AsyncNestedTupleHandler.as_decorator()
-        def cmd(data: tuple[tuple[int, ...], ...]) -> None:
-            click.echo(f"Data: {data}")
-
-        result = cli_runner.invoke(cmd, ["--data", "((2,3),(4,5))"])
-        assert result.exit_code == 0
-        assert "Data: ((6, 9), (12, 15))" in result.output
 
     def test_async_handle_tuple_with_mixed_types(
         self, cli_runner: CliRunner
@@ -1448,68 +1300,6 @@ class TestParentNodeIntegration:
         result = cli_runner.invoke(cmd, ["--num", "7"])
         assert result.exit_code == 0
         assert "Result: 75" in result.output  # (7 * 10) + 5
-
-    def test_child_with_option_nargs(self, cli_runner: CliRunner) -> None:
-        """Child handles option with nargs > 1 (tuple)."""
-
-        class TupleSumHandler(ChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[int, ...], context: Context
-            ) -> int:
-                return sum(value)
-
-        @command()
-        @option("--nums", nargs=3, type=int)
-        @TupleSumHandler.as_decorator()
-        def cmd(nums: int) -> None:
-            click.echo(f"Sum: {nums}")
-
-        result = cli_runner.invoke(cmd, ["--nums", "1", "2", "3"])
-        assert result.exit_code == 0
-        assert "Sum: 6" in result.output
-
-    def test_child_with_option_multiple(self, cli_runner: CliRunner) -> None:
-        """Child handles option with multiple=True (tuple)."""
-
-        class TupleJoinHandler(ChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[str, ...], context: Context
-            ) -> str:
-                return ",".join(value)
-
-        @command()
-        @option("--items", multiple=True, type=str)
-        @TupleJoinHandler.as_decorator()
-        def cmd(items: str) -> None:
-            click.echo(f"Items: {items}")
-
-        result = cli_runner.invoke(
-            cmd, ["--items", "a", "--items", "b", "--items", "c"]
-        )
-        assert result.exit_code == 0
-        assert "Items: a,b,c" in result.output
-
-    def test_child_with_argument_nargs_minus_one(
-        self, cli_runner: CliRunner
-    ) -> None:
-        """Child handles argument with nargs=-1 (unlimited)."""
-        from click_extended.core.argument import argument
-
-        class ListToStringHandler(ChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[str, ...], context: Context
-            ) -> str:
-                return " ".join(value).upper()
-
-        @command()
-        @argument("files", nargs=-1, type=str)
-        @ListToStringHandler.as_decorator()
-        def cmd(files: str) -> None:
-            click.echo(f"Files: {files}")
-
-        result = cli_runner.invoke(cmd, ["file1.txt", "file2.txt", "file3.txt"])
-        assert result.exit_code == 0
-        assert "Files: FILE1.TXT FILE2.TXT FILE3.TXT" in result.output
 
     def test_env_with_async_transformer(self, cli_runner: CliRunner) -> None:
         """Env value transformed by async handler."""
@@ -2446,28 +2236,6 @@ class TestEdgeCases:
         result = cli_runner.invoke(cmd, ["--num", "0"])
         assert result.exit_code == 0
         assert "Num: ZERO" in result.output
-
-    def test_empty_collection_handling(self, cli_runner: CliRunner) -> None:
-        """Empty list/dict/tuple handling."""
-
-        class EmptyCollectionHandler(ChildNode):
-            def handle_flat_tuple(
-                self, value: tuple[str, ...], context: Context
-            ) -> str:
-                if len(value) == 0:
-                    return "NO_ITEMS"
-                return ",".join(value)
-
-        @command()
-        @option("--items", multiple=True, type=str)
-        @EmptyCollectionHandler.as_decorator()
-        def cmd(items: str) -> None:
-            click.echo(f"Items: {items}")
-
-        # Empty tuple
-        result = cli_runner.invoke(cmd, [])
-        assert result.exit_code == 0
-        assert "Items: NO_ITEMS" in result.output
 
     def test_none_with_optional_type_hint(self, cli_runner: CliRunner) -> None:
         """None value with Optional type hint."""

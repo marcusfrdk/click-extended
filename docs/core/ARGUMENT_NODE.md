@@ -18,13 +18,21 @@ Parameters of the `ArgumentNode` as set in the `as_decorator()` method where the
 | name       | str                   |                                      | The name of the argument node, used as the parameter name unless `param` is set (converted to `snake_case`). |
 | param      | str                   | The `name` parameter in `snake_case` | The parameter name to inject the value as in the function.                                                   |
 | type       | str, int, float, bool | `str`                                | The type of the argument value.                                                                              |
-| nargs      | int                   | `1`                                  | The number of arguments to accept.                                                                           |
+| nargs      | int                   | `1`                                  | The number of arguments to accept. When `nargs > 1` or `nargs = -1`, creates a container tuple.              |
 | help       | str                   |                                      | The help string to display in the help menu.                                                                 |
 | required   | bool                  | `True`                               | Whether the argument is required.                                                                            |
 | default    | str, int, float, bool |                                      | The default value to use, this sets `required=False` even if `required=True`.                                |
 | tags       | str, list[str]        |                                      | A string or list of strings of tags to tag the argument node with.                                           |
 | \*args     | Any                   |                                      | Optional positional arguments passed to the `load()` method.                                                 |
 | \*\*kwargs | Any                   |                                      | Optional keyword arguments passed to the `load()` method.                                                    |
+
+### Container Tuples
+
+When `nargs > 1` or `nargs = -1` (unlimited), the argument produces a **container tuple**. Container tuples are automatically processed element-wise by child nodes:
+
+- Each element is passed individually to the appropriate type handler (`handle_int`, `handle_str`, etc.)
+- The tuple structure is preserved in the final result
+- Errors include index paths showing where in the tuple the error occurred (e.g., `[0]`, `[2]`)
 
 ## Methods
 

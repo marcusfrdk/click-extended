@@ -18,7 +18,7 @@ class GreaterThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> int | float | Decimal:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -32,6 +32,8 @@ class GreaterThan(ChildNode):
                 raise ValueError(
                     f"Value must be more than {threshold}, got {value}"
                 )
+
+        return value
 
     def handle_datetime(
         self,
@@ -39,7 +41,7 @@ class GreaterThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> datetime:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -53,6 +55,8 @@ class GreaterThan(ChildNode):
                 raise ValueError(
                     f"Value must be more than {threshold}, got {value}"
                 )
+
+        return value
 
     def handle_date(
         self,
@@ -60,7 +64,7 @@ class GreaterThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> date:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -74,6 +78,8 @@ class GreaterThan(ChildNode):
                 raise ValueError(
                     f"Value must be more than {threshold}, got {value}"
                 )
+
+        return value
 
     def handle_time(
         self,
@@ -81,7 +87,7 @@ class GreaterThan(ChildNode):
         context: Context,
         *args: Any,
         **kwargs: Any,
-    ) -> None:
+    ) -> time:
         threshold = kwargs["threshold"]
         inclusive = kwargs["inclusive"]
 
@@ -96,60 +102,7 @@ class GreaterThan(ChildNode):
                     f"Value must be more than {threshold}, got {value}"
                 )
 
-    def handle_flat_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        for v in value:
-            self._validate_single(v, context, *args, **kwargs)
-
-    def handle_nested_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        for item in value:
-            if isinstance(item, tuple):
-                self.handle_nested_tuple(
-                    item,  # type: ignore
-                    context,
-                    *args,
-                    **kwargs,
-                )
-            else:
-                self._validate_single(item, context, *args, **kwargs)
-
-    def _validate_single(
-        self,
-        value: Any,
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        if isinstance(value, bool):
-            raise TypeError("Cannot compare boolean with threshold")
-
-        if isinstance(value, int):
-            self.handle_numeric(value, context, *args, **kwargs)
-        elif isinstance(value, float):
-            self.handle_numeric(value, context, *args, **kwargs)
-        elif isinstance(value, Decimal):
-            self.handle_numeric(value, context, *args, **kwargs)
-        elif isinstance(value, datetime):
-            self.handle_datetime(value, context, *args, **kwargs)
-        elif isinstance(value, date):
-            self.handle_date(value, context, *args, **kwargs)
-        elif isinstance(value, time):
-            self.handle_time(value, context, *args, **kwargs)
-        else:
-            raise TypeError(
-                f"Cannot compare {type(value).__name__} with threshold"
-            )
+        return value
 
 
 def greater_than(
@@ -161,11 +114,10 @@ def greater_than(
 
     Type: `ChildNode`
 
-    Supports: `int`, `float`, `Decimal`, `datetime`, `date`, `time`,
-    `flat tuple`, `nested tuple`
+    Supports: `int`, `float`, `Decimal`, `datetime`, `date`, `time`
 
     Args:
-        value (int | float | Decimal | datetime | date | time):
+        threshold (int | float | Decimal | datetime | date | time):
             The threshold value to compare against.
         inclusive (bool):
             If `True`, allows values equal to threshold (>=).
@@ -213,7 +165,7 @@ def greater_than(
         >>> # Valid: 2024-01-01, 2024-12-31, 2025-01-01
         >>> # Invalid: 2023-12-31, 2023-01-01
 
-        Tuple validation:
+        Multiple values (automatic handling):
 
         >>> @command()
         >>> @option("numbers", type=int, multiple=True)
@@ -223,6 +175,7 @@ def greater_than(
 
         >>> # Valid: (1, 2, 3), (5, 10, 15)
         >>> # Invalid: (1, 0, 3), (-1, 2, 3)
+        >>> # Note: Validation applies to each number individually
     """
     return GreaterThan.as_decorator(
         threshold=threshold,

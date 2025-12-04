@@ -42,29 +42,6 @@ class ToDate(ChildNode):
             f"{fmt_text} {humanize_iterable(formats, sep='or')}"
         )
 
-    def handle_flat_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> tuple[date, ...]:
-        return tuple(
-            self.handle_str(str(v), context, *args, **kwargs) for v in value
-        )
-
-    def handle_nested_tuple(
-        self,
-        value: tuple[Any, ...],
-        context: Context,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        return tuple(
-            tuple(self.handle_str(str(v), context, *args, **kwargs) for v in t)
-            for t in value
-        )
-
 
 def to_date(
     *formats: str,
@@ -74,7 +51,7 @@ def to_date(
 
     Type: `ChildNode`
 
-    Supports: `str`, `flat tuple`, `nested tuple`
+    Supports: `str`
 
     Args:
         *formats (str):
