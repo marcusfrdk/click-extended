@@ -550,3 +550,145 @@ development:
         assert result.exit_code == 0
         assert "Prod timeout: 30" in result.output
         assert "Dev timeout: 30" in result.output
+
+
+class TestLoadYamlFlatTuple:
+    """Test load_yaml with flat tuples."""
+
+    def test_load_yaml_flat_tuple(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_yaml with flat tuple of YAML files."""
+        file1 = tmp_path / "config1.yaml"
+        file2 = tmp_path / "config2.yaml"
+        file3 = tmp_path / "config3.yaml"
+        file1.write_text("name: service1\nport: 8001\n")
+        file2.write_text("name: service2\nport: 8002\n")
+        file3.write_text("name: service3\nport: 8003\n")
+
+        @command()
+        @option("configs", default=None, nargs=3)
+        @to_path()
+        @load_yaml()
+        def cmd(configs: Any) -> None:
+            assert configs is not None
+            assert isinstance(configs, tuple)
+            assert len(configs) == 3
+            for cfg in configs:
+                click.echo(f"{cfg['name']}: {cfg['port']}")
+
+        result = cli_runner.invoke(
+            cmd, ["--configs", str(file1), str(file2), str(file3)]
+        )
+        assert result.exit_code == 0
+        assert "service1: 8001" in result.output
+        assert "service2: 8002" in result.output
+        assert "service3: 8003" in result.output
+
+    def test_load_yaml_flat_tuple_with_loader(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_yaml flat tuple with specific loader."""
+        file1 = tmp_path / "data1.yaml"
+        file2 = tmp_path / "data2.yaml"
+        file1.write_text("items: [1, 2, 3]\n")
+        file2.write_text("items: [4, 5, 6]\n")
+
+        @command()
+        @option("files", default=None, nargs=2)
+        @to_path()
+        @load_yaml(loader="safe")
+        def cmd(files: Any) -> None:
+            assert files is not None
+            total = sum(sum(f["items"]) for f in files)
+            click.echo(f"Total: {total}")
+
+        result = cli_runner.invoke(cmd, ["--files", str(file1), str(file2)])
+        assert result.exit_code == 0
+        assert "Total: 21" in result.output
+
+
+class TestLoadYamlNestedTuple:
+    """Test load_yaml with nested tuples."""
+
+    def test_load_yaml_nested_tuple(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_yaml with nested tuple of YAML files."""
+        file1 = tmp_path / "env1_app1.yaml"
+        file2 = tmp_path / "env1_app2.yaml"
+        file3 = tmp_path / "env2_app1.yaml"
+        file4 = tmp_path / "env2_app2.yaml"
+        file1.write_text("app: app1\nenv: dev\ninstances: 2\n")
+        file2.write_text("app: app2\nenv: dev\ninstances: 3\n")
+        file3.write_text("app: app1\nenv: prod\ninstances: 5\n")
+        file4.write_text("app: app2\nenv: prod\ninstances: 10\n")
+
+        @command()
+        @option("envs", multiple=True, nargs=2)
+        @to_path()
+        @load_yaml()
+        def cmd(envs: Any) -> None:
+            assert envs is not None
+            assert isinstance(envs, tuple)
+            assert len(envs) == 2
+            for env_group in envs:
+                env_name = env_group[0]["env"]
+                total_instances = sum(cfg["instances"] for cfg in env_group)
+                click.echo(f"{env_name}: {total_instances} instances")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--envs",
+                str(file1),
+                str(file2),
+                "--envs",
+                str(file3),
+                str(file4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "dev: 5 instances" in result.output
+        assert "prod: 15 instances" in result.output
+
+    def test_load_yaml_nested_tuple_multi_env_config(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_yaml nested tuple for multi-environment configs."""
+        db_dev = tmp_path / "db_dev.yaml"
+        cache_dev = tmp_path / "cache_dev.yaml"
+        db_prod = tmp_path / "db_prod.yaml"
+        cache_prod = tmp_path / "cache_prod.yaml"
+        db_dev.write_text("type: postgres\nhost: localhost\nport: 5432\n")
+        cache_dev.write_text("type: redis\nhost: localhost\nport: 6379\n")
+        db_prod.write_text("type: postgres\nhost: db.example.com\nport: 5432\n")
+        cache_prod.write_text(
+            "type: redis\nhost: cache.example.com\nport: 6379\n"
+        )
+
+        @command()
+        @option("configs", multiple=True, nargs=2)
+        @to_path()
+        @load_yaml()
+        def cmd(configs: Any) -> None:
+            assert configs is not None
+            for i, group in enumerate(configs):
+                env = "dev" if i == 0 else "prod"
+                types = [cfg["type"] for cfg in group]
+                click.echo(f"{env}: {', '.join(types)}")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--configs",
+                str(db_dev),
+                str(cache_dev),
+                "--configs",
+                str(db_prod),
+                str(cache_prod),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "dev: postgres, redis" in result.output
+        assert "prod: postgres, redis" in result.output

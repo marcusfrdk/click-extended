@@ -515,3 +515,146 @@ class TestLoadCsvPractical:
         assert "Total rows: 100" in result.output
         assert "First: User0" in result.output
         assert "Last: User99" in result.output
+
+
+class TestLoadCsvFlatTuple:
+    """Test load_csv with flat tuples."""
+
+    def test_load_csv_flat_tuple(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_csv with flat tuple of CSV files."""
+        file1 = tmp_path / "data1.csv"
+        file2 = tmp_path / "data2.csv"
+        file3 = tmp_path / "data3.csv"
+        file1.write_text("name,value\nA,10\nB,20\n")
+        file2.write_text("name,value\nC,30\nD,40\n")
+        file3.write_text("name,value\nE,50\nF,60\n")
+
+        @command()
+        @option("files", default=None, nargs=3)
+        @to_path()
+        @load_csv()
+        def cmd(files: Any) -> None:
+            assert files is not None
+            assert isinstance(files, tuple)
+            assert len(files) == 3
+            total = sum(
+                sum(int(row["value"]) for row in csv_data) for csv_data in files
+            )
+            click.echo(f"Total: {total}")
+
+        result = cli_runner.invoke(
+            cmd, ["--files", str(file1), str(file2), str(file3)]
+        )
+        assert result.exit_code == 0
+        assert "Total: 210" in result.output
+
+    def test_load_csv_flat_tuple_as_list(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_csv flat tuple with as_dict=False."""
+        file1 = tmp_path / "data1.csv"
+        file2 = tmp_path / "data2.csv"
+        file1.write_text("1,2,3\n4,5,6\n")
+        file2.write_text("7,8,9\n10,11,12\n")
+
+        @command()
+        @option("files", default=None, nargs=2)
+        @to_path()
+        @load_csv(as_dict=False, has_header=False)
+        def cmd(files: Any) -> None:
+            assert files is not None
+            total = sum(
+                sum(int(cell) for row in csv_data for cell in row)
+                for csv_data in files
+            )
+            click.echo(f"Total: {total}")
+
+        result = cli_runner.invoke(cmd, ["--files", str(file1), str(file2)])
+        assert result.exit_code == 0
+        assert "Total: 78" in result.output
+
+
+class TestLoadCsvNestedTuple:
+    """Test load_csv with nested tuples."""
+
+    def test_load_csv_nested_tuple(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_csv with nested tuple of CSV files."""
+        file1 = tmp_path / "quarter1_jan.csv"
+        file2 = tmp_path / "quarter1_feb.csv"
+        file3 = tmp_path / "quarter2_mar.csv"
+        file4 = tmp_path / "quarter2_apr.csv"
+        file1.write_text("month,revenue\nJan,1000\n")
+        file2.write_text("month,revenue\nFeb,1500\n")
+        file3.write_text("month,revenue\nMar,2000\n")
+        file4.write_text("month,revenue\nApr,2500\n")
+
+        @command()
+        @option("quarters", multiple=True, nargs=2)
+        @to_path()
+        @load_csv()
+        def cmd(quarters: Any) -> None:
+            assert quarters is not None
+            assert isinstance(quarters, tuple)
+            assert len(quarters) == 2
+            for i, quarter in enumerate(quarters, 1):
+                total = sum(int(csv_data[0]["revenue"]) for csv_data in quarter)
+                click.echo(f"Q{i}: ${total}")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--quarters",
+                str(file1),
+                str(file2),
+                "--quarters",
+                str(file3),
+                str(file4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Q1: $2500" in result.output
+        assert "Q2: $4500" in result.output
+
+    def test_load_csv_nested_tuple_data_aggregation(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_csv nested tuple for data aggregation."""
+        region1_store1 = tmp_path / "region1_store1.csv"
+        region1_store2 = tmp_path / "region1_store2.csv"
+        region2_store1 = tmp_path / "region2_store1.csv"
+        region2_store2 = tmp_path / "region2_store2.csv"
+        region1_store1.write_text("item,sales\nA,100\nB,150\n")
+        region1_store2.write_text("item,sales\nA,120\nB,180\n")
+        region2_store1.write_text("item,sales\nA,200\nB,250\n")
+        region2_store2.write_text("item,sales\nA,220\nB,280\n")
+
+        @command()
+        @option("regions", multiple=True, nargs=2)
+        @to_path()
+        @load_csv()
+        def cmd(regions: Any) -> None:
+            assert regions is not None
+            for i, region in enumerate(regions, 1):
+                total = sum(
+                    int(row["sales"]) for csv_data in region for row in csv_data
+                )
+                click.echo(f"Region {i}: {total} sales")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--regions",
+                str(region1_store1),
+                str(region1_store2),
+                "--regions",
+                str(region2_store1),
+                str(region2_store2),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Region 1: 550 sales" in result.output
+        assert "Region 2: 950 sales" in result.output

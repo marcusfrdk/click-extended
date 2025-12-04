@@ -189,7 +189,7 @@ def to_path(
 
     Type: `ChildNode`
 
-    Supports: `str`
+    Supports: `str`, `flat tuple`, `nested tuple`
 
     Args:
         exists (bool, optional):

@@ -483,3 +483,144 @@ class TestLoadJsonPractical:
         result = cli_runner.invoke(cmd, ["--file", str(json_file)])
         assert result.exit_code == 0
         assert "Status: ok" in result.output
+
+
+class TestLoadJsonFlatTuple:
+    """Test load_json with flat tuples."""
+
+    def test_load_json_flat_tuple(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_json with flat tuple of JSON files."""
+        file1 = tmp_path / "data1.json"
+        file2 = tmp_path / "data2.json"
+        file3 = tmp_path / "data3.json"
+        file1.write_text('{"id": 1, "value": 10}')
+        file2.write_text('{"id": 2, "value": 20}')
+        file3.write_text('{"id": 3, "value": 30}')
+
+        @command()
+        @option("files", default=None, nargs=3)
+        @to_path()
+        @load_json()
+        def cmd(files: Any) -> None:
+            assert files is not None
+            assert isinstance(files, tuple)
+            assert len(files) == 3
+            total = sum(f["value"] for f in files)
+            click.echo(f"Total: {total}")
+
+        result = cli_runner.invoke(
+            cmd, ["--files", str(file1), str(file2), str(file3)]
+        )
+        assert result.exit_code == 0
+        assert "Total: 60" in result.output
+
+    def test_load_json_flat_tuple_with_strict(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_json flat tuple with strict mode."""
+        file1 = tmp_path / "data1.json"
+        file2 = tmp_path / "data2.json"
+        file1.write_text('{"price": 19.99}')
+        file2.write_text('{"price": 29.99}')
+
+        @command()
+        @option("files", default=None, nargs=2)
+        @to_path()
+        @load_json(strict=True)
+        def cmd(files: Any) -> None:
+            assert files is not None
+            for f in files:
+                assert isinstance(f["price"], Decimal)
+            click.echo("Success")
+
+        result = cli_runner.invoke(cmd, ["--files", str(file1), str(file2)])
+        assert result.exit_code == 0
+        assert "Success" in result.output
+
+
+class TestLoadJsonNestedTuple:
+    """Test load_json with nested tuples."""
+
+    def test_load_json_nested_tuple(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_json with nested tuple of JSON files."""
+        file1 = tmp_path / "batch1_1.json"
+        file2 = tmp_path / "batch1_2.json"
+        file3 = tmp_path / "batch2_1.json"
+        file4 = tmp_path / "batch2_2.json"
+        file1.write_text('{"batch": 1, "value": 10}')
+        file2.write_text('{"batch": 1, "value": 20}')
+        file3.write_text('{"batch": 2, "value": 30}')
+        file4.write_text('{"batch": 2, "value": 40}')
+
+        @command()
+        @option("batches", multiple=True, nargs=2)
+        @to_path()
+        @load_json()
+        def cmd(batches: Any) -> None:
+            assert batches is not None
+            assert isinstance(batches, tuple)
+            assert len(batches) == 2
+            for i, batch in enumerate(batches, 1):
+                total = sum(f["value"] for f in batch)
+                click.echo(f"Batch {i}: {total}")
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--batches",
+                str(file1),
+                str(file2),
+                "--batches",
+                str(file3),
+                str(file4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Batch 1: 30" in result.output
+        assert "Batch 2: 70" in result.output
+
+    def test_load_json_nested_tuple_config_merge(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test load_json nested tuple for config merging."""
+        config1 = tmp_path / "config1.json"
+        config2 = tmp_path / "config2.json"
+        config3 = tmp_path / "config3.json"
+        config4 = tmp_path / "config4.json"
+        config1.write_text('{"env": "dev", "debug": true}')
+        config2.write_text('{"env": "dev", "port": 3000}')
+        config3.write_text('{"env": "prod", "debug": false}')
+        config4.write_text('{"env": "prod", "port": 8080}')
+
+        @command()
+        @option("configs", multiple=True, nargs=2)
+        @to_path()
+        @load_json()
+        def cmd(configs: Any) -> None:
+            assert configs is not None
+            for group in configs:
+                merged = {}
+                for cfg in group:
+                    merged.update(cfg)
+                click.echo(
+                    f"Env: {merged['env']}, Port: {merged.get('port', 'N/A')}"
+                )
+
+        result = cli_runner.invoke(
+            cmd,
+            [
+                "--configs",
+                str(config1),
+                str(config2),
+                "--configs",
+                str(config3),
+                str(config4),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Env: dev, Port: 3000" in result.output
+        assert "Env: prod, Port: 8080" in result.output
