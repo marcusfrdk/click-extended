@@ -8,7 +8,9 @@
 
 - **Check Utilities**: Added `is_argument`, `is_option`, and `is_tag` utility functions with type guards.
 - **Code Snippets**: Python code snippets.
-- **Dependencies**: Added `PyYAML` as a project dependency.
+- **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
+- **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.
 - **`@load_json`**: Child decorator to load a JSON file from a `pathlib.Path` object.
 - **`@to_path`**: Child decorator to validate and convert a string to a `pathlib.Path` object.
