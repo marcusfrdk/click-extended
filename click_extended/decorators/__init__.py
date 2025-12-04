@@ -9,6 +9,8 @@ from click_extended.decorators.default import default
 from click_extended.decorators.deprecated import deprecated
 from click_extended.decorators.exclusive import exclusive
 from click_extended.decorators.experimental import experimental
+from click_extended.decorators.greater_than import greater_than
+from click_extended.decorators.less_than import less_than
 from click_extended.decorators.load_csv import load_csv
 from click_extended.decorators.load_json import load_json
 from click_extended.decorators.load_toml import load_toml
@@ -52,10 +54,12 @@ __all__ = [
     "deprecated",
     "exclusive",
     "experimental",
+    "less_than",
     "load_csv",
     "load_json",
     "load_toml",
     "load_yaml",
+    "greater_than",
     "random_bool",
     "random_choice",
     "random_datetime",

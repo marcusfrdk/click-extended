@@ -4,15 +4,12 @@
 
 ## v1.0.0
 
-- `@to_timestamp(length)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`
 - `@requires(*name)`
 - `@conflicts(*names)`
 - `@in_range(min, max, inclusive=True)` (supports int, float, datetime)
-- `@more_than(value, inclusive)`
-- `@less_than(value, inclusive)`
 - `@min_length(n)`
 - `@max_length(n)`
 - `@not_empty(n)`
@@ -39,6 +36,3 @@
 - `@ipv4()`
 - `@ipv6()`
 - `@port()`
-- `@positive()`
-- `@negative()`
-- `@non_zero()`

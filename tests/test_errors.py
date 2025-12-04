@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 
 import click
 import pytest
+from click.testing import CliRunner
 
 from click_extended.errors import (
     ClickExtendedError,
@@ -92,7 +93,7 @@ class TestContextAwareError:
             assert error.context is not None
             assert error._node_name == "unknown"  # No click_extended meta
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         result = runner.invoke(dummy, [])
 
     def test_resolve_node_name_with_child(self) -> None:
@@ -108,7 +109,7 @@ class TestContextAwareError:
             error = ContextAwareError("Test error")
             assert error._node_name == "test_child"
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_resolve_node_name_with_parent(self) -> None:
@@ -124,7 +125,7 @@ class TestContextAwareError:
             error = ContextAwareError("Test error")
             assert error._node_name == "test_parent"
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_resolve_node_name_with_root(self) -> None:
@@ -140,7 +141,7 @@ class TestContextAwareError:
             error = ContextAwareError("Test error")
             assert error._node_name == "test_root"
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_show_without_context(self) -> None:
@@ -168,7 +169,7 @@ class TestContextAwareError:
             assert "ContextAwareError (unknown): Test error" in result
             assert "Tip: Try this" in result
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_show_with_help_option(self) -> None:
@@ -185,7 +186,7 @@ class TestContextAwareError:
             assert "Try" in result
             assert "--help" in result
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
 
@@ -212,7 +213,7 @@ class TestMissingValueError:
             error = MissingValueError()
             assert error.tip is not None and "--test-option" in error.tip
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_tip_for_argument_parent(self) -> None:
@@ -229,7 +230,7 @@ class TestMissingValueError:
             error = MissingValueError()
             assert error.tip is not None and "test_arg argument" in error.tip
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_tip_for_env_parent(self) -> None:
@@ -247,7 +248,7 @@ class TestMissingValueError:
             error = MissingValueError()
             assert error.tip is not None and "TEST_ENV" in error.tip
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_tip_for_env_parent_without_env_name(self) -> None:
@@ -267,7 +268,7 @@ class TestMissingValueError:
                 error.tip is not None and "TEST_ENV" in error.tip
             )  # Uses name.upper()
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
     def test_tip_for_unknown_parent(self) -> None:
@@ -284,7 +285,7 @@ class TestMissingValueError:
             error = MissingValueError()
             assert error.tip is not None and "Provide a value" in error.tip
 
-        runner = click.testing.CliRunner()
+        runner = CliRunner()
         runner.invoke(dummy, [])
 
 
