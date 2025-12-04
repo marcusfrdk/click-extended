@@ -785,7 +785,7 @@ class TestParentNodeWithChildren:
         from click_extended.core.option import option
 
         class Uppercase(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -808,11 +808,11 @@ class TestParentNodeWithChildren:
         from click_extended.core.option import option
 
         class AddPrefix(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return f"PREFIX-{value}"
 
         class AddSuffix(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return f"{value}-SUFFIX"
 
         @command()

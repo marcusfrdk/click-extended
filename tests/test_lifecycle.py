@@ -123,11 +123,11 @@ class TestPhase4Runtime:
         scopes: list[str] = []
 
         class TrackingChild(SimpleChild):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 ctx = click.get_current_context()
                 scope = ctx.meta["click_extended"]["current_scope"]
                 scopes.append(scope)
-                return super().handle_string(value, context)
+                return super().handle_str(value, context)
 
         @command()
         @option("--name", type=str, default="test")

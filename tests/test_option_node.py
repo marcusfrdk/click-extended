@@ -1007,7 +1007,7 @@ class TestOptionNodeWithChildren:
         from click_extended.core.option import option
 
         class Uppercase(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()
@@ -1032,13 +1032,13 @@ class TestOptionNodeWithChildren:
         from click_extended.core.option import option
 
         class Strip(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.strip()
 
         class Uppercase(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()
@@ -1150,13 +1150,13 @@ class TestOptionNodeWithChildren:
         from click_extended.core.option import option
 
         class AddPrefix(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return f"[{value}]"
 
         class AddSuffix(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return f"{value}!"
@@ -1183,7 +1183,7 @@ class TestOptionNodeWithChildren:
         from click_extended.core.option import option
 
         class ContextAware(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 # Children should receive context
@@ -1209,7 +1209,7 @@ class TestOptionNodeWithChildren:
         from click_extended.core.option import option
 
         class Uppercase(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()
@@ -1234,7 +1234,7 @@ class TestOptionNodeWithChildren:
         from click_extended.core.option import option
 
         class Uppercase(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
                 return value.upper()

@@ -102,7 +102,7 @@ class ChildNode(Node, ABC):
         """
         raise NotImplementedError
 
-    def handle_string(
+    def handle_str(
         self, value: str, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
         """

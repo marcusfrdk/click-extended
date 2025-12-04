@@ -154,7 +154,7 @@ class TestValidateHandlerType:
 
     def test_handle_string_int_to_string_suggestion(self) -> None:
         """Test suggestion when int is provided but str expected."""
-        is_valid, msg = _validate_handler_type("handle_string", 123, str)
+        is_valid, msg = _validate_handler_type("handle_str", 123, str)
         assert not is_valid
         assert "type=str" in msg
 
@@ -254,7 +254,7 @@ class TestIsHandlerImplemented:
     def test_not_implemented_returns_false(self) -> None:
         """Test that base ChildNode handlers return False."""
         child = MockChildNode()
-        assert not _is_handler_implemented(child, "handle_string")
+        assert not _is_handler_implemented(child, "handle_str")
 
     def test_implemented_handler_returns_true(self) -> None:
         """Test that implemented handler returns True."""
@@ -335,7 +335,7 @@ class TestShouldCallHandler:
                 return value * 2
 
         child = CustomChild()
-        assert not _should_call_handler(child, "handle_string", None)
+        assert not _should_call_handler(child, "handle_str", None)
 
 
 class TestDetermineHandler:
@@ -474,10 +474,10 @@ class TestDetermineHandler:
         assert handler == "handle_dict"
 
     def test_string_returns_handle_string(self) -> None:
-        """Test that strings return handle_string."""
+        """Test that strings return handle_str."""
 
         class CustomChild(MockChildNode):
-            def handle_string(self, value: str, context: Any) -> str:
+            def handle_str(self, value: str, context: Any) -> str:
                 return value
 
         child = CustomChild()
@@ -485,7 +485,7 @@ class TestDetermineHandler:
         context.is_tag.return_value = False
 
         handler = _determine_handler(child, "hello", context)
-        assert handler == "handle_string"
+        assert handler == "handle_str"
 
     def test_flat_tuple_returns_handle_flat_tuple(self) -> None:
         """Test that flat tuple returns handle_flat_tuple."""

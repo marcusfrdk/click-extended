@@ -726,7 +726,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class MinLength(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 if len(value) < 3:
                     raise ValueError("Must be at least 3 characters")
                 return value
@@ -758,7 +758,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class Uppercase(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -783,11 +783,11 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class StripWhitespace(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.strip()
 
         class Uppercase(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -834,7 +834,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class AsyncUpper(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -859,7 +859,7 @@ class TestArgumentNodeWithChildren:
         from click_extended.core.context import Context
 
         class AddPrefix(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return f"prefix_{value}"
 
         @command()

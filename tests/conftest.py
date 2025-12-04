@@ -19,7 +19,7 @@ def cli_runner() -> CliRunner:
 class SimpleChild(ChildNode):
     """Reusable child node that uppercases strings."""
 
-    def handle_string(self, value: str, context: Context) -> str:
+    def handle_str(self, value: str, context: Context) -> str:
         """Uppercase the input value."""
         return value.upper()
 

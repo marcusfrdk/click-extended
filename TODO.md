@@ -4,6 +4,18 @@
 
 ## v1.0.0
 
+- `@to_set()`
+- `@to_list()`
+- `@to_tuple()`
+- `@to_timestamp(length)`
+- `@to_datetime(formats)`
+- `@to_date(formats)`
+- `@to_time(formats)`
+- `@to_path(exists, parents, extensions, include_pattern, exclude_pattern, allow_file, allow_directory, allow_empty_file, allow_empty_directory, allow_symlink, follow_symlink, is_readable, is_writable, is_executable)`
+- `@load_json(encoding, strict)`
+- `@load_yaml(encoding, loader=safe|full|unsafe)` (requires PyYAML)
+- `@load_toml(encoding)`
+- `@load_csv(dialect, delimiter, had_header, as_dict, encoding, skip_empty)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`
@@ -21,18 +33,6 @@
 - `@ends_with(*text)`
 - `@divisible_by(n)`
 - `@choice(*values)`
-- `@to_set()`
-- `@to_list()`
-- `@to_tuple()`
-- `@load_json(encoding, strict)`
-- `@load_yaml(encoding, loader=safe|full|unsafe)` (requires PyYAML)
-- `@load_toml(encoding)`
-- `@load_csv(dialect, delimiter, had_header, as_dict, encoding, skip_empty)`
-- `@to_timestamp(length)`
-- `@to_datetime(formats)`
-- `@to_date(formats)`
-- `@to_time(formats)`
-- `@to_path(exists, parents, extensions, include_pattern, exclude_pattern, allow_file, allow_directory, allow_empty_file, allow_empty_directory, allow_symlink, follow_symlink, is_readable, is_writable, is_executable)`
 - `@strip(chars)`
 - `@split(sep, maxsplit)`
 - `@join(sep)`

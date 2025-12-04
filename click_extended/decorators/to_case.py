@@ -11,7 +11,7 @@ from click_extended.utils.casing import Casing
 class ToCase(ChildNode):
     """Child node to convert a string to one of many formats."""
 
-    def handle_string(
+    def handle_str(
         self,
         value: str,
         context: Context,

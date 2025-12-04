@@ -63,7 +63,7 @@ SIMPLE_TYPES = (
 )
 
 TYPE_SPECIFIC_HANDLERS = [
-    "handle_string",
+    "handle_str",
     "handle_int",
     "handle_float",
     "handle_bool",
@@ -233,14 +233,14 @@ def _validate_handler_type(
             )
 
     if handler_name in (
-        "handle_string",
+        "handle_str",
         "handle_int",
         "handle_float",
         "handle_bool",
         "handle_numeric",
     ):
         expected_type_map: dict[str, type | tuple[type, ...]] = {
-            "handle_string": str,
+            "handle_str": str,
             "handle_int": int,
             "handle_float": float,
             "handle_bool": bool,
@@ -678,8 +678,8 @@ def _determine_handler(
         if _is_handler_implemented(child, "handle_dict"):
             return "handle_dict"
     elif isinstance(value, str):
-        if _is_handler_implemented(child, "handle_string"):
-            return "handle_string"
+        if _is_handler_implemented(child, "handle_str"):
+            return "handle_str"
     elif isinstance(
         value, bool
     ):  # Must check bool before int since bool is subclass of int

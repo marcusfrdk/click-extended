@@ -21,7 +21,7 @@ class ConcreteParentNode(ParentNode):
 class ConcreteChildNode(ChildNode):
     """Concrete implementation of ChildNode for testing."""
 
-    def handle_string(self, value: str, context: Context) -> str:
+    def handle_str(self, value: str, context: Context) -> str:
         """Simple handler that uppercases strings."""
         return value.upper()
 
@@ -29,7 +29,7 @@ class ConcreteChildNode(ChildNode):
 class ChildWithHandleTag(ChildNode):
     """Child node with handle_tag implemented."""
 
-    def handle_string(self, value: str, context: Context) -> str:
+    def handle_str(self, value: str, context: Context) -> str:
         """Simple handler."""
         return value
 
@@ -1372,7 +1372,7 @@ class TestTreeIntegration:
         from click_extended.core.option import option
 
         class Uppercase(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -1396,7 +1396,7 @@ class TestTreeIntegration:
         from click_extended.core.tag import tag
 
         class Validate(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.strip()
 
             def handle_tag(self, value: Any, context: Context) -> None:
@@ -1498,7 +1498,7 @@ class TestTreeIntegration:
         execution_log: list[str] = []
 
         class Logger(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 execution_log.append("child_processing")
                 return value.upper()
 

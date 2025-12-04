@@ -19,10 +19,10 @@ class TestSyncHandlerDispatch:
     """Test that sync handlers are correctly dispatched based on value type."""
 
     def test_handle_string_with_string(self, cli_runner: CliRunner) -> None:
-        """Test handle_string receives and processes string values."""
+        """Test handle_str receives and processes string values."""
 
         class StringHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -112,10 +112,10 @@ class TestSyncHandlerDispatch:
     def test_handle_string_then_dict_parsing(
         self, cli_runner: CliRunner
     ) -> None:
-        """Test handle_string on JSON string - dict parsing happens in command function."""
+        """Test handle_str on JSON string - dict parsing happens in command function."""
 
         class JSONValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 # Validate it's valid JSON
                 try:
                     json.loads(value)
@@ -142,10 +142,10 @@ class TestSyncHandlerDispatch:
     def test_handle_string_with_path_string(
         self, cli_runner: CliRunner
     ) -> None:
-        """Test handle_string on path string - Path objects are 'flat' types."""
+        """Test handle_str on path string - Path objects are 'flat' types."""
 
         class PathValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 # Validate path exists
                 from pathlib import Path
 
@@ -167,10 +167,10 @@ class TestSyncHandlerDispatch:
     def test_handle_string_with_date_string(
         self, cli_runner: CliRunner
     ) -> None:
-        """Test handle_string on date string - datetime objects are 'flat' types."""
+        """Test handle_str on date string - datetime objects are 'flat' types."""
 
         class DateParser(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 # Parse and validate date format
                 try:
                     date_obj = datetime.strptime(value, "%Y-%m-%d")
@@ -213,7 +213,7 @@ class TestSyncHandlerDispatch:
         class StringParser(ChildNode):
             """First handler: parse string to tuple."""
 
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context
             ) -> tuple[tuple[int, ...], ...]:
                 return cast(tuple[tuple[int, ...], ...], eval(value))
@@ -243,7 +243,7 @@ class TestSyncHandlerDispatch:
         class StringParser(ChildNode):
             """First handler: parse string to tuple."""
 
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context
             ) -> tuple[Any, ...]:
                 return cast(tuple[Any, ...], eval(value))
@@ -294,7 +294,7 @@ class TestSyncHandlerDispatch:
         """Test None passes through when handle_none not implemented."""
 
         class NoNoneHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -369,7 +369,7 @@ class TestSyncTypeValidation:
         """Handler with value: str | int accepts both."""
 
         class UnionHandler(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str | int, context: Context
             ) -> str | int:
                 if isinstance(value, str):
@@ -390,7 +390,7 @@ class TestSyncTypeValidation:
         """Handler with value: str | tuple[str, ...] handles both."""
 
         class FlexibleHandler(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str | tuple[str, ...], context: Context
             ) -> str:
                 if isinstance(value, tuple):
@@ -411,7 +411,7 @@ class TestSyncTypeValidation:
         """Handler with value: str | None handles None."""
 
         class OptionalHandler(ChildNode):
-            def handle_string(self, value: str | None, context: Context) -> str:
+            def handle_str(self, value: str | None, context: Context) -> str:
                 return value.upper() if value else "EMPTY"
 
         @command()
@@ -453,13 +453,13 @@ class TestSyncHandlerPriority:
     def test_specific_handler_priority_over_handle_all(
         self, cli_runner: CliRunner
     ) -> None:
-        """Specific handlers like handle_string are called before handle_all fallback."""
+        """Specific handlers like handle_str are called before handle_all fallback."""
 
         class SpecificPriorityHandler(ChildNode):
             def handle_all(self, value: Any, context: Context) -> str:
                 return "FROM_ALL"
 
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return "FROM_PRIMITIVE"
 
         @command()
@@ -473,10 +473,10 @@ class TestSyncHandlerPriority:
         assert "Value: FROM_PRIMITIVE" in result.output
 
     def test_specific_handler_priority(self, cli_runner: CliRunner) -> None:
-        """handle_string chosen over handle_complex for strings."""
+        """handle_str chosen over handle_complex for strings."""
 
         class SpecificHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return "FROM_PRIMITIVE"
 
             def handle_all(self, value: Any, context: Context) -> str:
@@ -519,7 +519,7 @@ class TestSyncErrorHandling:
         """Error messages include parent/child context."""
 
         class ContextErrorHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 raise ValueError("Custom error message")
 
         @command()
@@ -537,10 +537,10 @@ class TestAsyncHandlerDispatch:
     """Test that async handlers are correctly dispatched based on value type."""
 
     def test_async_handle_string_string(self, cli_runner: CliRunner) -> None:
-        """Test async handle_string receives and processes string values."""
+        """Test async handle_str receives and processes string values."""
 
         class AsyncStringHandler(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)  # Simulate async work
                 return value.upper()
 
@@ -637,10 +637,10 @@ class TestAsyncHandlerDispatch:
     def test_async_handle_string_json_string(
         self, cli_runner: CliRunner
     ) -> None:
-        """Test async handle_string on JSON string."""
+        """Test async handle_str on JSON string."""
 
         class AsyncJSONValidator(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 # Validate JSON
                 try:
@@ -668,10 +668,10 @@ class TestAsyncHandlerDispatch:
     def test_async_handle_string_path_string(
         self, cli_runner: CliRunner
     ) -> None:
-        """Test async handle_string on path string."""
+        """Test async handle_str on path string."""
 
         class AsyncPathValidator(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 from pathlib import Path
 
@@ -693,10 +693,10 @@ class TestAsyncHandlerDispatch:
     def test_async_handle_string_date_string(
         self, cli_runner: CliRunner
     ) -> None:
-        """Test async handle_string on date string."""
+        """Test async handle_str on date string."""
 
         class AsyncDateParser(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 try:
                     date_obj = datetime.strptime(value, "%Y-%m-%d")
@@ -740,7 +740,7 @@ class TestAsyncHandlerDispatch:
         class AsyncStringParser(ChildNode):
             """First handler: parse string to nested tuple."""
 
-            async def handle_string(
+            async def handle_str(
                 self, value: str, context: Context
             ) -> tuple[tuple[int, ...], ...]:
                 await asyncio.sleep(0.001)
@@ -774,7 +774,7 @@ class TestAsyncHandlerDispatch:
         class AsyncStringParser(ChildNode):
             """First handler: parse string to tuple."""
 
-            async def handle_string(
+            async def handle_str(
                 self, value: str, context: Context
             ) -> tuple[Any, ...]:
                 await asyncio.sleep(0.001)
@@ -900,7 +900,7 @@ class TestAsyncTypeValidation:
         """Async handler with union types."""
 
         class AsyncUnionHandler(ChildNode):
-            async def handle_string(
+            async def handle_str(
                 self, value: str | int, context: Context
             ) -> str:
                 await asyncio.sleep(0.001)
@@ -922,7 +922,7 @@ class TestAsyncTypeValidation:
         """Async handler with optional types."""
 
         class AsyncOptionalHandler(ChildNode):
-            async def handle_string(
+            async def handle_str(
                 self, value: str | None, context: Context
             ) -> str:
                 await asyncio.sleep(0.001)
@@ -945,10 +945,10 @@ class TestAsyncHandlerPriority:
     def test_async_handle_string_called_before_complex(
         self, cli_runner: CliRunner
     ) -> None:
-        """Async handle_string called before handle_complex for primitives."""
+        """Async handle_str called before handle_complex for primitives."""
 
         class AsyncPriorityHandler(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 return "FROM_PRIMITIVE"
 
@@ -969,14 +969,14 @@ class TestAsyncHandlerPriority:
     def test_async_specific_handler_priority_over_handle_all(
         self, cli_runner: CliRunner
     ) -> None:
-        """Async specific handlers like handle_string are called before handle_all fallback."""
+        """Async specific handlers like handle_str are called before handle_all fallback."""
 
         class AsyncSpecificPriorityHandler(ChildNode):
             async def handle_all(self, value: Any, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 return "FROM_ALL"
 
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 return "FROM_PRIMITIVE"
 
@@ -1046,7 +1046,7 @@ class TestAsyncErrorHandling:
         """Async handler with transformation error."""
 
         class AsyncTransformHandler(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> int:
+            async def handle_str(self, value: str, context: Context) -> int:
                 await asyncio.sleep(0.001)
                 try:
                     return int(value)
@@ -1069,7 +1069,7 @@ class TestAsyncErrorHandling:
         """Async handler raises ValueError."""
 
         class AsyncErrorHandler(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 if "error" in value.lower():
                     raise ValueError("Value contains 'error'")
@@ -1122,14 +1122,14 @@ class TestMixedSyncAsync:
         """Async validation → sync transformation."""
 
         class AsyncValidator(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 if len(value) < 3:
                     raise ValueError("Too short")
                 return value
 
         class SyncTransformer(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -1309,7 +1309,7 @@ class TestParentNodeIntegration:
         """Child node processes @option value."""
 
         class UppercaseHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -1345,7 +1345,7 @@ class TestParentNodeIntegration:
         from click_extended.core.env import env
 
         class PrefixHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return f"PREFIX_{value}"
 
         @command()
@@ -1516,7 +1516,7 @@ class TestParentNodeIntegration:
         from click_extended.core.env import env
 
         class AsyncEnvHandler(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 return f"TRANSFORMED_{value}"
 
@@ -1701,7 +1701,7 @@ class TestRealWorldValidators:
         import re
 
         class EmailValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                 if not re.match(pattern, value):
                     raise ValueError(f"Invalid email format: {value}")
@@ -1735,7 +1735,7 @@ class TestRealWorldValidators:
         import re
 
         class AsyncEmailValidator(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                 if not re.match(pattern, value):
@@ -1759,7 +1759,7 @@ class TestRealWorldValidators:
         from urllib.parse import urlparse
 
         class URLValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 try:
                     result = urlparse(value)
                     if not all([result.scheme, result.netloc]):
@@ -1795,7 +1795,7 @@ class TestRealWorldValidators:
         import re
 
         class PhoneValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 cleaned = re.sub(r"[-.\s()]", "", value)
                 if not re.match(r"^\+?1?\d{10}$", cleaned):
                     raise ValueError(f"Invalid phone number: {value}")
@@ -1895,7 +1895,7 @@ class TestRealWorldValidators:
         import tempfile
 
         class FileExistsValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 if not os.path.exists(value):
                     raise ValueError(f"File not found: {value}")
                 return value
@@ -1928,7 +1928,7 @@ class TestRealWorldValidators:
         import tempfile
 
         class AsyncFileExistsValidator(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 if not os.path.exists(value):
                     raise ValueError(f"File not found: {value}")
@@ -1955,7 +1955,7 @@ class TestRealWorldValidators:
         import tempfile
 
         class DirExistsValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 if not os.path.isdir(value):
                     raise ValueError(f"Directory not found: {value}")
                 return value
@@ -1979,7 +1979,7 @@ class TestRealWorldValidators:
         """File has correct extension validation using handler kwargs."""
 
         class ExtensionValidator(ChildNode):
-            def handle_string(
+            def handle_str(
                 self,
                 value: str,
                 context: Context,
@@ -2021,7 +2021,7 @@ class TestRealWorldTransformers:
         """Parse JSON string to dict (sync)."""
 
         class JSONParser(ChildNode):
-            def handle_string(
+            def handle_str(
                 self, value: str, context: Context
             ) -> dict[str, Any]:
                 try:
@@ -2050,7 +2050,7 @@ class TestRealWorldTransformers:
         """Parse JSON string to dict (async)."""
 
         class AsyncJSONParser(ChildNode):
-            async def handle_string(
+            async def handle_str(
                 self, value: str, context: Context
             ) -> dict[str, Any]:
                 await asyncio.sleep(0.001)
@@ -2072,7 +2072,7 @@ class TestRealWorldTransformers:
         """Parse CSV string to list."""
 
         class CSVParser(ChildNode):
-            def handle_string(self, value: str, context: Context) -> list[str]:
+            def handle_str(self, value: str, context: Context) -> list[str]:
                 return [item.strip() for item in value.split(",")]
 
         @command()
@@ -2089,7 +2089,7 @@ class TestRealWorldTransformers:
         """String to uppercase transformation."""
 
         class UppercaseTransformer(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.upper()
 
         @command()
@@ -2106,7 +2106,7 @@ class TestRealWorldTransformers:
         """String to lowercase transformation."""
 
         class LowercaseTransformer(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.lower()
 
         @command()
@@ -2123,7 +2123,7 @@ class TestRealWorldTransformers:
         """Remove leading/trailing spaces transformation."""
 
         class StripTransformer(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 return value.strip()
 
         @command()
@@ -2141,7 +2141,7 @@ class TestRealWorldTransformers:
         import re
 
         class SlugTransformer(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 value = value.lower().strip()
                 value = re.sub(r"[^\w\s-]", "", value)
                 value = re.sub(r"[-\s]+", "-", value)
@@ -2163,7 +2163,7 @@ class TestRealWorldTransformers:
         """Parse date string to datetime (sync)."""
 
         class DateParser(ChildNode):
-            def handle_string(self, value: str, context: Context) -> datetime:
+            def handle_str(self, value: str, context: Context) -> datetime:
                 try:
                     return datetime.strptime(value, "%Y-%m-%d")
                 except ValueError as e:
@@ -2183,7 +2183,7 @@ class TestRealWorldTransformers:
         """Parse date string to datetime (async)."""
 
         class AsyncDateParser(ChildNode):
-            async def handle_string(
+            async def handle_str(
                 self, value: str, context: Context
             ) -> datetime:
                 await asyncio.sleep(0.001)
@@ -2207,7 +2207,7 @@ class TestRealWorldTransformers:
         import re
 
         class CurrencyParser(ChildNode):
-            def handle_string(self, value: str, context: Context) -> float:
+            def handle_str(self, value: str, context: Context) -> float:
                 # Remove currency symbol and commas
                 cleaned = re.sub(r"[$,]", "", value)
                 try:
@@ -2236,14 +2236,14 @@ class TestRealWorldChained:
         import re
 
         class EmailValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                 if not re.match(pattern, value):
                     raise ValueError(f"Invalid email: {value}")
                 return value
 
         class AsyncLowercase(ChildNode):
-            async def handle_string(self, value: str, context: Context) -> str:
+            async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 return value.lower()
 
@@ -2265,14 +2265,14 @@ class TestRealWorldChained:
         from urllib.parse import urlparse, urlunparse
 
         class URLValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 result = urlparse(value)
                 if not all([result.scheme, result.netloc]):
                     raise ValueError(f"Invalid URL: {value}")
                 return value
 
         class URLNormalizer(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 parsed = urlparse(value)
                 # Remove trailing slash
                 path = parsed.path.rstrip("/")
@@ -2334,7 +2334,7 @@ class TestRealWorldChained:
         import re
 
         class PasswordValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 errors: list[str] = []
 
                 if len(value) < 8:
@@ -2378,7 +2378,7 @@ class TestRealWorldChained:
         import ipaddress
 
         class IPValidator(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 try:
                     ipaddress.ip_address(value)
                     return value
@@ -2413,7 +2413,7 @@ class TestEdgeCases:
         """Empty string '' passes through correctly."""
 
         class EmptyHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 if value == "":
                     return "EMPTY"
                 return value.upper()
@@ -2476,7 +2476,7 @@ class TestEdgeCases:
             def handle_none(self, context: Context) -> str:
                 return "GOT_NONE"
 
-            def handle_string(self, value: str | None, context: Context) -> str:
+            def handle_str(self, value: str | None, context: Context) -> str:
                 return value.upper() if value else "DEFAULT"
 
         @command()
@@ -2498,7 +2498,7 @@ class TestEdgeCases:
         processed: list[str] = []
 
         class TrackingHandler(ChildNode):
-            def handle_string(self, value: str, context: Context) -> str:
+            def handle_str(self, value: str, context: Context) -> str:
                 # Track that processing occurred
                 processed.append(value)
                 return value.upper()
