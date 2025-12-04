@@ -10,6 +10,7 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@load_csv`**: Child decorator to load a CSV file from a `pathlib.Path` object.
 - **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.
 - **`@load_json`**: Child decorator to load a JSON file from a `pathlib.Path` object.

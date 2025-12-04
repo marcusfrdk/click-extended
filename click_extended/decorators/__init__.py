@@ -7,6 +7,7 @@ from click_extended.decorators.default import default
 from click_extended.decorators.deprecated import deprecated
 from click_extended.decorators.exclusive import exclusive
 from click_extended.decorators.experimental import experimental
+from click_extended.decorators.load_csv import load_csv
 from click_extended.decorators.load_json import load_json
 from click_extended.decorators.load_toml import load_toml
 from click_extended.decorators.load_yaml import load_yaml
@@ -43,6 +44,7 @@ __all__ = [
     "deprecated",
     "exclusive",
     "experimental",
+    "load_csv",
     "load_json",
     "load_toml",
     "load_yaml",

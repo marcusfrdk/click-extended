@@ -132,6 +132,24 @@ if __name__ == "__main__":
 # The API key is: api-key
 ```
 
+### Load CSV Data
+
+```python
+import pandas as pd
+from click_extended import command, argument
+from click_extended.decorators import to_path, load_csv
+
+@command()
+@argument("file", param="data")
+@to_path(extensions=["csv"])
+@load_csv()
+def my_command(data: dict[str, Any], *args: Any, **kwargs: Any) -> None:
+    df = pd.DataFrame(data)
+    print(df.head())
+```
+
+_Note: `pandas` is not installed in this library and must be installed manually due to size._
+
 ### Custom Children
 
 ```python
