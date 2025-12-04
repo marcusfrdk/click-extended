@@ -8,9 +8,9 @@
 - `@to_list()`
 - `@to_tuple()`
 - `@to_timestamp(length)`
-- `@to_datetime(formats)`
-- `@to_date(formats)`
-- `@to_time(formats)`
+- `@to_datetime(*formats)`
+- `@to_date(*formats)`
+- `@to_time(*formats)`
 - `@load_csv(dialect, delimiter, had_header, as_dict, encoding, skip_empty)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
