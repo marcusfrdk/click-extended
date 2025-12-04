@@ -18,7 +18,30 @@ class ToCase(ChildNode):
         *args: Any,
         **kwargs: Any,
     ) -> str:
-        return cast(str, getattr(Casing, kwargs["method"])(value))
+        return cast(str, getattr(Casing, kwargs["method"])(str(value)))
+
+    def handle_flat_tuple(
+        self,
+        value: tuple[Any, ...],
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        return tuple(
+            self.handle_str(v, context, *args, **kwargs) for v in value
+        )
+
+    def handle_nested_tuple(
+        self,
+        value: tuple[Any, ...],
+        context: Context,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        return tuple(
+            tuple(self.handle_str(v, context, *args, **kwargs) for v in t)
+            for t in value
+        )
 
 
 def to_lower_case() -> Decorator:
@@ -27,7 +50,7 @@ def to_lower_case() -> Decorator:
 
     Type: `ChildNode`
 
-    Supports: `str`
+    Supports: `str`, `flat tuple`, `nested tuple`
 
     Returns:
         Decorator:
