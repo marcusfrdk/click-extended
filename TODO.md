@@ -16,22 +16,18 @@
 - `@max_length(n)`
 - `@not_empty(n)`
 - `@flatten()`
-- `@must_contain(*text)`
-- `@cannot_contain(*text)`
-- `@must_start_with(*text)`
-- `@cannot_start_with(*text)`
-- `@must_end_with(*text)`
-- `@cannot_end_with(*text)`
+- `@contains(*text, all_of, none_of)`
+- `@starts_with(*text)`
+- `@ends_with(*text)`
 - `@divisible_by(n)`
-- `@gcd(n)`
-- `@lcd(n)`
 - `@choice(*values)`
 - `@to_set()`
 - `@to_list()`
 - `@to_tuple()`
-- `@load_json()`
-- `@load_yaml()`
-- `@load_toml()`
+- `@load_json(encoding, strict)`
+- `@load_yaml(encoding, loader=safe|full|unsafe)` (requires PyYAML)
+- `@load_toml(encoding)`
+- `@load_csv(dialect, delimiter, had_header, as_dict, encoding, skip_empty)`
 - `@to_timestamp(length)`
 - `@to_datetime(formats)`
 - `@to_date(formats)`
@@ -45,7 +41,7 @@
 - `@add_timezone(tz)`
 - `@add_prefix(text)`
 - `@add_suffix(text)`
-- `@add_schema(protocol)` (Add schema if missing, e.g. google.com -> https://google.com)
+- `@add_protocol(protocol)` (Add protocol if missing, e.g. google.com -> https://google.com)
 - `@normalize(min, max)`
 - `@standardize()`
 - `@clamp(min, max)`
