@@ -11,6 +11,7 @@ from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 from click_extended.core.context import Context
 from click_extended.core.option_node import OptionNode
 from click_extended.utils.casing import Casing
+from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import (
     is_long_flag,
     is_short_flag,
@@ -19,6 +20,8 @@ from click_extended.utils.naming import (
 
 P = ParamSpec("P")
 T = TypeVar("T")
+
+SUPPORTED_TYPES = (str, int, float, bool)
 
 
 class Option(OptionNode):
@@ -82,12 +85,10 @@ class Option(OptionNode):
             **kwargs (Any):
                 Additional Click option parameters.
         """
-        # When @option("--my-option")
         if is_long_flag(name):
             derived_name = name[2:]
             long_flag = name if long is None else long
 
-        # When @option("my_option") or @option("my-option")
         else:
             validate_name(name, "option name")
             derived_name = name
@@ -125,10 +126,24 @@ class Option(OptionNode):
             default = False
 
         if type is None:
-            if default is not None:
+            if is_flag:
+                type = bool
+            elif default is not None:
                 type = cast(Type[Any], builtins_type(default))  # type: ignore
             else:
                 type = str
+
+        if type not in SUPPORTED_TYPES:
+            types = humanize_type(
+                type.__name__ if hasattr(type, "__name__") else type
+            )
+
+            raise ValueError(
+                f"Option '{derived_name}' has unsupported type '{types}'. "
+                "Only basic primitives are supported: str, int, float, bool. "
+                "For complex types, use child decorators (e.g., @to_path, "
+                "@to_datetime, ...)."
+            )
 
         super().__init__(
             name=derived_name,
@@ -179,7 +194,7 @@ def option(
     long: str | None = None,
     param: str | None = None,
     is_flag: bool = False,
-    type: Any = None,
+    type: Type[str | int | float | bool] | None = None,
     nargs: int = 1,
     multiple: bool = False,
     help: str | None = None,
@@ -206,8 +221,8 @@ def option(
         is_flag (bool):
             Whether this is a boolean flag (no value needed).
             Defaults to `False`.
-        type (Any, optional):
-            The type to convert the value to (int, str, float, etc.).
+        type (Type[str | int | float | bool] | None, optional):
+            The type to convert the value to.
         nargs (int):
             Number of arguments each occurrence accepts. Defaults to `1`.
         multiple (bool):
