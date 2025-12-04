@@ -52,9 +52,11 @@
 ### Updated
 
 - **Granular Handlers**: Replaced `handle_primitive` with more granular `handle_string`, `handle_int`, and more.
+- **Makefile**: Added `*-all` commands to run function on all supported versions if installed.
 
 ### Fixed
 
+- **Version issues**: Fixed versioning issues between the supported versions.
 - **Name and Tag Naming Conflict**: Added validation so nodes cannot have a tag of the same name as the node itself.
 - **Typing Issue**: Fixed typing issues for `Group.command()` and `Group.group()` methods.
 - **Existing Parents**: Fixed issue where duplicate parents were allowed.
