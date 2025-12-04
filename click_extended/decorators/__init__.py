@@ -40,6 +40,7 @@ from click_extended.decorators.to_date import to_date
 from click_extended.decorators.to_datetime import to_datetime
 from click_extended.decorators.to_path import to_path
 from click_extended.decorators.to_time import to_time
+from click_extended.decorators.to_timestamp import to_timestamp
 
 __all__ = [
     "add_prefix",
@@ -80,4 +81,5 @@ __all__ = [
     "to_datetime",
     "to_path",
     "to_time",
+    "to_timestamp",
 ]

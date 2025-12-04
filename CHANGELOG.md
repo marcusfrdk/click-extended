@@ -10,6 +10,7 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@to_timestamp`**: Child decorator to convert a `date`, `time`, or `datetime` object to a unix timestamp.
 - **`@add_prefix`**: Child decorator to add a prefix to a string.
 - **`@add_suffix`**: Child decorator to add a suffix to a string.
 - **`@to_date`**: Child decorator to convert a string from various formats to a `date` object.

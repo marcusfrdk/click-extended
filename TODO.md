@@ -4,9 +4,6 @@
 
 ## v1.0.0
 
-- `@to_set()`
-- `@to_list()`
-- `@to_tuple()`
 - `@to_timestamp(length)`
 - `@expand_vars()`
 - `@confirm(prompt, truthy)`
