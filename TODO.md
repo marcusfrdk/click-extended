@@ -14,10 +14,6 @@
 - `@confirm(prompt, truthy)`
 - `@confirm_if(prompt, fn)`
 
-### Select
-
-- `@choice(*values)`
-
 ### Checks
 
 - `@requires(*name)`
