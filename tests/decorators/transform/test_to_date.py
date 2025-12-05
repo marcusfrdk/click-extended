@@ -3,7 +3,6 @@
 from datetime import date as date_type
 from typing import Any
 
-import pytest
 from click.testing import CliRunner
 
 from click_extended import command, option
@@ -107,8 +106,8 @@ class TestToDateTuples:
         @to_date()
         def cmd(dates: Any) -> None:
             assert isinstance(dates, tuple)
-            assert len(dates) == 2
-            assert all(isinstance(d, date_type) for d in dates)
+            assert len(dates) == 2  # type: ignore
+            assert all(isinstance(d, date_type) for d in dates)  # type: ignore
             assert dates[0] == date_type(2024, 1, 1)
             assert dates[1] == date_type(2024, 12, 31)
 
@@ -123,8 +122,8 @@ class TestToDateTuples:
         @to_date()
         def cmd(dates: Any) -> None:
             assert isinstance(dates, tuple)
-            assert len(dates) == 2
-            assert all(isinstance(t, tuple) for t in dates)
+            assert len(dates) == 2  # type: ignore
+            assert all(isinstance(t, tuple) for t in dates)  # type: ignore
             assert dates[0][0] == date_type(2024, 1, 1)
             assert dates[0][1] == date_type(2024, 6, 30)
             assert dates[1][0] == date_type(2024, 7, 1)

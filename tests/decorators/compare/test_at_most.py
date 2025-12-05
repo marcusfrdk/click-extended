@@ -153,11 +153,9 @@ class TestAtMostMultiple:
         def cmd(opt1: str | None, opt2: str | None) -> None:
             click.echo("Success")
 
-        # None - should succeed
         result = cli_runner.invoke(cmd, [])
         assert result.exit_code == 0
 
-        # One - should fail
         result = cli_runner.invoke(cmd, ["--opt1", "a"])
         assert result.exit_code == 1
 
@@ -181,13 +179,11 @@ class TestAtMostMultiple:
         ) -> None:
             click.echo("Success")
 
-        # Exactly 3 - should succeed
         result = cli_runner.invoke(
             cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"]
         )
         assert result.exit_code == 0
 
-        # 4 - should fail
         result = cli_runner.invoke(
             cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c", "--opt4", "d"]
         )
@@ -209,11 +205,9 @@ class TestAtMostWithFlags:
         def cmd(flag1: bool, flag2: bool, flag3: bool) -> None:
             click.echo("Success")
 
-        # Two flags - should succeed
         result = cli_runner.invoke(cmd, ["--flag1", "--flag2"])
         assert result.exit_code == 0
 
-        # Three flags - should fail
         result = cli_runner.invoke(cmd, ["--flag1", "--flag2", "--flag3"])
         assert result.exit_code == 1
 
@@ -295,15 +289,12 @@ class TestAtMostPractical:
         ) -> None:
             click.echo("Running")
 
-        # No overrides - should succeed
         result = cli_runner.invoke(run, [])
         assert result.exit_code == 0
 
-        # One override - should succeed
         result = cli_runner.invoke(run, ["--override-config", "custom.yaml"])
         assert result.exit_code == 0
 
-        # Two overrides - should fail
         result = cli_runner.invoke(
             run, ["--override-config", "c.yaml", "--override-env", "prod"]
         )
@@ -327,11 +318,9 @@ class TestAtMostPractical:
         ) -> None:
             click.echo("Created")
 
-        # Two metadata fields - should succeed
         result = cli_runner.invoke(create, ["--tag", "v1", "--label", "test"])
         assert result.exit_code == 0
 
-        # Three metadata fields - should fail
         result = cli_runner.invoke(
             create, ["--tag", "v1", "--label", "test", "--category", "bug"]
         )

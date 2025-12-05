@@ -7,6 +7,7 @@ from conftest import SimpleChild, ValidatingChild, assert_error, assert_success
 from click_extended.core.decorators.command import command
 from click_extended.core.decorators.option import option
 from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.other.context import Context
 
 
 class TestPhase1Collection:
@@ -61,7 +62,6 @@ class TestPhase3Validation:
 
     def test_validates_type_mismatch(self, cli_runner: CliRunner) -> None:
         """Test that type mismatches are caught during runtime."""
-        from click_extended.core.other.context import Context
 
         class IntChild(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -118,7 +118,6 @@ class TestPhase4Runtime:
         self, cli_runner: CliRunner
     ) -> None:
         """Test that scope is tracked as execution moves through nodes."""
-        from click_extended.core.other.context import Context
 
         scopes: list[str] = []
 
@@ -179,10 +178,8 @@ class TestFullLifecycle:
         def check_positive(number: int) -> None:
             click.echo(f"Valid: {number}")
 
-        # Valid case
         result = cli_runner.invoke(check_positive, ["--number", "10"])  # type: ignore
         assert_success(result, "Valid: 10")
 
-        # Invalid case
         result = cli_runner.invoke(check_positive, ["--number", "0"])  # type: ignore
         assert_error(result)

@@ -347,7 +347,6 @@ class TestDeprecatedEdgeCases:
         def cmd(opt: str | None) -> None:
             click.echo(f"Opt: {opt}")
 
-        # Providing explicit None-like value
         result = cli_runner.invoke(cmd, ["--opt", ""])
         assert result.exit_code == 0
         assert "DeprecationWarning" in result.output

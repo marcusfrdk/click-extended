@@ -134,7 +134,7 @@ class TestAddSuffixFlatTuple:
         @command()
         @option("names", default=None, nargs=3)
         @add_suffix(".txt")
-        def cmd(names: Any) -> None:
+        def cmd(names: tuple[str, ...]) -> None:
             assert names is not None
             assert isinstance(names, tuple)
             assert len(names) == 3
@@ -191,7 +191,7 @@ class TestAddSuffixNestedTuple:
         @command()
         @option("groups", multiple=True, nargs=2)
         @add_suffix(".log")
-        def cmd(groups: Any) -> None:
+        def cmd(groups: tuple[tuple[str, ...], ...]) -> None:
             assert groups is not None
             assert isinstance(groups, tuple)
             assert len(groups) == 2
@@ -224,10 +224,8 @@ class TestAddSuffixNestedTuple:
         def cmd(batches: Any) -> None:
             assert batches is not None
             assert len(batches) == 2
-            # First batch
             assert batches[0][0] == "db1_20241204.bak"
             assert batches[0][1] == "db2_20241204.bak"
-            # Second batch
             assert batches[1][0] == "config1_20241204.bak"
             assert batches[1][1] == "config2_20241204.bak"
 
@@ -255,10 +253,8 @@ class TestAddSuffixNestedTuple:
         def cmd(archives: Any) -> None:
             assert archives is not None
             assert len(archives) == 2
-            # First archive group
             for archive in archives[0]:
                 assert archive.endswith(".tar.gz")
-            # Second archive group
             assert archives[1][0] == "module1.tar.gz"
             assert archives[1][1] == "module2.tar.gz"
             assert archives[1][2] == "module3.tar.gz"
@@ -321,10 +317,8 @@ class TestAddSuffixPractical:
         @add_suffix("_amd64.deb")
         def cmd(artifacts: Any) -> None:
             assert artifacts is not None
-            # First build
             assert artifacts[0][0] == "myapp_1.0.0_amd64.deb"
             assert artifacts[0][1] == "myapp-dev_1.0.0_amd64.deb"
-            # Second build
             assert artifacts[1][0] == "myapp_2.0.0_amd64.deb"
             assert artifacts[1][1] == "myapp-dev_2.0.0_amd64.deb"
 

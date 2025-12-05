@@ -1,10 +1,17 @@
 """Comprehensive tests for OptionNode functionality."""
 
 from typing import Any
+from unittest.mock import MagicMock
 
+import click
 import pytest
 
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import Option, option
+from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.nodes.option_node import OptionNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other._tree import Tree
 from click_extended.core.other.context import Context
 
 
@@ -43,7 +50,7 @@ class TestOptionNodeInit:
         assert node.multiple is False
         assert node.was_provided is False
         assert node.cached_value is None
-        assert node._value_computed is False
+        assert node._value_computed is False  # type: ignore
         assert node.decorator_kwargs == {}
         assert node.children == {}
 
@@ -172,11 +179,8 @@ class TestOptionNodeInit:
 
     def test_init_flag_without_explicit_default(self) -> None:
         """Test that flags get default value automatically."""
-        # Note: The base OptionNode doesn't set default for is_flag,
-        # that's done in the Option concrete class
         node = ConcreteOptionNode(name="verbose", is_flag=True)
 
-        # Base OptionNode doesn't auto-set default for flags
         assert node.is_flag is True
         assert node.default is None
 
@@ -201,7 +205,6 @@ class TestOptionNodeInit:
 
     def test_init_nargs_multiple_combination(self) -> None:
         """Test initialization with both nargs and multiple."""
-        # This is valid: each occurrence takes nargs values
         node = ConcreteOptionNode(name="pairs", nargs=2, multiple=True)
 
         assert node.nargs == 2
@@ -213,7 +216,6 @@ class TestOptionNodeMethods:
 
     def test_load_method_signature(self) -> None:
         """Test that load method has correct signature."""
-        from unittest.mock import MagicMock
 
         node = ConcreteOptionNode(name="test")
         context = Context(
@@ -228,13 +230,11 @@ class TestOptionNodeMethods:
             data={},
         )
 
-        # Should accept value, context, and optional args/kwargs
         result = node.load("test_value", context)
         assert result == "test_value"
 
     def test_load_with_different_types(self) -> None:
         """Test load method with different value types."""
-        from unittest.mock import MagicMock
 
         node = ConcreteOptionNode(name="test")
         context = Context(
@@ -263,7 +263,6 @@ class TestOptionNodeMethods:
 
     def test_inherits_from_parent_node(self) -> None:
         """Test that OptionNode inherits from ParentNode."""
-        from click_extended.core.nodes.parent_node import ParentNode
 
         node = ConcreteOptionNode(name="test")
         assert isinstance(node, ParentNode)
@@ -274,7 +273,7 @@ class TestOptionNodeMethods:
 
         assert node.was_provided is False
         assert node.cached_value is None
-        assert node._value_computed is False
+        assert node._value_computed is False  # type: ignore
 
     def test_children_dict_is_initialized(self) -> None:
         """Test that children dictionary is initialized."""
@@ -302,7 +301,6 @@ class TestOptionNaming:
 
     def test_snake_case_name(self) -> None:
         """Test option with snake_case name."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option(name="config_file")
 
@@ -311,7 +309,6 @@ class TestOptionNaming:
 
     def test_kebab_case_name(self) -> None:
         """Test option with kebab-case name."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option(name="config-file")
 
@@ -320,7 +317,6 @@ class TestOptionNaming:
 
     def test_screaming_snake_case_name(self) -> None:
         """Test option with SCREAMING_SNAKE_CASE name."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option(name="CONFIG_FILE")
 
@@ -329,7 +325,6 @@ class TestOptionNaming:
 
     def test_long_flag_as_name(self) -> None:
         """Test providing long flag directly as name."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option(name="--verbose")
 
@@ -338,7 +333,6 @@ class TestOptionNaming:
 
     def test_long_flag_override(self) -> None:
         """Test explicit long flag override."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option("configuration", "--cfg")
 
@@ -347,7 +341,6 @@ class TestOptionNaming:
 
     def test_param_override(self) -> None:
         """Test custom parameter name."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option(name="configuration_file", param="cfg")
 
@@ -356,7 +349,6 @@ class TestOptionNaming:
 
     def test_short_flag_valid(self) -> None:
         """Test valid short flag."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option("port", "-p")
 
@@ -365,49 +357,42 @@ class TestOptionNaming:
 
     def test_short_flag_invalid_format(self) -> None:
         """Test invalid short flag format raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid flag"):
             Option("port", "p")  # missing dash
 
     def test_short_flag_invalid_multiple_chars(self) -> None:
         """Test short flag with multiple characters raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid short flag"):
             Option("port", "-port")
 
     def test_long_flag_invalid_format(self) -> None:
         """Test invalid long flag format raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid short flag"):
             Option("port", "-port")  # single dash but multiple chars
 
     def test_long_flag_invalid_uppercase(self) -> None:
         """Test long flag with uppercase raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid long flag"):
             Option("port", "--Port")
 
     def test_name_validation_empty(self) -> None:
         """Test empty name raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError):
             Option(name="")
 
     def test_name_validation_spaces(self) -> None:
         """Test name with spaces raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError):
             Option(name="my option")
 
     def test_auto_kebab_case_conversion(self) -> None:
         """Test that snake_case names auto-convert to kebab-case for long flag."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option(name="my_long_option_name")
 
@@ -416,7 +401,6 @@ class TestOptionNaming:
 
     def test_long_flag_with_name_and_explicit_override(self) -> None:
         """Test long flag as name with explicit long override."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option("--verbose", "--debug")
 
@@ -425,7 +409,6 @@ class TestOptionNaming:
 
     def test_both_flags_specified(self) -> None:
         """Test specifying both short and long flags."""
-        from click_extended.core.decorators.option import Option
 
         opt = Option("port", "-p", "--port-number")
 
@@ -435,7 +418,6 @@ class TestOptionNaming:
 
     def test_param_validation(self) -> None:
         """Test that param name is validated."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError):
             Option(name="test", param="invalid name")
@@ -446,13 +428,11 @@ class TestOptionDecorator:
 
     def test_basic_decorator_application(self) -> None:
         """Test basic option decorator on a function."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("port", type=int)
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -461,14 +441,12 @@ class TestOptionDecorator:
 
     def test_multiple_options_on_same_function(self) -> None:
         """Test multiple option decorators on same function."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("port", type=int)
         @option("host")
-        def serve(host: str, port: int) -> None:
+        def serve(host: str, port: int) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -476,19 +454,16 @@ class TestOptionDecorator:
 
     def test_decorator_stacking_order(self) -> None:
         """Test that decorators are queued in correct order."""
-        from click_extended.core.decorators.option import Option, option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("first")
         @option("second")
-        def process(first: str, second: str) -> None:
+        def process(first: str, second: str) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         assert len(pending) == 2
-        # Decorators apply bottom-to-top, so second is queued first
         node1 = pending[0][1]
         node2 = pending[1][1]
         assert isinstance(node1, Option)
@@ -498,29 +473,24 @@ class TestOptionDecorator:
 
     def test_type_inference_from_default_value(self) -> None:
         """Test that type is inferred from default value."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("port", default=8080)
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         assert len(pending) == 1
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.type == int
 
     def test_decorator_with_all_params(self) -> None:
         """Test decorator with all parameters."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option(
             "port",
@@ -531,12 +501,11 @@ class TestOptionDecorator:
             default=8080,
             tags="network",
         )
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.short_flags == ["-p"]
@@ -548,18 +517,15 @@ class TestOptionDecorator:
 
     def test_flag_decorator(self) -> None:
         """Test boolean flag decorator."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("verbose", is_flag=True)
-        def run(verbose: bool) -> None:
+        def run(verbose: bool) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.is_flag is True
@@ -567,25 +533,21 @@ class TestOptionDecorator:
 
     def test_decorator_with_tags_list(self) -> None:
         """Test decorator with list of tags."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("port", tags=["network", "config"])
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.tags == ["network", "config"]
 
     def test_decorator_function_remains_callable(self) -> None:
         """Test that decorated function remains callable."""
-        from click_extended.core.decorators.option import option
 
         @option("port", type=int)
         def serve(port: int) -> str:
@@ -595,7 +557,6 @@ class TestOptionDecorator:
 
     def test_decorator_preserves_function_metadata(self) -> None:
         """Test that decorator preserves function name and docstring."""
-        from click_extended.core.decorators.option import option
 
         @option("port")
         def serve(port: int) -> None:
@@ -607,13 +568,11 @@ class TestOptionDecorator:
 
     def test_option_class_as_decorator(self) -> None:
         """Test using Option.as_decorator() directly."""
-        from click_extended.core.decorators.option import Option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @Option.as_decorator(name="port", type=int)
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -621,54 +580,45 @@ class TestOptionDecorator:
 
     def test_multiple_option_with_decorator(self) -> None:
         """Test multiple flag with decorator."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("tag", multiple=True)
-        def build(tag: list[str]) -> None:
+        def build(tag: list[str]) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.multiple is True
 
     def test_nargs_with_decorator(self) -> None:
         """Test nargs parameter with decorator."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("coords", nargs=3, type=float)
-        def plot(coords: tuple[float, float, float]) -> None:
+        def plot(coords: tuple[float, float, float]) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.nargs == 3
 
     def test_required_option_decorator(self) -> None:
         """Test required option with decorator."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @option("config", required=True)
-        def run(config: str) -> None:
+        def run(config: str) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         node = pending[0][1]
-        from click_extended.core.decorators.option import Option
 
         assert isinstance(node, Option)
         assert node.required is True
@@ -679,10 +629,6 @@ class TestOptionCommandIntegration:
 
     def test_basic_option_value(self, cli_runner: Any) -> None:
         """Test basic option with value."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -695,10 +641,6 @@ class TestOptionCommandIntegration:
 
     def test_short_flag(self, cli_runner: Any) -> None:
         """Test short flag usage."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", "-p", type=int)
@@ -711,10 +653,6 @@ class TestOptionCommandIntegration:
 
     def test_boolean_flag(self, cli_runner: Any) -> None:
         """Test boolean flag without value."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("verbose", is_flag=True)
@@ -734,10 +672,6 @@ class TestOptionCommandIntegration:
 
     def test_option_type_conversion_int(self, cli_runner: Any) -> None:
         """Test type conversion to int."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int, default=1)
@@ -750,10 +684,6 @@ class TestOptionCommandIntegration:
 
     def test_option_type_conversion_float(self, cli_runner: Any) -> None:
         """Test type conversion to float."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("price", type=float)
@@ -766,10 +696,6 @@ class TestOptionCommandIntegration:
 
     def test_option_default_value(self, cli_runner: Any) -> None:
         """Test option with default value when not provided."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
@@ -782,8 +708,6 @@ class TestOptionCommandIntegration:
 
     def test_required_option_missing(self, cli_runner: Any) -> None:
         """Test that missing required option raises error."""
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("config", required=True)
@@ -799,10 +723,6 @@ class TestOptionCommandIntegration:
 
     def test_required_option_provided(self, cli_runner: Any) -> None:
         """Test required option when provided."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("config", required=True)
@@ -815,10 +735,6 @@ class TestOptionCommandIntegration:
 
     def test_multiple_option(self, cli_runner: Any) -> None:
         """Test option with multiple flag."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("tag", multiple=True)
@@ -833,10 +749,6 @@ class TestOptionCommandIntegration:
 
     def test_option_nargs_fixed(self, cli_runner: Any) -> None:
         """Test option with fixed nargs."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("coords", nargs=3, type=int)
@@ -850,10 +762,6 @@ class TestOptionCommandIntegration:
 
     def test_multiple_options_same_command(self, cli_runner: Any) -> None:
         """Test multiple different options on same command."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("host", default="localhost")
@@ -869,8 +777,6 @@ class TestOptionCommandIntegration:
 
     def test_option_with_help_text(self, cli_runner: Any) -> None:
         """Test that help text appears in --help output."""
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, help="Port number for server")
@@ -883,8 +789,6 @@ class TestOptionCommandIntegration:
 
     def test_option_invalid_type_conversion(self, cli_runner: Any) -> None:
         """Test invalid type conversion raises error."""
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int)
@@ -896,10 +800,6 @@ class TestOptionCommandIntegration:
 
     def test_option_with_both_short_and_long(self, cli_runner: Any) -> None:
         """Test using both short and long flags."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("verbose", "-v", is_flag=True)
@@ -917,10 +817,6 @@ class TestOptionCommandIntegration:
 
     def test_option_override_with_explicit_value(self, cli_runner: Any) -> None:
         """Test that provided value overrides default."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("retries", type=int, default=3)
@@ -933,10 +829,6 @@ class TestOptionCommandIntegration:
 
     def test_flag_default_false(self, cli_runner: Any) -> None:
         """Test that boolean flags default to False."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("debug", is_flag=True)
@@ -949,10 +841,6 @@ class TestOptionCommandIntegration:
 
     def test_option_with_empty_string_default(self, cli_runner: Any) -> None:
         """Test option with empty string as default."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("prefix", default="")
@@ -965,10 +853,6 @@ class TestOptionCommandIntegration:
 
     def test_option_with_zero_default(self, cli_runner: Any) -> None:
         """Test option with zero as default value."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("offset", type=int, default=0)
@@ -981,10 +865,6 @@ class TestOptionCommandIntegration:
 
     def test_option_type_inference_from_default(self, cli_runner: Any) -> None:
         """Test that type is inferred from default value."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", default=5)
@@ -1001,12 +881,6 @@ class TestOptionNodeWithChildren:
 
     def test_option_with_single_child(self, cli_runner: Any) -> None:
         """Test option with a single child node."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -1026,12 +900,6 @@ class TestOptionNodeWithChildren:
 
     def test_option_with_multiple_children(self, cli_runner: Any) -> None:
         """Test option with multiple child nodes."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Strip(ChildNode):
             def handle_str(
@@ -1058,12 +926,6 @@ class TestOptionNodeWithChildren:
 
     def test_option_flag_with_child(self, cli_runner: Any) -> None:
         """Test boolean flag with child node."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Negate(ChildNode):
             def handle_bool(
@@ -1083,12 +945,6 @@ class TestOptionNodeWithChildren:
 
     def test_option_child_execution_order(self, cli_runner: Any) -> None:
         """Test that children execute in correct order."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class AddPrefix(ChildNode):
             def handle_str(
@@ -1111,23 +967,15 @@ class TestOptionNodeWithChildren:
 
         result = cli_runner.invoke(greet, ["--name", "test"])
         assert result.exit_code == 0
-        # Children execute top-to-bottom: AddPrefix first, then AddSuffix
         assert "Result: [test]!" in result.output
 
     def test_option_with_child_context_access(self, cli_runner: Any) -> None:
         """Test that children can access context."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class ContextAware(ChildNode):
             def handle_str(
                 self, value: str, context: Context, *args: Any, **kwargs: Any
             ) -> str:
-                # Children should receive context
                 assert context is not None
                 return value
 
@@ -1142,12 +990,6 @@ class TestOptionNodeWithChildren:
 
     def test_option_default_with_child(self, cli_runner: Any) -> None:
         """Test that child processes default values."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -1167,12 +1009,6 @@ class TestOptionNodeWithChildren:
 
     def test_option_required_with_child(self, cli_runner: Any) -> None:
         """Test required option with child transformation."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -1196,72 +1032,61 @@ class TestOptionNodeEdgeCases:
 
     def test_is_flag_with_type_int_raises_error(self) -> None:
         """Test that is_flag=True with type=int raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Cannot specify both is_flag"):
             Option(name="count", is_flag=True, type=int)
 
     def test_is_flag_with_type_str_raises_error(self) -> None:
         """Test that is_flag=True with non-bool type raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Cannot specify both is_flag"):
             Option(name="verbose", is_flag=True, type=str)
 
     def test_is_flag_with_type_bool_is_valid(self) -> None:
         """Test that is_flag=True with type=bool is allowed."""
-        from click_extended.core.decorators.option import Option
 
-        # This should not raise
         opt = Option(name="verbose", is_flag=True, type=bool)
         assert opt.is_flag is True
         assert opt.type == bool
 
     def test_invalid_long_flag_no_dashes(self) -> None:
         """Test that long flag without dashes raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid flag"):
             Option("port", "port")
 
     def test_invalid_long_flag_single_dash(self) -> None:
         """Test that long flag with single dash raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid short flag"):
             Option("port", "-port")
 
     def test_invalid_short_flag_no_dash(self) -> None:
         """Test that short flag without dash raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid flag"):
             Option("port", "p")
 
     def test_invalid_short_flag_multiple_chars(self) -> None:
         """Test that short flag with multiple chars raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError, match="Invalid short flag"):
             Option("port", "-port")
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError):
             Option(name="")
 
     def test_name_with_spaces_raises_error(self) -> None:
         """Test that name with spaces raises error."""
-        from click_extended.core.decorators.option import Option
 
         with pytest.raises(ValueError):
             Option(name="my option")
 
     def test_option_none_vs_empty_string_default(self) -> None:
         """Test distinction between None and empty string default."""
-        from click_extended.core.decorators.option import Option
 
         opt1 = Option(name="test1", default=None)
         opt2 = Option(name="test2", default="")
@@ -1271,7 +1096,6 @@ class TestOptionNodeEdgeCases:
 
     def test_option_zero_vs_none_default(self) -> None:
         """Test distinction between 0 and None default."""
-        from click_extended.core.decorators.option import Option
 
         opt1 = Option(name="test1", default=0, type=int)
         opt2 = Option(name="test2", default=None)

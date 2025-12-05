@@ -1,11 +1,24 @@
 """Comprehensive tests for RootNode functionality."""
 
+import asyncio
+import os
 from typing import Any
 
+import click
 import pytest
+from click.testing import CliRunner
 
+from click_extended.core.decorators.argument import argument
 from click_extended.core.decorators.command import Command, command
+from click_extended.core.decorators.env import env
 from click_extended.core.decorators.group import Group, group
+from click_extended.core.decorators.option import option
+from click_extended.core.decorators.tag import tag
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.other._click_command import ClickCommand
+from click_extended.core.other._click_group import ClickGroup
+from click_extended.core.other.context import Context
+from click_extended.errors import ContextAwareError, NameExistsError
 
 
 class TestRootNodeInit:
@@ -113,7 +126,6 @@ class TestRootNodeDecorator:
 
         @command()
         def hello() -> None:
-            import click
 
             click.echo("Hello!")
 
@@ -128,11 +140,9 @@ class TestRootNodeDecorator:
 
         @command("greet")
         def some_function() -> None:
-            import click
 
             click.echo("Greeting")
 
-        # The Click command name should be 'greet'
         assert some_function.name == "greet"  # type: ignore[attr-defined]
 
     def test_command_decorator_derives_name_from_function(
@@ -142,7 +152,6 @@ class TestRootNodeDecorator:
 
         @command()
         def my_command() -> None:
-            import click
 
             click.echo("Running")
 
@@ -193,7 +202,6 @@ class TestRootNodeDecorator:
             """Start the server."""
             pass
 
-        # Note: Aliases are stored but testing them requires Click context
         result = cli_runner.invoke(serve, ["--help"])
         assert result.exit_code == 0
 
@@ -219,11 +227,9 @@ class TestRootNodeDecorator:
 
     def test_async_command_wrapped_to_sync(self, cli_runner: Any) -> None:
         """Test that async functions are wrapped to sync."""
-        import asyncio
 
         @command()
         async def async_hello() -> None:
-            import click
 
             await asyncio.sleep(0.001)
             click.echo("Async Hello!")
@@ -243,7 +249,6 @@ class TestRootNodeDecorator:
         def cmd2() -> None:
             pass
 
-        # Each command should have its own tree
         assert cmd1.root.tree is not cmd2.root.tree  # type: ignore[attr-defined]
 
     def test_command_decorator_with_context_settings(
@@ -280,7 +285,6 @@ class TestRootNodeDecorator:
             """Docstring that should be ignored."""
             pass
 
-        # Help text should be the explicit parameter
         result = cli_runner.invoke(admin, ["--help"])
         assert result.exit_code == 0
         assert "Explicit help text" in result.output
@@ -293,7 +297,6 @@ class TestRootNodeDecorator:
         def get_value() -> int:
             return 42
 
-        # Click doesn't directly return the value, but we can test execution
         result = cli_runner.invoke(get_value, [])
         assert result.exit_code == 0
 
@@ -306,7 +309,6 @@ class TestRootNodeTreeBuilding:
 
         @command()
         def empty() -> None:
-            import click
 
             click.echo("Empty")
 
@@ -316,12 +318,10 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_option_parent(self, cli_runner: Any) -> None:
         """Test command with option decorator."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
         def greet(name: str) -> None:
-            import click
 
             click.echo(f"Hello, {name}!")
 
@@ -331,12 +331,10 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_argument_parent(self, cli_runner: Any) -> None:
         """Test command with argument decorator."""
-        from click_extended.core.decorators.argument import argument
 
         @command()
         @argument("filename")
         def process(filename: str) -> None:
-            import click
 
             click.echo(f"Processing {filename}")
 
@@ -346,15 +344,12 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_multiple_parents(self, cli_runner: Any) -> None:
         """Test command with multiple parent decorators."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
         @option("host", default="localhost")
         @argument("config")
         def serve(host: str, port: int, config: str) -> None:
-            import click
 
             click.echo(f"Serving on {host}:{port} with {config}")
 
@@ -366,9 +361,6 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_child_on_parent(self, cli_runner: Any) -> None:
         """Test command with child node attached to parent."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -380,7 +372,6 @@ class TestRootNodeTreeBuilding:
         @option("name")
         @Uppercase.as_decorator()
         def greet(name: str) -> None:
-            import click
 
             click.echo(f"Hello, {name}!")
 
@@ -390,14 +381,11 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_tag(self, cli_runner: Any) -> None:
         """Test command with tag decorator."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.decorators.tag import tag
 
         @command()
         @option("name", tags="input")
         @tag("input")
         def greet(name: str) -> None:
-            import click
 
             click.echo(f"Hello, {name}!")
 
@@ -407,23 +395,18 @@ class TestRootNodeTreeBuilding:
 
     def test_auto_tag_creation(self, cli_runner: Any) -> None:
         """Test that tags are auto-created when referenced but not declared."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name", tags="auto_tag")
         def greet(name: str) -> None:
-            import click
 
             click.echo(f"Hello, {name}!")
 
-        # Should not error, auto-tag should be created
         result = cli_runner.invoke(greet, ["--name", "Test"])
         assert result.exit_code == 0
 
     def test_duplicate_short_flags_raises_error(self) -> None:
         """Test that duplicate short flags raise NameExistsError."""
-        from click_extended.core.decorators.option import option
-        from click_extended.errors import NameExistsError
 
         with pytest.raises(NameExistsError):
 
@@ -433,15 +416,11 @@ class TestRootNodeTreeBuilding:
             def serve(port: int, path: str) -> None:
                 pass
 
-            # Need to actually invoke to trigger validation
-            from click.testing import CliRunner
-
             runner = CliRunner()
             runner.invoke(serve, ["-p", "8080"])
 
     def test_help_option_names_when_h_not_taken(self, cli_runner: Any) -> None:
         """Test that -h is added to help options when not taken."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("verbose", "-v", is_flag=True)
@@ -454,31 +433,25 @@ class TestRootNodeTreeBuilding:
 
     def test_help_option_when_h_flag_taken(self, cli_runner: Any) -> None:
         """Test that -h is not added when taken by an option."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("host", "-h")
         def serve(host: str) -> None:
-            import click
 
             click.echo(f"Host: {host}")
 
-        # -h should be used for host, not help
         result = cli_runner.invoke(serve, ["-h", "localhost"])
         assert result.exit_code == 0
         assert "Host: localhost" in result.output
 
     def test_tag_with_multiple_parents(self, cli_runner: Any) -> None:
         """Test tag associated with multiple parents."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.decorators.tag import tag
 
         @command()
         @option("first", tags="group1")
         @option("second", tags="group1")
         @tag("group1")
         def process(first: str, second: str) -> None:
-            import click
 
             click.echo(f"{first} and {second}")
 
@@ -492,12 +465,10 @@ class TestRootNodeValueProcessing:
 
     def test_option_value_injection(self, cli_runner: Any) -> None:
         """Test that option values are injected into function."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
         def greet(name: str) -> None:
-            import click
 
             click.echo(f"Name: {name}")
 
@@ -507,12 +478,10 @@ class TestRootNodeValueProcessing:
 
     def test_argument_value_injection(self, cli_runner: Any) -> None:
         """Test that argument values are injected."""
-        from click_extended.core.decorators.argument import argument
 
         @command()
         @argument("filename")
         def process(filename: str) -> None:
-            import click
 
             click.echo(f"File: {filename}")
 
@@ -522,12 +491,10 @@ class TestRootNodeValueProcessing:
 
     def test_option_default_value_used(self, cli_runner: Any) -> None:
         """Test that default values are used when option not provided."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
         def serve(port: int) -> None:
-            import click
 
             click.echo(f"Port: {port}")
 
@@ -539,7 +506,6 @@ class TestRootNodeValueProcessing:
         self, cli_runner: Any
     ) -> None:
         """Test that missing required option raises error."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("config", required=True)
@@ -551,15 +517,12 @@ class TestRootNodeValueProcessing:
 
     def test_multiple_values_injected(self, cli_runner: Any) -> None:
         """Test that multiple parent values are injected."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("verbose", is_flag=True)
         @option("port", type=int, default=3000)
         @argument("filename")
         def process(filename: str, port: int, verbose: bool) -> None:
-            import click
 
             click.echo(f"File: {filename}, Port: {port}, Verbose: {verbose}")
 
@@ -571,36 +534,14 @@ class TestRootNodeValueProcessing:
         assert "Port: 5000" in result.output
         assert "Verbose: True" in result.output
 
-    def test_was_provided_tracking_true(self, cli_runner: Any) -> None:
-        """Test that was_provided is True when value provided."""
-        from click_extended.core.decorators.option import option
-
-        was_provided_value = None
-
-        @command()
-        @option("name")
-        def check(name: str) -> None:
-            nonlocal was_provided_value
-            import click
-
-            # Access via context to check was_provided
-            ctx = click.get_current_context()
-            meta = ctx.meta.get("click_extended", {})
-            # This would need actual implementation to check
-
-        result = cli_runner.invoke(check, ["--name", "test"])
-        assert result.exit_code == 0
-
     def test_was_provided_tracking_false_with_default(
         self, cli_runner: Any
     ) -> None:
         """Test that was_provided is False when default used."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
         def serve(port: int) -> None:
-            import click
 
             click.echo(f"Port: {port}")
 
@@ -610,12 +551,10 @@ class TestRootNodeValueProcessing:
 
     def test_custom_param_name_injection(self, cli_runner: Any) -> None:
         """Test that custom param names work correctly."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("configuration_file", param="cfg")
         def run(cfg: str) -> None:
-            import click
 
             click.echo(f"Config: {cfg}")
 
@@ -625,14 +564,12 @@ class TestRootNodeValueProcessing:
 
     def test_value_type_conversion(self, cli_runner: Any) -> None:
         """Test that values are converted to correct types."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int)
         @option("ratio", type=float)
         @option("enabled", is_flag=True)
         def process(count: int, ratio: float, enabled: bool) -> None:
-            import click
 
             click.echo(f"{count}, {ratio}, {enabled}")
 
@@ -648,13 +585,8 @@ class TestRootNodeChildrenProcessing:
 
     def test_child_executes_after_parents(self, cli_runner: Any) -> None:
         """Test that children execute after parent load."""
-        import click
 
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
-
-        execution_order = []
+        execution_order: list[str] = []
 
         class TrackedChild(ChildNode):
             def handle_str(
@@ -677,13 +609,8 @@ class TestRootNodeChildrenProcessing:
 
     def test_multiple_children_execute_in_order(self, cli_runner: Any) -> None:
         """Test that multiple children execute in top-to-bottom order."""
-        import click
 
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
-
-        execution_order = []
+        execution_order: list[str] = []
 
         class First(ChildNode):
             def handle_str(
@@ -721,10 +648,6 @@ class TestRootNodeChildrenProcessing:
 
     def test_child_error_propagates(self, cli_runner: Any) -> None:
         """Test that child errors propagate correctly."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
-        from click_extended.errors import ContextAwareError
 
         class FailingChild(ChildNode):
             def handle_int(
@@ -746,11 +669,6 @@ class TestRootNodeChildrenProcessing:
 
     def test_children_receive_transformed_values(self, cli_runner: Any) -> None:
         """Test that children receive output from previous children."""
-        import click
-
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Double(ChildNode):
             def handle_int(
@@ -773,7 +691,6 @@ class TestRootNodeChildrenProcessing:
 
         result = cli_runner.invoke(calc, ["--num", "5"])
         assert result.exit_code == 0
-        # (5 * 2) + 10 = 20
         assert "Result: 20" in result.output
 
 
@@ -782,11 +699,6 @@ class TestRootNodeAsync:
 
     def test_async_child_handler_detected(self, cli_runner: Any) -> None:
         """Test that async child handlers are detected."""
-        import click
-
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class AsyncChild(ChildNode):
             async def handle_str(
@@ -806,11 +718,6 @@ class TestRootNodeAsync:
 
     def test_multiple_async_children(self, cli_runner: Any) -> None:
         """Test multiple async children execute correctly."""
-        import click
-
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class AsyncFirst(ChildNode):
             async def handle_str(
@@ -837,11 +744,6 @@ class TestRootNodeAsync:
 
     def test_mixed_sync_and_async_children(self, cli_runner: Any) -> None:
         """Test mixing sync and async children."""
-        import click
-
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class SyncChild(ChildNode):
             def handle_str(
@@ -874,10 +776,6 @@ class TestRootNodeErrorHandling:
         self, cli_runner: Any
     ) -> None:
         """Test that ContextAwareError results in exit code 1."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
-        from click_extended.errors import ContextAwareError
 
         class FailingChild(ChildNode):
             def handle_str(
@@ -896,9 +794,6 @@ class TestRootNodeErrorHandling:
 
     def test_generic_exception_exits_with_code_1(self, cli_runner: Any) -> None:
         """Test that generic exceptions result in exit code 1."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class FailingChild(ChildNode):
             def handle_str(
@@ -918,8 +813,6 @@ class TestRootNodeErrorHandling:
 
     def test_error_message_displayed(self, cli_runner: Any) -> None:
         """Test that error messages are displayed to user."""
-        from click_extended.core.decorators.option import option
-        from click_extended.errors import ContextAwareError
 
         @command()
         @option("number", type=int, required=True)
@@ -933,7 +826,6 @@ class TestRootNodeErrorHandling:
 
     def test_missing_required_option_error(self, cli_runner: Any) -> None:
         """Test error when required option is missing."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("config", required=True)
@@ -949,7 +841,6 @@ class TestRootNodeErrorHandling:
 
     def test_type_conversion_error(self, cli_runner: Any) -> None:
         """Test error when type conversion fails."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int)
@@ -961,7 +852,6 @@ class TestRootNodeErrorHandling:
 
     def test_empty_function_with_parents(self, cli_runner: Any) -> None:
         """Test empty function with parent nodes works."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -977,9 +867,6 @@ class TestRootNodeClickIntegration:
 
     def test_click_context_available(self, cli_runner: Any) -> None:
         """Test that Click context is accessible in function."""
-        import click
-
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -994,7 +881,6 @@ class TestRootNodeClickIntegration:
 
     def test_help_option_works(self, cli_runner: Any) -> None:
         """Test that --help option displays help."""
-        from click_extended.core.decorators.option import option
 
         @command(help="A greeting command")
         @option("name", help="The name to greet")
@@ -1020,7 +906,6 @@ class TestRootNodeClickIntegration:
 
     def test_multiple_options_in_help(self, cli_runner: Any) -> None:
         """Test that all options appear in help."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name", help="User name")
@@ -1044,7 +929,6 @@ class TestRootNodeEdgeCases:
 
         @command()
         def simple() -> None:
-            import click
 
             click.echo("Success")
 
@@ -1054,9 +938,6 @@ class TestRootNodeEdgeCases:
 
     def test_option_with_default_none(self, cli_runner: Any) -> None:
         """Test option with None as default value."""
-        import click
-
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("value", default=None)
@@ -1069,9 +950,6 @@ class TestRootNodeEdgeCases:
 
     def test_option_with_zero_default(self, cli_runner: Any) -> None:
         """Test option with 0 as default value."""
-        import click
-
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int, default=0)
@@ -1084,9 +962,6 @@ class TestRootNodeEdgeCases:
 
     def test_option_with_empty_string_default(self, cli_runner: Any) -> None:
         """Test option with empty string as default."""
-        import click
-
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("text", default="")
@@ -1099,7 +974,6 @@ class TestRootNodeEdgeCases:
 
     def test_function_with_return_value(self, cli_runner: Any) -> None:
         """Test that function return values are preserved."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("value", type=int)
@@ -1111,12 +985,6 @@ class TestRootNodeEdgeCases:
 
     def test_complex_scenario_all_node_types(self, cli_runner: Any) -> None:
         """Test complex scenario with multiple node types."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Validate(ChildNode):
             def handle_str(
@@ -1148,15 +1016,14 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_with_single_subcommand(self, cli_runner: Any) -> None:
         """Test group with a single subcommand."""
-        import click
 
         @group()
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def hello() -> None:
+        @cli.command()
+        def hello() -> None:  # type: ignore
             """Say hello."""
             click.echo("Hello!")
 
@@ -1166,20 +1033,19 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_with_multiple_subcommands(self, cli_runner: Any) -> None:
         """Test group with multiple subcommands."""
-        import click
 
         @group()
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def start() -> None:
+        @cli.command()
+        def start() -> None:  # type: ignore
             """Start service."""
             click.echo("Starting...")
 
-        @cli.command()  # type: ignore[misc]
-        def stop() -> None:
+        @cli.command()
+        def stop() -> None:  # type: ignore
             """Stop service."""
             click.echo("Stopping...")
 
@@ -1193,20 +1059,19 @@ class TestRootNodeGroupFunctionality:
 
     def test_nested_groups(self, cli_runner: Any) -> None:
         """Test nested group structure."""
-        import click
 
         @group()
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.group()  # type: ignore[misc]
+        @cli.group()
         def database() -> None:
             """Database commands."""
             pass
 
-        @database.command()  # type: ignore[misc]
-        def migrate() -> None:
+        @database.command()
+        def migrate() -> None:  # type: ignore
             """Run migrations."""
             click.echo("Migrating...")
 
@@ -1216,7 +1081,6 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_add_command(self, cli_runner: Any) -> None:
         """Test adding command to group via add_command."""
-        import click
 
         @group()
         def cli() -> None:
@@ -1242,13 +1106,12 @@ class TestRootNodeGroupFunctionality:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def hello() -> None:
+        @cli.command()
+        def hello() -> None:  # type: ignore
             """Say hello."""
             pass
 
         result = cli_runner.invoke(cli, [])
-        # Click returns exit code 2 when group invoked without subcommand
         assert result.exit_code in (0, 2)
         assert "Usage:" in result.output or "Commands:" in result.output
 
@@ -1260,13 +1123,13 @@ class TestRootNodeGroupFunctionality:
             """Main CLI group."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def start() -> None:
+        @cli.command()
+        def start() -> None:  # type: ignore
             """Start the service."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def stop() -> None:
+        @cli.command()
+        def stop() -> None:  # type: ignore
             """Stop the service."""
             pass
 
@@ -1278,9 +1141,6 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_with_options(self, cli_runner: Any) -> None:
         """Test group with options passed to handler."""
-        import click
-
-        from click_extended.core.decorators.option import option
 
         @group()
         @option("verbose", is_flag=True)
@@ -1289,8 +1149,8 @@ class TestRootNodeGroupFunctionality:
             if verbose:
                 click.echo("Verbose mode")
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """Test command."""
             click.echo("Testing")
 
@@ -1301,18 +1161,15 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_subcommand_with_options(self, cli_runner: Any) -> None:
         """Test subcommand with its own options."""
-        import click
-
-        from click_extended.core.decorators.option import option
 
         @group()
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
+        @cli.command()
         @option("port", type=int, default=8080)
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             """Start server."""
             click.echo(f"Serving on port {port}")
 
@@ -1322,17 +1179,16 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_with_callback(self, cli_runner: Any) -> None:
         """Test group with callback function."""
-        import click
 
-        execution_order = []
+        execution_order: list[str] = []
 
         @group()
         def cli() -> None:
             """Main CLI."""
             execution_order.append("group")
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """Test command."""
             execution_order.append("command")
             click.echo("Test")
@@ -1343,25 +1199,24 @@ class TestRootNodeGroupFunctionality:
 
     def test_three_level_nested_groups(self, cli_runner: Any) -> None:
         """Test three-level nested group structure."""
-        import click
 
         @group()
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.group()  # type: ignore[misc]
+        @cli.group()
         def admin() -> None:
             """Admin commands."""
             pass
 
-        @admin.group()  # type: ignore[misc]
+        @admin.group()
         def users() -> None:
             """User management."""
             pass
 
-        @users.command()  # type: ignore[misc]
-        def add() -> None:
+        @users.command()
+        def add() -> None:  # type: ignore
             """Add a user."""
             click.echo("User added")
 
@@ -1377,32 +1232,29 @@ class TestRootNodeGroupFunctionality:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """Test command."""
             pass
 
-        # Note: Click doesn't natively support group aliases in invocation
-        # This test verifies the group can be created with aliases
         result = cli_runner.invoke(cli, ["test"])
         assert result.exit_code == 0
 
     def test_group_chain_mode(self, cli_runner: Any) -> None:
         """Test group with chain mode allowing multiple commands."""
-        import click
 
         @group(chain=True)
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def clean() -> None:
+        @cli.command()
+        def clean() -> None:  # type: ignore
             """Clean up."""
             click.echo("Cleaned")
 
-        @cli.command()  # type: ignore[misc]
-        def build() -> None:
+        @cli.command()
+        def build() -> None:  # type: ignore
             """Build project."""
             click.echo("Built")
 
@@ -1413,7 +1265,6 @@ class TestRootNodeGroupFunctionality:
 
     def test_group_with_invoke_without_command(self, cli_runner: Any) -> None:
         """Test group configured to invoke without command."""
-        import click
 
         @group(invoke_without_command=True)
         def cli() -> None:
@@ -1422,8 +1273,8 @@ class TestRootNodeGroupFunctionality:
             if ctx.invoked_subcommand is None:
                 click.echo("No subcommand")
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """Test command."""
             click.echo("Test")
 
@@ -1441,19 +1292,16 @@ class TestRootNodeGroupFunctionality:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """First test."""
             pass
 
-        # Adding another command with the same name should replace or error
-        @cli.command()  # type: ignore[misc]
-        def test2() -> None:
+        @cli.command()
+        def test2() -> None:  # type: ignore
             """Second test."""
             pass
 
-        # The second definition should be the one that runs
-        # Both commands should be available
         result = cli_runner.invoke(cli, ["test"])
         assert result.exit_code == 0
 
@@ -1463,39 +1311,28 @@ class TestRootNodeEnvIntegration:
 
     def test_env_with_command_basic(self, cli_runner: Any) -> None:
         """Test basic env decorator with command."""
-        import os
-
-        import click
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("TEST_VAR")
         def check(test_var: str) -> None:
             click.echo(f"Value: {test_var}")
 
-        # Set environment variable
         os.environ["TEST_VAR"] = "test_value"
 
         result = cli_runner.invoke(check, [])
         assert result.exit_code == 0
         assert "Value: test_value" in result.output
 
-        # Clean up
         del os.environ["TEST_VAR"]
 
     def test_env_missing_single_variable(self, cli_runner: Any) -> None:
         """Test error when single env variable is missing."""
-        import os
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("MISSING_VAR", required=True)
         def check(missing_var: str) -> None:
             pass
 
-        # Ensure variable is not set
         if "MISSING_VAR" in os.environ:
             del os.environ["MISSING_VAR"]
 
@@ -1505,9 +1342,6 @@ class TestRootNodeEnvIntegration:
 
     def test_env_missing_multiple_variables(self, cli_runner: Any) -> None:
         """Test error message when multiple env variables are missing."""
-        import os
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("VAR_ONE", required=True)
@@ -1516,32 +1350,24 @@ class TestRootNodeEnvIntegration:
         def check(var_one: str, var_two: str, var_three: str) -> None:
             pass
 
-        # Ensure variables are not set
         for var in ["VAR_ONE", "VAR_TWO", "VAR_THREE"]:
             if var in os.environ:
                 del os.environ[var]
 
         result = cli_runner.invoke(check, [])
         assert result.exit_code == 1
-        # Should show all missing variables
         assert "VAR_ONE" in result.output
         assert "VAR_TWO" in result.output
         assert "VAR_THREE" in result.output
 
     def test_env_with_default_value(self, cli_runner: Any) -> None:
         """Test env with default value when variable not set."""
-        import os
-
-        import click
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("OPTIONAL_VAR", default="default_value")
         def check(optional_var: str) -> None:
             click.echo(f"Value: {optional_var}")
 
-        # Ensure variable is not set
         if "OPTIONAL_VAR" in os.environ:
             del os.environ["OPTIONAL_VAR"]
 
@@ -1551,13 +1377,6 @@ class TestRootNodeEnvIntegration:
 
     def test_env_with_children_processors(self, cli_runner: Any) -> None:
         """Test env with child processors transforming value."""
-        import os
-
-        import click
-
-        from click_extended.core.decorators.env import env
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -1581,11 +1400,6 @@ class TestRootNodeEnvIntegration:
 
     def test_env_with_type_conversion(self, cli_runner: Any) -> None:
         """Test env with type conversion."""
-        import os
-
-        import click
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("PORT_NUMBER", type=int)
@@ -1602,12 +1416,6 @@ class TestRootNodeEnvIntegration:
 
     def test_env_mixed_with_options(self, cli_runner: Any) -> None:
         """Test env mixed with option decorators."""
-        import os
-
-        import click
-
-        from click_extended.core.decorators.env import env
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -1625,9 +1433,6 @@ class TestRootNodeEnvIntegration:
 
     def test_env_error_message_formatting_single(self, cli_runner: Any) -> None:
         """Test error message format for single missing variable."""
-        import os
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("DATABASE_URL", required=True)
@@ -1639,7 +1444,6 @@ class TestRootNodeEnvIntegration:
 
         result = cli_runner.invoke(connect, [])
         assert result.exit_code == 1
-        # Error should mention the specific variable
         assert "DATABASE_URL" in result.output
         assert (
             "environment" in result.output.lower()
@@ -1650,9 +1454,6 @@ class TestRootNodeEnvIntegration:
         self, cli_runner: Any
     ) -> None:
         """Test error message format for multiple missing variables."""
-        import os
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("DB_HOST", required=True)
@@ -1671,11 +1472,6 @@ class TestRootNodeEnvIntegration:
 
     def test_env_with_group(self, cli_runner: Any) -> None:
         """Test env with group command."""
-        import os
-
-        import click
-
-        from click_extended.core.decorators.env import env
 
         @group()
         @env("CONFIG_PATH")
@@ -1683,8 +1479,8 @@ class TestRootNodeEnvIntegration:
             """Main CLI."""
             click.echo(f"Config: {config_path}")
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """Test command."""
             click.echo("Testing")
 
@@ -1703,8 +1499,6 @@ class TestRootNodeDebugMode:
 
     def test_error_handling_basic(self, cli_runner: Any) -> None:
         """Test basic error handling with ContextAwareError."""
-        from click_extended.core.decorators.option import option
-        from click_extended.errors import ContextAwareError
 
         @command()
         @option("value", type=int)
@@ -1718,7 +1512,6 @@ class TestRootNodeDebugMode:
 
     def test_error_with_type_conversion(self, cli_runner: Any) -> None:
         """Test error handling with type conversion error."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int)
@@ -1730,10 +1523,6 @@ class TestRootNodeDebugMode:
 
     def test_error_with_child_validation(self, cli_runner: Any) -> None:
         """Test error handling in child node validation."""
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
-        from click_extended.errors import ContextAwareError
 
         class Validator(ChildNode):
             def handle_int(
@@ -1755,9 +1544,6 @@ class TestRootNodeDebugMode:
 
     def test_error_with_missing_required_env(self, cli_runner: Any) -> None:
         """Test error handling with missing required environment variable."""
-        import os
-
-        from click_extended.core.decorators.env import env
 
         @command()
         @env("MISSING_DEBUG_VAR", required=True)
@@ -1773,7 +1559,6 @@ class TestRootNodeDebugMode:
 
     def test_error_with_generic_exception(self, cli_runner: Any) -> None:
         """Test error handling with generic Python exception."""
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("value")
@@ -1797,7 +1582,6 @@ class TestRootNodeAliasInvocation:
             """Start server."""
             pass
 
-        # Verify alias is stored
         assert serve.root.aliases == "s"  # type: ignore[attr-defined]
 
     def test_command_with_multiple_aliases_storage(
@@ -1810,7 +1594,6 @@ class TestRootNodeAliasInvocation:
             """Start server."""
             pass
 
-        # Verify aliases are stored
         assert serve.root.aliases == ["s", "start", "run"]  # type: ignore[attr-defined]
 
     def test_group_with_single_alias_storage(self, cli_runner: Any) -> None:
@@ -1821,7 +1604,6 @@ class TestRootNodeAliasInvocation:
             """Main CLI."""
             pass
 
-        # Verify alias is stored
         assert cli.root.aliases == "c"  # type: ignore[attr-defined]
 
     def test_group_with_multiple_aliases_storage(self, cli_runner: Any) -> None:
@@ -1832,12 +1614,10 @@ class TestRootNodeAliasInvocation:
             """Main CLI."""
             pass
 
-        # Verify aliases are stored
         assert cli.root.aliases == ["c", "main", "app"]  # type: ignore[attr-defined]
 
     def test_format_name_with_aliases_in_help(self, cli_runner: Any) -> None:
         """Test that format_name_with_aliases works for help display."""
-        from click_extended.core.decorators.command import Command
 
         cmd = Command(name="deploy", aliases=["d", "push"])
         formatted = cmd.format_name_with_aliases()
@@ -1846,7 +1626,6 @@ class TestRootNodeAliasInvocation:
 
     def test_empty_aliases_filtered_in_format(self, cli_runner: Any) -> None:
         """Test that empty aliases are filtered out in formatting."""
-        from click_extended.core.decorators.command import Command
 
         cmd = Command(name="build", aliases=["b", "", "compile", ""])
         formatted = cmd.format_name_with_aliases()
@@ -1861,7 +1640,6 @@ class TestRootNodeAliasInvocation:
             """Run tests."""
             pass
 
-        # Aliases should be accessible via the root node
         assert test.root.aliases == ["t", "check"]  # type: ignore[attr-defined]
         assert test.root.name == "test"  # type: ignore[attr-defined]
 
@@ -1869,19 +1647,17 @@ class TestRootNodeAliasInvocation:
         self, cli_runner: Any
     ) -> None:
         """Test that group aliases are preserved with subcommands."""
-        import click
 
         @group(aliases="c")
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def test() -> None:
+        @cli.command()
+        def test() -> None:  # type: ignore
             """Test command."""
             click.echo("Testing")
 
-        # Group aliases should be preserved
         assert cli.root.aliases == "c"  # type: ignore[attr-defined]
 
         result = cli_runner.invoke(cli, ["test"])
@@ -1889,19 +1665,17 @@ class TestRootNodeAliasInvocation:
 
     def test_subcommand_with_aliases(self, cli_runner: Any) -> None:
         """Test subcommand with its own aliases."""
-        import click
 
         @group()
         def cli() -> None:
             """Main CLI."""
             pass
 
-        @cli.command(aliases=["d", "push"])  # type: ignore[misc]
-        def deploy() -> None:
+        @cli.command(aliases=["d", "push"])
+        def deploy() -> None:  # type: ignore
             """Deploy application."""
             click.echo("Deploying")
 
-        # Note: Click's native alias support is limited
         result = cli_runner.invoke(cli, ["deploy"])
         assert result.exit_code == 0
         assert "Deploying" in result.output
@@ -1910,7 +1684,6 @@ class TestRootNodeAliasInvocation:
         self, cli_runner: Any
     ) -> None:
         """Test that empty aliases are filtered out."""
-        from click_extended.core.decorators.command import Command
 
         cmd = Command(name="build", aliases=["", "b", "", "compile"])
         filtered = [a for a in cmd.aliases if a]  # type: ignore[union-attr]
@@ -1925,7 +1698,6 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_command_requires_root_instance(self) -> None:
         """Test that ClickCommand raises ValueError without root_instance."""
-        from click_extended.core.other._click_command import ClickCommand
 
         with pytest.raises(
             ValueError, match="root_instance is required for ClickCommand"
@@ -1934,7 +1706,6 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_group_requires_root_instance(self) -> None:
         """Test that ClickGroup raises ValueError without root_instance."""
-        from click_extended.core.other._click_group import ClickGroup
 
         with pytest.raises(
             ValueError, match="root_instance is required for ClickGroup"
@@ -1943,8 +1714,6 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_command_with_root_instance(self) -> None:
         """Test that ClickCommand works with valid root_instance."""
-        from click_extended.core.decorators.command import Command
-        from click_extended.core.other._click_command import ClickCommand
 
         root = Command(name="test")
         click_cmd = ClickCommand(name="test", root_instance=root)
@@ -1954,8 +1723,6 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_group_with_root_instance(self) -> None:
         """Test that ClickGroup works with valid root_instance."""
-        from click_extended.core.decorators.group import Group
-        from click_extended.core.other._click_group import ClickGroup
 
         root = Group(name="test")
         click_grp = ClickGroup(name="test", root_instance=root)
@@ -1967,27 +1734,17 @@ class TestClickCommandAndGroupClasses:
         self, cli_runner: Any
     ) -> None:
         """Test ClickGroup.add_command with command that has string alias."""
-        import click
 
-        from click_extended.core.decorators.command import Command
-        from click_extended.core.decorators.group import Group
-        from click_extended.core.other._click_group import ClickGroup
-
-        # Create a group
         root_group = Group(name="cli")
         click_grp = ClickGroup(name="cli", root_instance=root_group)
 
-        # Create a command with a single alias
-        root_cmd = Command(name="deploy", aliases="d")
         click_cmd = click.Command(
             name="deploy", callback=lambda: click.echo("Deploying")
         )
         click_cmd.aliases = "d"  # type: ignore[attr-defined]
 
-        # Add command to group
         click_grp.add_command(click_cmd)
 
-        # Both name and alias should work
         assert "deploy" in click_grp.commands
         assert "d" in click_grp.commands
 
@@ -1995,25 +1752,17 @@ class TestClickCommandAndGroupClasses:
         self, cli_runner: Any
     ) -> None:
         """Test ClickGroup.add_command with command that has list of aliases."""
-        import click
 
-        from click_extended.core.decorators.group import Group
-        from click_extended.core.other._click_group import ClickGroup
-
-        # Create a group
         root_group = Group(name="cli")
         click_grp = ClickGroup(name="cli", root_instance=root_group)
 
-        # Create a command with multiple aliases
         click_cmd = click.Command(
             name="deploy", callback=lambda: click.echo("Deploying")
         )
         click_cmd.aliases = ["d", "push", "release"]  # type: ignore[attr-defined]
 
-        # Add command to group
         click_grp.add_command(click_cmd)
 
-        # Name and all aliases should work
         assert "deploy" in click_grp.commands
         assert "d" in click_grp.commands
         assert "push" in click_grp.commands
@@ -2029,15 +1778,14 @@ class TestClickCommandAndGroupClasses:
             """Main CLI."""
             pass
 
-        @cli.command()  # type: ignore[misc]
-        def deploy() -> None:
+        @cli.command()
+        def deploy() -> None:  # type: ignore
             """Deploy the application.
 
             This is the full docstring.
             """
             pass
 
-        # Help text should be extracted from first line of docstring
         result = cli_runner.invoke(cli, ["--help"])
         assert "Deploy the application" in result.output
 
@@ -2051,15 +1799,14 @@ class TestClickCommandAndGroupClasses:
             """Main CLI."""
             pass
 
-        @cli.group()  # type: ignore[misc]
-        def admin() -> None:
+        @cli.group()
+        def admin() -> None:  # type: ignore
             """Admin commands.
 
             These are administrative commands.
             """
             pass
 
-        # Help text should be extracted from first line of docstring
         result = cli_runner.invoke(cli, ["--help"])
         assert "Admin commands" in result.output
 
@@ -2073,12 +1820,11 @@ class TestClickCommandAndGroupClasses:
             """Main CLI."""
             pass
 
-        @cli.command(help="Explicit help text")  # type: ignore[misc]
-        def deploy() -> None:
+        @cli.command(help="Explicit help text")
+        def deploy() -> None:  # type: ignore
             """Docstring that should be ignored."""
             pass
 
-        # Help text should be the explicit parameter, not docstring
         result = cli_runner.invoke(cli, ["--help"])
         assert "Explicit help text" in result.output
         assert "Docstring that should be ignored" not in result.output
@@ -2093,12 +1839,11 @@ class TestClickCommandAndGroupClasses:
             """Main CLI."""
             pass
 
-        @cli.group(help="Explicit group help")  # type: ignore[misc]
-        def admin() -> None:
+        @cli.group(help="Explicit group help")
+        def admin() -> None:  # type: ignore
             """Docstring that should be ignored."""
             pass
 
-        # Help text should be the explicit parameter, not docstring
         result = cli_runner.invoke(cli, ["--help"])
         assert "Explicit group help" in result.output
         assert "Docstring that should be ignored" not in result.output
@@ -2113,12 +1858,11 @@ class TestClickCommandAndGroupClasses:
             """Main CLI."""
             pass
 
-        @cli.group(aliases="adm", help="Admin commands")  # type: ignore[misc]
-        def admin() -> None:
+        @cli.group(aliases="adm", help="Admin commands")
+        def admin() -> None:  # type: ignore
             """Admin commands."""
             pass
 
-        # Both name and alias should work
         result1 = cli_runner.invoke(cli, ["admin", "--help"])
         assert result1.exit_code == 0
 
@@ -2129,29 +1873,20 @@ class TestClickCommandAndGroupClasses:
         self, cli_runner: Any
     ) -> None:
         """Test format_commands with command that has empty string aliases."""
-        import click
 
-        from click_extended.core.decorators.group import Group
-        from click_extended.core.other._click_group import ClickGroup
-
-        # Create a group
         root_group = Group(name="cli")
         click_grp = ClickGroup(name="cli", root_instance=root_group)
 
-        # Create a command with aliases including empty strings
         click_cmd = click.Command(
             name="deploy", callback=lambda: click.echo("Deploying")
         )
         click_cmd.aliases = ["d", "", "push", ""]  # type: ignore[attr-defined]
 
-        # Add command to group
         click_grp.add_command(click_cmd)
 
-        # Format commands - should filter empty aliases
         formatter = click.HelpFormatter()
         click_grp.format_commands(click.Context(click_grp), formatter)
 
-        # Should have formatted properly with non-empty aliases
         assert "deploy (d, push)" in formatter.getvalue()
 
     def test_group_decorator_extracts_docstring_help(
@@ -2167,17 +1902,12 @@ class TestClickCommandAndGroupClasses:
             """
             pass
 
-        # Help text should be extracted from first line
         result = cli_runner.invoke(admin, ["--help"])
         assert result.exit_code == 0
         assert "Admin panel commands" in result.output
 
     def test_click_group_add_method_returns_self(self) -> None:
         """Test that ClickGroup.add() returns self for chaining."""
-        import click
-
-        from click_extended.core.decorators.group import Group
-        from click_extended.core.other._click_group import ClickGroup
 
         root_group = Group(name="cli")
         click_grp = ClickGroup(name="cli", root_instance=root_group)
@@ -2185,7 +1915,6 @@ class TestClickCommandAndGroupClasses:
         cmd1 = click.Command(name="cmd1", callback=lambda: None)
         cmd2 = click.Command(name="cmd2", callback=lambda: None)
 
-        # Test method chaining
         result = click_grp.add(cmd1).add(cmd2)
 
         assert result is click_grp
@@ -2200,11 +1929,9 @@ class TestCommandAliases:
         self, cli_runner: Any
     ) -> None:
 
-        # Creating with aliases including empty strings
         cmd = Command(name="test", aliases=["t", "", "check"])
         formatted = cmd.format_name_with_aliases()
 
-        # Empty strings are filtered out by format_name_with_aliases
         assert formatted == "test (t, check)"
 
     def test_format_name_with_aliases_no_aliases(self) -> None:
@@ -2225,16 +1952,12 @@ class TestClickDecoratorMethods:
 
     def test_command_get_click_decorator(self) -> None:
         """Test Command._get_click_decorator returns click.command."""
-        from click_extended.core.decorators.command import Command
 
-        decorator = Command._get_click_decorator()
-        # Should return click.command function
+        decorator = Command._get_click_decorator()  # type: ignore
         assert callable(decorator)
 
     def test_group_get_click_decorator(self) -> None:
         """Test Group._get_click_decorator returns click.group."""
-        from click_extended.core.decorators.group import Group
 
-        decorator = Group._get_click_decorator()
-        # Should return click.group function
+        decorator = Group._get_click_decorator()  # type: ignore
         assert callable(decorator)

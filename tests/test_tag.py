@@ -2,9 +2,16 @@
 
 from typing import Any
 
-import pytest
+import click
 
+from click_extended.core.decorators.argument import argument
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.env import env
+from click_extended.core.decorators.group import group
+from click_extended.core.decorators.option import option
 from click_extended.core.decorators.tag import Tag, tag
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.nodes.node import Node
 from click_extended.core.nodes.parent_node import ParentNode
 from click_extended.core.other._tree import Tree
 
@@ -46,7 +53,6 @@ class TestTagInit:
 
     def test_tag_extends_node_class(self) -> None:
         """Test that Tag inherits from Node."""
-        from click_extended.core.nodes.node import Node
 
         tag_node = Tag(name="test_tag")
 
@@ -326,7 +332,6 @@ class TestTagGetProvidedValues:
         tag_node = Tag(name="test_tag")
         parents = [ConcreteParentNode(name=f"opt{i}") for i in range(5)]
 
-        # Mark first, third, and fifth as provided
         for i, parent in enumerate(parents):
             parent.was_provided = i % 2 == 0
             tag_node.parent_nodes.append(parent)
@@ -363,11 +368,9 @@ class TestTagGetProvidedValues:
 
         tag_node.parent_nodes.append(parent)
 
-        # Initially not provided
         provided = tag_node.get_provided_values()
         assert provided == []
 
-        # Change to provided
         parent.was_provided = True
         provided = tag_node.get_provided_values()
         assert provided == ["option1"]
@@ -378,7 +381,7 @@ class TestTagAsDecorator:
 
     def setup_method(self) -> None:
         """Clear pending nodes before each test."""
-        Tree._pending_nodes.clear()  # type: ignore[attr-defined]
+        Tree._pending_nodes.clear()  # type: ignore
 
     def test_as_decorator_returns_callable(self) -> None:
         """Test as_decorator returns a callable decorator."""
@@ -390,7 +393,7 @@ class TestTagAsDecorator:
         """Test as_decorator creates Tag instance."""
 
         @Tag.as_decorator(name="validation")
-        def test_func() -> None:
+        def test_func() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -403,7 +406,7 @@ class TestTagAsDecorator:
         """Test as_decorator queues tag in Tree._pending_nodes."""
 
         @Tag.as_decorator(name="test_tag")
-        def test_func() -> None:
+        def test_func() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -444,11 +447,11 @@ class TestTagAsDecorator:
         """Test multiple tags can be created with decorator."""
 
         @Tag.as_decorator(name="tag1")
-        def func1() -> None:
+        def func1() -> None:  # type: ignore
             pass
 
         @Tag.as_decorator(name="tag2")
-        def func2() -> None:
+        def func2() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -468,7 +471,7 @@ class TestTagDecoratorFunction:
         """Test tag() function creates Tag instance."""
 
         @tag(name="validation")
-        def test_func() -> None:
+        def test_func() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -480,7 +483,7 @@ class TestTagDecoratorFunction:
         """Test tag() queues tag in Tree._pending_nodes."""
 
         @tag(name="test_tag")
-        def test_func() -> None:
+        def test_func() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -491,7 +494,7 @@ class TestTagDecoratorFunction:
         """Test tag() function with name parameter."""
 
         @tag(name="custom_tag")
-        def test_func() -> None:
+        def test_func() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -499,9 +502,6 @@ class TestTagDecoratorFunction:
 
     def test_tag_decorator_on_command(self, cli_runner: Any) -> None:
         """Test tag() decorator works with @command."""
-        import click
-
-        from click_extended.core.decorators.command import command
 
         @command()
         @tag(name="test_tag")
@@ -514,7 +514,6 @@ class TestTagDecoratorFunction:
 
     def test_tag_decorator_on_group(self, cli_runner: Any) -> None:
         """Test tag() decorator works with @group."""
-        from click_extended.core.decorators.group import group
 
         @group()
         @tag(name="test_tag")
@@ -531,7 +530,7 @@ class TestTagDecoratorFunction:
         @tag(name="tag1")
         @tag(name="tag2")
         @tag(name="tag3")
-        def test_func() -> None:
+        def test_func() -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -547,15 +546,10 @@ class TestTagIntegrationWithChildren:
 
     def setup_method(self) -> None:
         """Clear pending nodes before each test."""
-        Tree._pending_nodes.clear()  # type: ignore[attr-defined]
+        Tree._pending_nodes.clear()  # type: ignore
 
     def test_child_handle_tag_receives_tag(self, cli_runner: Any) -> None:
         """Test ChildNode.handle_tag() receives tag values."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
 
         tag_values_received = {}
 
@@ -563,7 +557,7 @@ class TestTagIntegrationWithChildren:
             def handle_tag(
                 self, value: Any, context: Any, **kwargs: Any
             ) -> None:
-                tag_values_received.update(value)
+                tag_values_received.update(value)  # type: ignore
 
         @command()
         @option("--opt", tags=["validation"])
@@ -578,17 +572,11 @@ class TestTagIntegrationWithChildren:
 
     def test_child_validates_tag_values(self, cli_runner: Any) -> None:
         """Test ChildNode can validate via handle_tag()."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
 
         class ValidatingChild(ChildNode):
             def handle_tag(
                 self, value: Any, context: Any, **kwargs: Any
             ) -> None:
-                # Check if any values were provided
                 provided_count = sum(1 for v in value.values() if v is not None)
                 if provided_count == 0:
                     raise click.UsageError("At least one option required")
@@ -601,22 +589,15 @@ class TestTagIntegrationWithChildren:
         def cmd(opt1: str, opt2: str) -> None:
             click.echo("Success")
 
-        # No options should fail
         result = cli_runner.invoke(cmd, [])
         assert result.exit_code != 0
         assert "At least one option required" in result.output
 
-        # With option should succeed
         result = cli_runner.invoke(cmd, ["--opt1=value"])
         assert result.exit_code == 0
 
     def test_child_access_tag_get_value(self, cli_runner: Any) -> None:
         """Test ChildNode can access tag values via handle_tag()."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
 
         captured_values: dict[str, Any] = {}
 
@@ -641,11 +622,6 @@ class TestTagIntegrationWithChildren:
 
     def test_multiple_children_with_same_tag(self, cli_runner: Any) -> None:
         """Test multiple ChildNodes can handle same tag."""
-        import click
-
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
-        from click_extended.core.nodes.child_node import ChildNode
 
         child1_called: list[str] = []
         child2_called: list[str] = []
@@ -709,7 +685,6 @@ class TestTagEdgeCases:
         tag_node.parent_nodes.append(parent)
         tag_node.parent_nodes.append(parent)
 
-        # Should have duplicate references
         assert len(tag_node.parent_nodes) == 2
         assert tag_node.parent_nodes[0] is parent
         assert tag_node.parent_nodes[1] is parent
@@ -724,7 +699,6 @@ class TestTagEdgeCases:
 
         value = tag_node.get_value()
 
-        # Both should be in the dict even though their values are None
         assert "opt1" in value
         assert "opt2" in value
         assert value["opt1"] is None
@@ -747,12 +721,6 @@ class TestTagEdgeCases:
 
     def test_tag_with_mixed_parent_types(self, cli_runner: Any) -> None:
         """Test tag works with options, arguments, and env mixed."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.env import env
-        from click_extended.core.decorators.option import option
 
         @command()
         @option("--opt", tags=["mixed"])

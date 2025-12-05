@@ -2,11 +2,9 @@
 
 import sys
 from io import StringIO
-from typing import Any
 from unittest.mock import Mock, patch
 
 import click
-import pytest
 from click.testing import CliRunner
 
 from click_extended.errors import (
@@ -69,7 +67,6 @@ class TestClickExtendedError:
         with patch("click_extended.errors.echo") as mock_echo:
             error.show()
             assert mock_echo.call_count >= 1
-            # Check that first call used sys.stderr
             call_kwargs = mock_echo.call_args_list[0][1]
             assert call_kwargs["file"] == sys.stderr
 
@@ -82,7 +79,7 @@ class TestContextAwareError:
         error = ContextAwareError("Test error")
         assert error.message == "Test error"
         assert error.context is None
-        assert error._node_name == "unknown"
+        assert error._node_name == "unknown"  # type: ignore
 
     def test_init_with_context(self) -> None:
         """Test creating error inside Click context."""
@@ -91,10 +88,10 @@ class TestContextAwareError:
         def dummy() -> None:
             error = ContextAwareError("Test error")
             assert error.context is not None
-            assert error._node_name == "unknown"  # No click_extended meta
+            assert error._node_name == "unknown"  # type: ignore
 
         runner = CliRunner()
-        result = runner.invoke(dummy, [])
+        runner.invoke(dummy, [])
 
     def test_resolve_node_name_with_child(self) -> None:
         """Test _resolve_node_name() with child node in context."""
@@ -107,7 +104,7 @@ class TestContextAwareError:
             ctx.meta["click_extended"] = {"child_node": mock_child}
 
             error = ContextAwareError("Test error")
-            assert error._node_name == "test_child"
+            assert error._node_name == "test_child"  # type: ignore
 
         runner = CliRunner()
         runner.invoke(dummy, [])
@@ -123,7 +120,7 @@ class TestContextAwareError:
             ctx.meta["click_extended"] = {"parent_node": mock_parent}
 
             error = ContextAwareError("Test error")
-            assert error._node_name == "test_parent"
+            assert error._node_name == "test_parent"  # type: ignore
 
         runner = CliRunner()
         runner.invoke(dummy, [])
@@ -139,7 +136,7 @@ class TestContextAwareError:
             ctx.meta["click_extended"] = {"root_node": mock_root}
 
             error = ContextAwareError("Test error")
-            assert error._node_name == "test_root"
+            assert error._node_name == "test_root"  # type: ignore
 
         runner = CliRunner()
         runner.invoke(dummy, [])

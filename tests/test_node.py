@@ -53,10 +53,8 @@ class TestNode:
         child = ConcreteNode(name="child")
         node = ConcreteNode(name="parent", children={"key": child})
 
-        # Should have one child initially
         assert len(node) == 1
 
-        # Setting to None should clear children
         node.children = None  # type: ignore[assignment]
 
         assert node.children == {}

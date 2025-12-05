@@ -161,15 +161,12 @@ class TestToDatetimeMultipleFormats:
             assert isinstance(date, datetime)
             click.echo(f"Date: {date.date()}")
 
-        # Test first format (simplified)
         result = cli_runner.invoke(cmd, ["--date", "2024-12-04"])
         assert result.exit_code == 0
 
-        # Test second format (strptime)
         result = cli_runner.invoke(cmd, ["--date", "04/12/2024"])
         assert result.exit_code == 0
 
-        # Test third format (simplified)
         result = cli_runner.invoke(cmd, ["--date", "12-04-2024"])
         assert result.exit_code == 0
 
@@ -236,8 +233,8 @@ class TestToDatetimeTuples:
         @to_datetime("%Y-%m-%d")
         def cmd(dates: Any) -> None:
             assert isinstance(dates, tuple)
-            click.echo(f"Count: {len(dates)}")
-            for i, date in enumerate(dates, 1):
+            click.echo(f"Count: {len(dates)}")  # type: ignore
+            for i, date in enumerate(dates, 1):  # type: ignore
                 assert isinstance(date, datetime)
                 click.echo(f"Date {i}: {date.date()}")
 
@@ -260,8 +257,8 @@ class TestToDatetimeTuples:
         @to_datetime("%Y-%m-%d", "%d/%m/%Y")
         def cmd(dates: Any) -> None:
             assert isinstance(dates, tuple)
-            click.echo(f"Count: {len(dates)}")
-            for date in dates:
+            click.echo(f"Count: {len(dates)}")  # type: ignore
+            for date in dates:  # type: ignore
                 assert isinstance(date, datetime)
                 click.echo(f"Year: {date.year}")
 
@@ -326,11 +323,9 @@ class TestToDatetimeErrors:
         def cmd(date: Any) -> None:
             click.echo(f"Date: {date}")
 
-        # Invalid month
         result = cli_runner.invoke(cmd, ["--date", "2024-13-01"])
         assert result.exit_code != 0
 
-        # Invalid day
         result = cli_runner.invoke(cmd, ["--date", "2024-02-30"])
         assert result.exit_code != 0
 
@@ -343,7 +338,6 @@ class TestToDatetimeErrors:
         def cmd(date: Any) -> None:
             click.echo(f"Date: {date}")
 
-        # Missing day
         result = cli_runner.invoke(cmd, ["--date", "2024-12"])
         assert result.exit_code != 0
 
@@ -464,10 +458,10 @@ class TestToDatetimePractical:
         @to_datetime("YYYY-MM-DD")
         def cmd(event_dates: Any) -> None:
             assert isinstance(event_dates, tuple)
-            click.echo(f"Total events: {len(event_dates)}")
+            click.echo(f"Total events: {len(event_dates)}")  # type: ignore
             if event_dates:
-                earliest = min(event_dates)
-                click.echo(f"First event: {earliest.date()}")
+                earliest = min(event_dates)  # type: ignore
+                click.echo(f"First event: {earliest.date()}")  # type: ignore
 
         result = cli_runner.invoke(
             cmd, ["2024-12-10", "2024-12-15", "2024-12-20"]

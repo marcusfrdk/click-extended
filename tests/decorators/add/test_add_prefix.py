@@ -137,7 +137,7 @@ class TestAddPrefixFlatTuple:
         def cmd(names: Any) -> None:
             assert names is not None
             assert isinstance(names, tuple)
-            assert len(names) == 3
+            assert len(names) == 3  # type: ignore
             assert names[0] == "user_alice"
             assert names[1] == "user_bob"
             assert names[2] == "user_charlie"
@@ -190,7 +190,7 @@ class TestAddPrefixNestedTuple:
         def cmd(groups: Any) -> None:
             assert groups is not None
             assert isinstance(groups, tuple)
-            assert len(groups) == 2
+            assert len(groups) == 2  # type: ignore
             assert groups[0][0] == "team_alpha"
             assert groups[0][1] == "team_beta"
             assert groups[1][0] == "team_gamma"
@@ -220,10 +220,8 @@ class TestAddPrefixNestedTuple:
         def cmd(envs: Any) -> None:
             assert envs is not None
             assert len(envs) == 2
-            # First environment group
             assert envs[0][0] == "env-dev"
             assert envs[0][1] == "env-staging"
-            # Second environment group
             assert envs[1][0] == "env-prod"
             assert envs[1][1] == "env-backup"
 
@@ -251,10 +249,8 @@ class TestAddPrefixNestedTuple:
         def cmd(batches: Any) -> None:
             assert batches is not None
             assert len(batches) == 2
-            # First batch
             for filename in batches[0]:
                 assert filename.startswith("v2.0_")
-            # Second batch
             assert batches[1][0] == "v2.0_module1.py"
             assert batches[1][1] == "v2.0_module2.py"
             assert batches[1][2] == "v2.0_module3.py"
@@ -326,10 +322,8 @@ class TestAddPrefixPractical:
         @add_prefix("app_")
         def cmd(tables: Any) -> None:
             assert tables is not None
-            # First app tables
             assert tables[0][0] == "app_users"
             assert tables[0][1] == "app_sessions"
-            # Second app tables
             assert tables[1][0] == "app_products"
             assert tables[1][1] == "app_orders"
 

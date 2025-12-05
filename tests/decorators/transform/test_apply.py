@@ -277,7 +277,6 @@ class TestApplyChaining:
 
         result = cli_runner.invoke(cmd, ["--value", "3"])
         assert result.exit_code == 0
-        # 3 * 2 = 6, then 6 + 10 = 16
         assert "Value: 16" in result.output
 
     def test_chain_three_applies(self, cli_runner: CliRunner) -> None:
@@ -293,7 +292,6 @@ class TestApplyChaining:
 
         result = cli_runner.invoke(cmd, ["--text", "hi"])
         assert result.exit_code == 0
-        # "hi" -> "HI" -> "HI!" -> "HI!HI!"
         assert "Text: HI!HI!" in result.output
 
     def test_chain_with_type_conversions(self, cli_runner: CliRunner) -> None:
@@ -398,7 +396,6 @@ class TestApplyWithMultipleOptions:
 
         result = cli_runner.invoke(cmd, ["--first", "1", "--second", "2"])
         assert result.exit_code == 0
-        # Only second should be transformed
         assert "First: 1, Second: 200" in result.output
 
 

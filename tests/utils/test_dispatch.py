@@ -16,13 +16,17 @@ from click_extended.errors import (
     ProcessError,
     UnhandledTypeError,
 )
+from click_extended.utils.dispatch import _determine_handler  # type: ignore
+from click_extended.utils.dispatch import _extract_inner_types  # type: ignore
 from click_extended.utils.dispatch import (
-    _determine_handler,
-    _extract_inner_types,
-    _get_implemented_handlers,
-    _is_handler_implemented,
-    _should_call_handler,
-    _validate_handler_type,
+    _get_implemented_handlers,  # type: ignore
+)
+from click_extended.utils.dispatch import (
+    _is_handler_implemented,  # type: ignore
+)
+from click_extended.utils.dispatch import _should_call_handler  # type: ignore
+from click_extended.utils.dispatch import _validate_handler_type  # type: ignore
+from click_extended.utils.dispatch import (
     dispatch_to_child,
     dispatch_to_child_async,
     has_async_handlers,
@@ -49,13 +53,11 @@ class TestExtractInnerTypes:
 
     def test_tuple_hint(self) -> None:
         """Test extracting from tuple[T, ...] hint."""
-        # tuple[int, ...]
         hint = tuple[int, ...]
         assert _extract_inner_types(hint) == {int}
 
     def test_tuple_multiple_types(self) -> None:
         """Test extracting from tuple with multiple specific types."""
-        # tuple[int, str, float] (not variadic)
         hint = tuple[int, str, float]
         assert _extract_inner_types(hint) == {int, str, float}
 
@@ -74,12 +76,10 @@ class TestExtractInnerTypes:
 
     def test_dict_hint(self) -> None:
         """Test extracting from dict[K, V] hint."""
-        # Should extract value type (V)
         assert _extract_inner_types(dict[str, int]) == {int}
 
     def test_nested_tuple_hint(self) -> None:
         """Test extracting from nested tuple hint."""
-        # tuple[tuple[int, ...], ...]
         inner = tuple[int, ...]
         outer = tuple[inner, ...]
         assert _extract_inner_types(outer) == {int}
@@ -546,7 +546,6 @@ class TestDispatchToChild:
 
         class CustomChild(MockChildNode):
             def handle_int(self, value: int, context: Any) -> None:
-                # Return None to preserve original value
                 return None
 
         child = CustomChild()
@@ -563,7 +562,6 @@ class TestDispatchToChild:
 
         class CustomChild(MockChildNode):
             def handle_none(self, context: Any) -> None:
-                # Validation only, return None
                 return None
 
         child = CustomChild()
@@ -617,7 +615,6 @@ class TestDispatchToChild:
 
         class CustomChild(MockChildNode):
             def handle_int(self, value: str, context: Any) -> int:
-                # Type hint says str but value passed is int
                 return int(value)
 
         child = CustomChild()
@@ -781,7 +778,6 @@ class TestDispatchToChildAsync:
 
         class CustomChild(MockChildNode):
             async def handle_int(self, value: str, context: Any) -> int:
-                # Type hint says str but value passed is int
                 return int(value)
 
         child = CustomChild()

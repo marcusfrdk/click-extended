@@ -180,9 +180,7 @@ class TestToCaseVariations:
         @option("text", default=None)
         @to_meme_case()
         def cmd(text: Any) -> None:
-            # Meme case alternates upper/lower case
             assert len(text) == len("hello world")
-            # Just verify it's not the original
             assert text != "hello world"
 
         result = cli_runner.invoke(cmd, ["--text", "hello world"])
@@ -200,7 +198,7 @@ class TestToCaseFlatTuple:
         @to_snake_case()
         def cmd(texts: Any) -> None:
             assert isinstance(texts, tuple)
-            assert len(texts) == 3
+            assert len(texts) == 3  # type: ignore
             assert texts[0] == "hello_world"
             assert texts[1] == "foo_bar"
             assert texts[2] == "test_case"
@@ -218,7 +216,7 @@ class TestToCaseFlatTuple:
         @to_camel_case()
         def cmd(texts: Any) -> None:
             assert isinstance(texts, tuple)
-            assert len(texts) == 2
+            assert len(texts) == 2  # type: ignore
             assert texts[0] == "helloWorld"
             assert texts[1] == "fooBar"
 
@@ -265,8 +263,8 @@ class TestToCaseNestedTuple:
         @to_snake_case()
         def cmd(texts: Any) -> None:
             assert isinstance(texts, tuple)
-            assert len(texts) == 2
-            assert all(isinstance(t, tuple) for t in texts)
+            assert len(texts) == 2  # type: ignore
+            assert all(isinstance(t, tuple) for t in texts)  # type: ignore
             assert texts[0][0] == "hello_world"
             assert texts[0][1] == "foo_bar"
             assert texts[1][0] == "test_case"
@@ -293,7 +291,7 @@ class TestToCaseNestedTuple:
         @to_camel_case()
         def cmd(texts: Any) -> None:
             assert isinstance(texts, tuple)
-            assert len(texts) == 2
+            assert len(texts) == 2  # type: ignore
             assert texts[0][0] == "helloWorld"
             assert texts[0][1] == "fooBar"
             assert texts[1][0] == "testCase"
@@ -486,12 +484,10 @@ class TestToCasePractical:
         @to_snake_case()
         def cmd(texts: Any) -> None:
             assert isinstance(texts, tuple)
-            assert len(texts) == 2
-            # First group
+            assert len(texts) == 2  # type: ignore
             assert texts[0][0] == "first_item"
             assert texts[0][1] == "second_item"
             assert texts[0][2] == "third_item"
-            # Second group
             assert texts[1][0] == "fourth_item"
             assert texts[1][1] == "fifth_item"
             assert texts[1][2] == "sixth_item"

@@ -1,10 +1,8 @@
 """Tests for the greater_than decorator."""
 
 from datetime import date, datetime, time
-from decimal import Decimal
 
 import click
-import pytest
 from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
@@ -234,7 +232,6 @@ class TestMoreThanInclusive:
         def cmd(value: int | None) -> None:
             pass
 
-        # Should reject equal value
         result = cli_runner.invoke(cmd, ["--value", "10"])
         assert result.exit_code != 0
         assert "Value must be more than 10" in result.output

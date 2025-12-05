@@ -127,14 +127,12 @@ class TestInteractiveFunctionDefaults:
     def test_single_mode_list_default_uses_first(self) -> None:
         """Test single mode with list default uses first item."""
         with patch("sys.stdin.isatty", return_value=False):
-            # In single mode, list default should be handled as-is
             result = interactive_selection(["A", "B", "C"], default=["B", "C"])
             assert result == ["B", "C"]
 
     def test_nonexistent_default_not_validated_in_non_tty(self) -> None:
         """Test that nonexistent default values are returned as-is in non-TTY mode."""
         with patch("sys.stdin.isatty", return_value=False):
-            # Non-TTY mode simply returns the default without validation
             result = interactive_selection(["A", "B"], default="Z")
             assert result == "Z"
 
@@ -306,9 +304,7 @@ class TestSelectionDecoratorWithCommand:
 
     def test_decorator_can_be_imported_and_used(self) -> None:
         """Test that selection decorator is accessible and usable."""
-        # Simply verify the decorator exists and is callable
         assert callable(selection)
-        # Verify it returns a decorator when called
         decorator_fn = selection("test_param", ["A", "B"], default="A")
         assert callable(decorator_fn)
 

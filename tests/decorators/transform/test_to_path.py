@@ -548,7 +548,6 @@ class TestToPathResolve:
         @option("path", default=None)
         @to_path(exists=False)
         def cmd(path: Path | None) -> None:
-            # Should not contain ~ after expansion
             click.echo(f"Has tilde: {'~' in str(path)}")
 
         result = cli_runner.invoke(cmd, ["--path", "~/test.txt"])
@@ -735,10 +734,8 @@ class TestToPathNestedTuple:
         def cmd(configs: tuple[tuple[Path, ...], ...] | None) -> None:
             assert configs is not None
             assert len(configs) == 2
-            # First group
             assert configs[0][0].suffix == ".yaml"
             assert configs[0][1].suffix == ".yaml"
-            # Second group
             assert configs[1][0].suffix == ".yml"
             assert configs[1][1].suffix == ".yml"
             click.echo("Success")
@@ -772,7 +769,6 @@ class TestToPathNestedTuple:
         def cmd(outputs: tuple[tuple[Path, ...], ...] | None) -> None:
             assert outputs is not None
             assert len(outputs) == 2
-            # Check that parents were created
             assert outputs[0][0].parent.exists()
             assert outputs[0][1].parent.exists()
             assert outputs[1][0].parent.exists()
@@ -816,7 +812,6 @@ class TestToPathNestedTuple:
                 str(file2),
             ],
         )
-        # Should fail because file2 doesn't have .py extension
         assert result.exit_code != 0
         assert "does not have an allowed extension" in result.output
 

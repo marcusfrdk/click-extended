@@ -538,9 +538,9 @@ class TestLoadCsvFlatTuple:
         def cmd(files: Any) -> None:
             assert files is not None
             assert isinstance(files, tuple)
-            assert len(files) == 3
+            assert len(files) == 3  # type: ignore
             total = sum(
-                sum(int(row["value"]) for row in csv_data) for csv_data in files
+                sum(int(row["value"]) for row in csv_data) for csv_data in files  # type: ignore
             )
             click.echo(f"Total: {total}")
 
@@ -599,9 +599,9 @@ class TestLoadCsvNestedTuple:
         def cmd(quarters: Any) -> None:
             assert quarters is not None
             assert isinstance(quarters, tuple)
-            assert len(quarters) == 2
-            for i, quarter in enumerate(quarters, 1):
-                total = sum(int(csv_data[0]["revenue"]) for csv_data in quarter)
+            assert len(quarters) == 2  # type: ignore
+            for i, quarter in enumerate(quarters, 1):  # type: ignore
+                total = sum(int(csv_data[0]["revenue"]) for csv_data in quarter)  # type: ignore
                 click.echo(f"Q{i}: ${total}")
 
         result = cli_runner.invoke(

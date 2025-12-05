@@ -108,7 +108,6 @@ class TestValidateName:
         validate_name("my_option")
         validate_name("MY_OPTION")
         validate_name("my-option")
-        # Should not raise
 
     def test_validate_invalid_name_raises(self) -> None:
         """Test that invalid names raise ValueError."""

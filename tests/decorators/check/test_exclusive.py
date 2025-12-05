@@ -37,17 +37,14 @@ class TestExclusiveGroupMode:
         def cmd(format: str | None, json: bool, xml: bool) -> None:
             click.echo(f"Format: {format}, JSON: {json}, XML: {xml}")
 
-        # Test with --format
         result = cli_runner.invoke(cmd, ["--format", "yaml"])
         assert result.exit_code == 0
         assert "Format: yaml" in result.output
 
-        # Test with --json
         result = cli_runner.invoke(cmd, ["--json"])
         assert result.exit_code == 0
         assert "JSON: True" in result.output
 
-        # Test with --xml
         result = cli_runner.invoke(cmd, ["--xml"])
         assert result.exit_code == 0
         assert "XML: True" in result.output
@@ -122,12 +119,10 @@ class TestExclusiveTwoParams:
         def cmd(p: str | None, q: str | None) -> None:
             click.echo(f"P: {p}, Q: {q}")
 
-        # Test with p
         result = cli_runner.invoke(cmd, ["-p", "5"])
         assert result.exit_code == 0
         assert "P: 5, Q: None" in result.output
 
-        # Test with q
         result = cli_runner.invoke(cmd, ["-q", "10"])
         assert result.exit_code == 0
         assert "P: None, Q: 10" in result.output
@@ -155,12 +150,10 @@ class TestExclusiveManyParams:
         ) -> None:
             click.echo("Success")
 
-        # Each one alone should work
         for i in range(1, 6):
             result = cli_runner.invoke(cmd, [f"--opt{i}", "value"])
             assert result.exit_code == 0
 
-        # Two together should fail
         result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt3", "b"])
         assert result.exit_code == 1
         assert "mutually exclusive" in result.output
@@ -187,17 +180,14 @@ class TestExclusiveWithFlags:
             else:
                 click.echo("Mode: Normal")
 
-        # No flags - should work
         result = cli_runner.invoke(cmd, [])
         assert result.exit_code == 0
         assert "Mode: Normal" in result.output
 
-        # One flag - should work
         result = cli_runner.invoke(cmd, ["--verbose"])
         assert result.exit_code == 0
         assert "Mode: Verbose" in result.output
 
-        # Two flags - should fail
         result = cli_runner.invoke(cmd, ["--verbose", "--quiet"])
         assert result.exit_code == 1
         assert "mutually exclusive" in result.output
@@ -218,17 +208,14 @@ class TestExclusiveWithDefaults:
         def cmd(format: str, output: str) -> None:
             click.echo(f"Format: {format}, Output: {output}")
 
-        # Neither explicitly provided - should work
         result = cli_runner.invoke(cmd, [])
         assert result.exit_code == 0
         assert "Format: json, Output: stdout" in result.output
 
-        # One explicitly provided - should work
         result = cli_runner.invoke(cmd, ["--format", "xml"])
         assert result.exit_code == 0
         assert "Format: xml" in result.output
 
-        # Both explicitly provided - should fail
         result = cli_runner.invoke(cmd, ["--format", "xml", "--output", "file"])
         assert result.exit_code == 1
         assert "mutually exclusive" in result.output
@@ -309,7 +296,6 @@ class TestExclusiveEdgeCases:
         def cmd(real: str | None) -> None:
             click.echo(f"Real: {real}")
 
-        # Should work since only 'real' exists
         result = cli_runner.invoke(cmd, ["--real", "value"])
         assert result.exit_code == 0
 
@@ -338,12 +324,10 @@ class TestExclusivePractical:
             else:
                 click.echo("Exporting as default format")
 
-        # Each format alone should work
         for fmt in ["json", "xml", "yaml", "csv"]:
             result = cli_runner.invoke(export, [f"--{fmt}"])
             assert result.exit_code == 0
 
-        # Multiple formats should fail
         result = cli_runner.invoke(export, ["--json", "--xml"])
         assert result.exit_code == 1
 
@@ -367,11 +351,9 @@ class TestExclusivePractical:
             elif oauth:
                 click.echo(f"Logging in with OAuth: {oauth}")
 
-        # Each method alone should work
         result = cli_runner.invoke(login, ["--token", "abc123"])
         assert result.exit_code == 0
 
-        # Multiple methods should fail
         result = cli_runner.invoke(
             login, ["--token", "abc", "--password", "xyz"]
         )
@@ -398,10 +380,8 @@ class TestExclusivePractical:
             else:
                 click.echo("Level: Default")
 
-        # Each level alone should work
         result = cli_runner.invoke(run, ["--verbose"])
         assert result.exit_code == 0
 
-        # Multiple levels should fail
         result = cli_runner.invoke(run, ["--quiet", "--verbose"])
         assert result.exit_code == 1

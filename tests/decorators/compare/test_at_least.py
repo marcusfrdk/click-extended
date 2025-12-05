@@ -143,11 +143,9 @@ class TestAtLeastMultiple:
         def cmd(a: str | None, b: str | None, c: str | None) -> None:
             click.echo("Success")
 
-        # All three - should succeed
         result = cli_runner.invoke(cmd, ["--a", "1", "--b", "2", "--c", "3"])
         assert result.exit_code == 0
 
-        # Only two - should fail
         result = cli_runner.invoke(cmd, ["--a", "1", "--b", "2"])
         assert result.exit_code == 1
         assert "At least 3" in result.output
@@ -172,13 +170,11 @@ class TestAtLeastMultiple:
         ) -> None:
             click.echo("Success")
 
-        # Exactly 3 - should succeed
         result = cli_runner.invoke(
             cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"]
         )
         assert result.exit_code == 0
 
-        # Only 2 - should fail
         result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt2", "b"])
         assert result.exit_code == 1
 
@@ -198,11 +194,9 @@ class TestAtLeastWithFlags:
         def cmd(flag1: bool, flag2: bool, flag3: bool) -> None:
             click.echo("Success")
 
-        # Two flags - should succeed
         result = cli_runner.invoke(cmd, ["--flag1", "--flag2"])
         assert result.exit_code == 0
 
-        # One flag - should fail
         result = cli_runner.invoke(cmd, ["--flag1"])
         assert result.exit_code == 1
 
@@ -279,11 +273,9 @@ class TestAtLeastPractical:
         ) -> None:
             click.echo("Registration successful")
 
-        # With email - should succeed
         result = cli_runner.invoke(register, ["--email", "test@example.com"])
         assert result.exit_code == 0
 
-        # Without any contact - should fail
         result = cli_runner.invoke(register, [])
         assert result.exit_code == 1
 

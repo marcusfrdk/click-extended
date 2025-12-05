@@ -1,9 +1,8 @@
 """Tests for the to_timestamp decorator."""
 
-from datetime import date, datetime, time, timezone
+from datetime import datetime, timezone
 
 import click
-import pytest
 from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
@@ -62,7 +61,6 @@ class TestToTimestampBasic:
         @to_timestamp(unit="s")
         def cmd(t: int | None) -> None:
             assert isinstance(t, int)
-            # Just verify it's a valid timestamp
             assert t > 0
 
         result = cli_runner.invoke(cmd, ["--t", "10:30:00"])
@@ -299,7 +297,6 @@ class TestToTimestampPractical:
         @to_timestamp(unit="s")
         def process_date(start_date: int | None) -> None:
             assert isinstance(start_date, int)
-            # Date should be converted to midnight UTC timestamp
             expected = int(
                 datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc).timestamp()
             )
@@ -321,7 +318,6 @@ class TestToTimestampPractical:
         @to_timestamp(unit="s")
         def process_time(meeting_time: int | None) -> None:
             assert isinstance(meeting_time, int)
-            # Just verify it's a valid timestamp
             assert meeting_time > 0
             click.echo(f"Meeting time timestamp: {meeting_time}")
 

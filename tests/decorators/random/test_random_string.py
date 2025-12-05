@@ -22,7 +22,6 @@ class TestRandomStringBasic:
 
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
-        # Extract the token from output
         token = result.output.split("Token: ")[1].strip()
         assert len(token) == 8
 
@@ -42,7 +41,7 @@ class TestRandomStringBasic:
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that multiple invocations with different seeds generate different values."""
 
-        results = []
+        results: list[str] = []
         for i in range(5):
 
             @command()
@@ -53,7 +52,6 @@ class TestRandomStringBasic:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All results should be different (different seeds)
         assert len(set(results)) == 5
 
 
@@ -158,7 +156,6 @@ class TestRandomStringCharacterSets:
         token = result.output.split("Token: ")[1].strip()
         allowed = ascii_lowercase + ascii_uppercase + digits
         assert all(c in allowed for c in token)
-        # With 100 chars, should statistically contain mix of character types
         assert any(c in ascii_lowercase for c in token)
         assert any(c in ascii_uppercase for c in token)
         assert any(c in digits for c in token)
@@ -175,8 +172,6 @@ class TestRandomStringCharacterSets:
         assert result.exit_code == 0
         password = result.output.split("Password: ")[1].strip()
 
-        # With 50 characters and all types, we should see all character types
-        # (statistically extremely likely)
         assert any(c in ascii_lowercase for c in password)
         assert any(c in ascii_uppercase for c in password)
         assert any(c in digits for c in password)
@@ -270,7 +265,6 @@ class TestRandomStringIntegration:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         assert "Length: 16" in result.output
-        # Verify it's actually a string, not None
         assert "Token: None" not in result.output
 
     def test_randomness_quality(self, cli_runner: CliRunner) -> None:
@@ -285,11 +279,8 @@ class TestRandomStringIntegration:
         assert result.exit_code == 0
         value = result.output.split("Value: ")[1].strip()
 
-        # Check that we don't have obvious patterns like repeated characters
-        # Count consecutive duplicates
         max_consecutive = max(
             len(list(group))
             for _, group in __import__("itertools").groupby(value)
         )
-        # With 100 random characters, we shouldn't see more than 4-5 consecutive
         assert max_consecutive < 6, "String appears to have suspicious patterns"

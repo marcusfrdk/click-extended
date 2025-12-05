@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import click
-import pytest
 from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
@@ -178,7 +177,6 @@ class TestLoadJsonStrict:
     ) -> None:
         """Test load_json strict mode preserves decimal precision."""
         json_file = tmp_path / "precise.json"
-        # Use a number that loses precision with float
         json_file.write_text('{"value": 0.1}')
 
         @command()
@@ -188,7 +186,6 @@ class TestLoadJsonStrict:
         def cmd(file: Any) -> None:
             assert file is not None
             value = file["value"]
-            # Decimal preserves exact value
             click.echo(f"Value: {value}")
             click.echo(f"Exact: {value == Decimal('0.1')}")
 
@@ -279,7 +276,6 @@ class TestLoadJsonErrors:
 
         result = cli_runner.invoke(cmd, ["--file", str(json_file)])
         assert result.exit_code != 0
-        # JSON decode error should be raised
 
     def test_load_json_directory_path(
         self, cli_runner: CliRunner, tmp_path: Path
@@ -391,14 +387,11 @@ class TestLoadJsonTypes:
         @to_path()
         @load_json()
         def cmd(file: Any) -> None:
-            # When JSON contains null, it returns None but decorators
-            # may not pass it through. Check the type.
             click.echo(f"Type: {type(file).__name__}")
             click.echo(f"Is None: {file is None}")
 
         result = cli_runner.invoke(cmd, ["--file", str(json_file)])
         assert result.exit_code == 0
-        # Could be NoneType or PosixPath depending on decorator handling
         assert "Type:" in result.output
 
 
@@ -503,7 +496,7 @@ class TestLoadJsonFlatTuple:
         @option("files", default=None, nargs=3)
         @to_path()
         @load_json()
-        def cmd(files: Any) -> None:
+        def cmd(files: tuple[dict[str, Any], ...]) -> None:
             assert files is not None
             assert isinstance(files, tuple)
             assert len(files) == 3
@@ -560,7 +553,7 @@ class TestLoadJsonNestedTuple:
         @option("batches", multiple=True, nargs=2)
         @to_path()
         @load_json()
-        def cmd(batches: Any) -> None:
+        def cmd(batches: tuple[tuple[dict[str, Any], ...], ...]) -> None:
             assert batches is not None
             assert isinstance(batches, tuple)
             assert len(batches) == 2
@@ -600,10 +593,10 @@ class TestLoadJsonNestedTuple:
         @option("configs", multiple=True, nargs=2)
         @to_path()
         @load_json()
-        def cmd(configs: Any) -> None:
+        def cmd(configs: tuple[tuple[dict[str, Any], ...], ...]) -> None:
             assert configs is not None
             for group in configs:
-                merged = {}
+                merged: dict[str, Any] = {}
                 for cfg in group:
                     merged.update(cfg)
                 click.echo(

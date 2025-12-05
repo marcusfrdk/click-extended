@@ -41,7 +41,7 @@ class TestRandomIntegerBasic:
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that multiple invocations generate different values."""
 
-        values = []
+        values: list[int] = []
         for i in range(10):
 
             @command()
@@ -51,7 +51,7 @@ class TestRandomIntegerBasic:
 
             result = cli_runner.invoke(cmd)
             values.append(int(result.output.split("Value: ")[1].strip()))
-        # With range 0-1000, we should have at least some variety
+
         assert len(set(values)) > 1
 
     def test_single_value_range(self, cli_runner: CliRunner) -> None:
@@ -133,8 +133,7 @@ class TestRandomIntegerDistribution:
     def test_includes_boundaries(self, cli_runner: CliRunner) -> None:
         """Test that both min and max values can be generated."""
 
-        # Run multiple times to likely hit boundaries
-        values = set()
+        values: set[int] = set()
         for i in range(50):
 
             @command()
@@ -146,14 +145,12 @@ class TestRandomIntegerDistribution:
             value = int(result.output.strip())
             values.add(value)
 
-        # Should have seen 1, 2, and 3
         assert values == {1, 2, 3}
 
     def test_reasonable_distribution(self, cli_runner: CliRunner) -> None:
         """Test that distribution is reasonably uniform."""
 
-        # Collect sample
-        values = []
+        values: list[int] = []
         for i in range(100):
 
             @command()
@@ -165,9 +162,8 @@ class TestRandomIntegerDistribution:
             value = int(result.output.strip())
             values.append(value)
 
-        # Should see most digits (not a strict statistical test)
         unique_values = len(set(values))
-        assert unique_values >= 7  # At least 7 out of 10 digits
+        assert unique_values >= 7
 
 
 class TestRandomIntegerIntegration:

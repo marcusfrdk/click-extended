@@ -97,12 +97,10 @@ user:
         @to_path()
         @load_yaml()
         def cmd(file: Any) -> None:
-            # Empty YAML file returns None
             click.echo(f"Type: {type(file).__name__}")
 
         result = cli_runner.invoke(cmd, ["--file", str(yaml_file)])
         assert result.exit_code == 0
-        # Empty YAML may return None or empty dict depending on parser
         assert "Type:" in result.output
 
     def test_load_yaml_multiline_strings(
@@ -244,7 +242,6 @@ class TestLoadYamlErrors:
     ) -> None:
         """Test load_yaml with invalid YAML syntax."""
         yaml_file = tmp_path / "invalid.yaml"
-        # Use truly invalid YAML that will cause parse error
         yaml_file.write_text("key: [unclosed bracket")
 
         @command()
@@ -570,7 +567,7 @@ class TestLoadYamlFlatTuple:
         @option("configs", default=None, nargs=3)
         @to_path()
         @load_yaml()
-        def cmd(configs: Any) -> None:
+        def cmd(configs: tuple[dict[str, Any], ...]) -> None:
             assert configs is not None
             assert isinstance(configs, tuple)
             assert len(configs) == 3
@@ -628,12 +625,12 @@ class TestLoadYamlNestedTuple:
         @option("envs", multiple=True, nargs=2)
         @to_path()
         @load_yaml()
-        def cmd(envs: Any) -> None:
+        def cmd(envs: tuple[tuple[dict[str, Any], ...], ...]) -> None:
             assert envs is not None
             assert isinstance(envs, tuple)
             assert len(envs) == 2
             for env_group in envs:
-                env_name = env_group[0]["env"]
+                env_name: str = env_group[0]["env"]
                 total_instances = sum(cfg["instances"] for cfg in env_group)
                 click.echo(f"{env_name}: {total_instances} instances")
 

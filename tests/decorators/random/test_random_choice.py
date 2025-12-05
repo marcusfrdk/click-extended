@@ -22,7 +22,6 @@ class TestRandomChoiceBasic:
         assert result.exit_code == 0
         output = result.output.strip()
         assert "Status:" in output
-        # Extract status value
         status = output.split("Status: ")[1]
         assert status in ["active", "pending", "inactive"]
 
@@ -83,7 +82,7 @@ class TestRandomChoiceBasic:
         """Test that different seeds can produce different results."""
 
         choices = ["a", "b", "c", "d", "e"]
-        results = []
+        results: list[str] = []
 
         for i in range(10):
 
@@ -95,7 +94,6 @@ class TestRandomChoiceBasic:
             result = cli_runner.invoke(cmd)
             results.append(result.output.strip())
 
-        # Should have some variety (not all the same)
         assert len(set(results)) > 1
 
 
@@ -106,7 +104,7 @@ class TestRandomChoiceWeights:
         """Test equal weights behaves like no weights."""
 
         choices = ["a", "b", "c"]
-        results = []
+        results: list[str] = []
 
         for i in range(30):
 
@@ -118,21 +116,18 @@ class TestRandomChoiceWeights:
             result = cli_runner.invoke(cmd)
             results.append(result.output.strip())
 
-        # Should see all choices
         assert set(results) == {"a", "b", "c"}
 
     def test_high_weight_appears_more(self, cli_runner: CliRunner) -> None:
         """Test that higher weighted items appear more frequently."""
 
         choices = ["rare", "common"]
-        results = []
+        results: list[str] = []
 
         for i in range(100):
 
             @command()
-            @random_choice(
-                "value", choices, weights=[1, 9], seed=4300 + i
-            )  # 10% vs 90%
+            @random_choice("value", choices, weights=[1, 9], seed=4300 + i)
             def cmd(value: str) -> None:
                 click.echo(f"{value}")
 
@@ -142,8 +137,6 @@ class TestRandomChoiceWeights:
         rare_count = results.count("rare")
         common_count = results.count("common")
 
-        # "common" should appear much more than "rare"
-        # With 90% weight, expect roughly 90 out of 100
         assert 70 <= common_count <= 100
         assert 0 <= rare_count <= 30
 
@@ -151,7 +144,7 @@ class TestRandomChoiceWeights:
         """Test that zero-weighted items are never chosen."""
 
         choices = ["never", "always"]
-        results = []
+        results: list[str] = []
 
         for i in range(50):
 
@@ -163,7 +156,6 @@ class TestRandomChoiceWeights:
             result = cli_runner.invoke(cmd)
             results.append(result.output.strip())
 
-        # Should never see "never"
         assert "never" not in results
         assert all(r == "always" for r in results)
 
@@ -183,9 +175,8 @@ class TestRandomChoiceWeights:
         """Test that weights are normalized (don't need to sum to 1)."""
 
         choices = ["low", "high"]
+        results_10: list[str] = []
 
-        # Test with weights summing to 10
-        results_10 = []
         for i in range(50):
 
             @command()
@@ -196,8 +187,7 @@ class TestRandomChoiceWeights:
             result = cli_runner.invoke(cmd)
             results_10.append(result.output.strip())
 
-        # Test with weights summing to 100 (same ratio)
-        results_100 = []
+        results_100: list[str] = []
         for i in range(50):
 
             @command()
@@ -208,7 +198,6 @@ class TestRandomChoiceWeights:
             result = cli_runner.invoke(cmd)
             results_100.append(result.output.strip())
 
-        # Should produce same distribution (same seed, same ratio)
         assert results_10 == results_100
 
 
@@ -251,7 +240,7 @@ class TestRandomChoiceDistribution:
         """Test that all items in the list can be chosen."""
 
         choices = ["a", "b", "c", "d", "e"]
-        results = set()
+        results: set[str] = set()
 
         for i in range(100):
 
@@ -263,7 +252,6 @@ class TestRandomChoiceDistribution:
             result = cli_runner.invoke(cmd)
             results.add(result.output.strip())
 
-        # Should see all choices over 100 iterations
         assert results == set(choices)
 
     def test_roughly_uniform_without_weights(
@@ -272,7 +260,7 @@ class TestRandomChoiceDistribution:
         """Test that choices are roughly uniform without weights."""
 
         choices = ["a", "b", "c"]
-        results = []
+        results: list[str] = []
 
         for i in range(150):
 
@@ -284,8 +272,6 @@ class TestRandomChoiceDistribution:
             result = cli_runner.invoke(cmd)
             results.append(result.output.strip())
 
-        # Each should appear roughly 50 times (33%)
-        # Allow 20-70 (roughly 13-47%)
         for choice in choices:
             count = results.count(choice)
             assert 20 <= count <= 70, f"{choice} appeared {count} times"
@@ -328,8 +314,8 @@ class TestRandomChoicePractical:
         """Test simulating API status codes."""
 
         statuses = [200, 400, 404, 500]
-        weights = [8, 1, 0.5, 0.5]  # Mostly successful
-        results = []
+        weights = [8, 1, 0.5, 0.5]
+        results: list[int] = []
 
         for i in range(100):
 
@@ -341,15 +327,13 @@ class TestRandomChoicePractical:
             result = cli_runner.invoke(cmd)
             results.append(int(result.output.strip()))
 
-        # Should be mostly 200s
         success_count = results.count(200)
-        assert success_count > 60  # At least 60% success
+        assert success_count > 60
 
     def test_environment_selection(self, cli_runner: CliRunner) -> None:
         """Test weighted environment selection."""
 
         envs = ["local", "dev", "staging", "prod"]
-        # Higher weight for non-prod environments in testing
         weights = [5, 3, 2, 0]
 
         @command()
@@ -360,7 +344,7 @@ class TestRandomChoicePractical:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         env = result.output.split("Deploying to: ")[1].strip()
-        # Should never be prod (weight=0)
+
         assert env != "prod"
         assert env in ["local", "dev", "staging"]
 
@@ -368,9 +352,8 @@ class TestRandomChoicePractical:
         """Test A/B/C testing scenario."""
 
         variants = ["control", "variant_a", "variant_b"]
-        # 50% control, 25% each variant
         weights = [2, 1, 1]
-        results = []
+        results: list[str] = []
 
         for i in range(100):
 
@@ -383,5 +366,4 @@ class TestRandomChoicePractical:
             results.append(result.output.strip())
 
         control_count = results.count("control")
-        # Control should be roughly 50%
         assert 30 <= control_count <= 70

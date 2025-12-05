@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import click
-import pytest
 from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
@@ -287,7 +286,7 @@ class TestLoadTomlFlatTuple:
         @option("configs", default=None, nargs=3)
         @to_path()
         @load_toml()
-        def cmd(configs: Any) -> None:
+        def cmd(configs: tuple[dict[str, Any], ...]) -> None:
             assert configs is not None
             assert isinstance(configs, tuple)
             assert len(configs) == 3
@@ -350,14 +349,14 @@ class TestLoadTomlNestedTuple:
         @option("envs", multiple=True, nargs=2)
         @to_path()
         @load_toml()
-        def cmd(envs: Any) -> None:
+        def cmd(envs: tuple[tuple[dict[str, Any], ...], ...]) -> None:
             assert envs is not None
             assert isinstance(envs, tuple)
             assert len(envs) == 2
             env_names = ["dev", "prod"]
             for i, env_group in enumerate(envs):
-                db_host = env_group[0]["database"]["host"]
-                cache_host = env_group[1]["cache"]["host"]
+                db_host: str = env_group[0]["database"]["host"]
+                cache_host: str = env_group[1]["cache"]["host"]
                 click.echo(f"{env_names[i]}: db={db_host}, cache={cache_host}")
 
         result = cli_runner.invoke(
@@ -392,11 +391,10 @@ class TestLoadTomlNestedTuple:
         @option("configs", multiple=True, nargs=2)
         @to_path()
         @load_toml()
-        def cmd(configs: Any) -> None:
+        def cmd(configs: tuple[tuple[dict[str, Any], ...], ...]) -> None:
             assert configs is not None
             for i, group in enumerate(configs, 1):
-                # Merge configs
-                merged = {}
+                merged: dict[str, Any] = {}
                 for cfg in group:
                     if "app" in cfg:
                         merged.update(cfg["app"])

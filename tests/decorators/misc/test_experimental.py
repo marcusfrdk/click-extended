@@ -213,7 +213,6 @@ class TestExperimentalMultipleOptions:
         result = cli_runner.invoke(cmd, ["--exp1", "a", "--exp2", "b"])
         assert result.exit_code == 0
         assert "Exp1: a, Exp2: b" in result.output
-        # Should see two warnings
         assert result.output.count("ExperimentalWarning") == 2
 
     def test_experimental_multiple_options_one_used(
@@ -232,7 +231,6 @@ class TestExperimentalMultipleOptions:
         result = cli_runner.invoke(cmd, ["--exp1", "a"])
         assert result.exit_code == 0
         assert "Exp1: a, Exp2: None" in result.output
-        # Should see only one warning
         assert result.output.count("ExperimentalWarning") == 1
 
 

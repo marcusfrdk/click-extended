@@ -101,7 +101,6 @@ class TestToTimeBasic:
             assert isinstance(time_val, time)
             click.echo(f"Time: {time_val}")
 
-        # Should accept HH:MM:SS format (default)
         result = cli_runner.invoke(cmd, ["--time-val", "14:30:45"])
         assert result.exit_code == 0
 
@@ -167,17 +166,14 @@ class TestToTimeMultipleFormats:
             assert isinstance(time_val, time)
             click.echo(f"Hour: {time_val.hour}")
 
-        # Test first format (simplified)
         result = cli_runner.invoke(cmd, ["--time-val", "14:30:45"])
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
 
-        # Test second format (strptime)
         result = cli_runner.invoke(cmd, ["--time-val", "02:30 PM"])
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
 
-        # Test third format (simplified)
         result = cli_runner.invoke(cmd, ["--time-val", "14:30"])
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
@@ -274,8 +270,8 @@ class TestToTimeTuples:
         @to_time("%H:%M:%S")
         def cmd(times: Any) -> None:
             assert isinstance(times, tuple)
-            click.echo(f"Count: {len(times)}")
-            for i, time_val in enumerate(times, 1):
+            click.echo(f"Count: {len(times)}")  # type: ignore
+            for i, time_val in enumerate(times, 1):  # type: ignore
                 assert isinstance(time_val, time)
                 click.echo(f"Time {i}: {time_val}")
 
@@ -296,8 +292,8 @@ class TestToTimeTuples:
         @to_time("%H:%M:%S", "%H:%M", "%I:%M %p")
         def cmd(times: Any) -> None:
             assert isinstance(times, tuple)
-            click.echo(f"Count: {len(times)}")
-            for time_val in times:
+            click.echo(f"Count: {len(times)}")  # type: ignore
+            for time_val in times:  # type: ignore
                 assert isinstance(time_val, time)
                 click.echo(f"Hour: {time_val.hour}")
 
@@ -393,7 +389,6 @@ class TestToTimeErrors:
         def cmd(time_val: Any) -> None:
             click.echo(f"Time: {time_val}")
 
-        # Missing seconds
         result = cli_runner.invoke(cmd, ["--time-val", "14:30"])
         assert result.exit_code != 0
 
@@ -464,7 +459,6 @@ class TestToTimePractical:
         def cmd(start: Any, end: Any) -> None:
             assert isinstance(start, time)
             assert isinstance(end, time)
-            # Calculate duration in minutes
             start_mins = start.hour * 60 + start.minute
             end_mins = end.hour * 60 + end.minute
             duration = end_mins - start_mins
@@ -482,10 +476,10 @@ class TestToTimePractical:
         @to_time("HH:mm")
         def cmd(meeting_times: Any) -> None:
             assert isinstance(meeting_times, tuple)
-            click.echo(f"Total meetings: {len(meeting_times)}")
+            click.echo(f"Total meetings: {len(meeting_times)}")  # type: ignore
             if meeting_times:
-                earliest = min(meeting_times)
-                latest = max(meeting_times)
+                earliest = min(meeting_times)  # type: ignore
+                latest = max(meeting_times)  # type: ignore
                 click.echo(f"First: {earliest}")
                 click.echo(f"Last: {latest}")
 
@@ -505,12 +499,10 @@ class TestToTimePractical:
             assert isinstance(alarm, time)
             click.echo(f"Alarm set for: {alarm.strftime('%I:%M %p')}")
 
-        # Test 24-hour format
         result = cli_runner.invoke(cmd, ["--alarm", "07:30"])
         assert result.exit_code == 0
         assert "Alarm set for: 07:30 AM" in result.output
 
-        # Test 12-hour format
         result = cli_runner.invoke(cmd, ["--alarm", "07:30 PM"])
         assert result.exit_code == 0
         assert "Alarm set for: 07:30 PM" in result.output

@@ -22,7 +22,6 @@ class TestRandomPrimeBasic:
         assert result.exit_code == 0
         value = int(result.output.split("Value: ")[1].strip())
 
-        # Should be a prime from first 10: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
         first_10_primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
         assert value in first_10_primes
 
@@ -38,14 +37,13 @@ class TestRandomPrimeBasic:
         assert result.exit_code == 0
         prime = int(result.output.split("Prime: ")[1].strip())
 
-        # Should be prime and <= 541 (100th prime)
         assert prime >= 2
         assert prime <= 541
 
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that multiple invocations generate different values."""
 
-        values = []
+        values: list[int] = []
         for i in range(20):
 
             @command()
@@ -56,7 +54,6 @@ class TestRandomPrimeBasic:
             result = cli_runner.invoke(cmd)
             values.append(int(result.output.strip()))
 
-        # Should have variety
         assert len(set(values)) > 1
 
 
@@ -78,7 +75,7 @@ class TestRandomPrimeSmallValues:
     def test_k_equals_5(self, cli_runner: CliRunner) -> None:
         """Test k=5 generates from first 5 primes."""
 
-        values = set()
+        values: set[int] = set()
         for i in range(30):
 
             @command()
@@ -89,16 +86,14 @@ class TestRandomPrimeSmallValues:
             result = cli_runner.invoke(cmd)
             values.add(int(result.output.strip()))
 
-        # Should only be from [2, 3, 5, 7, 11]
         first_5_primes = {2, 3, 5, 7, 11}
         assert values.issubset(first_5_primes)
-        # Should have seen most of them
         assert len(values) >= 3
 
     def test_k_equals_10_coverage(self, cli_runner: CliRunner) -> None:
         """Test k=10 covers all first 10 primes."""
 
-        values = set()
+        values: set[int] = set()
         for i in range(100):
 
             @command()
@@ -110,7 +105,7 @@ class TestRandomPrimeSmallValues:
             values.add(int(result.output.strip()))
 
         first_10_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29}
-        # Should have seen all or most of them
+
         assert len(values) >= 8
         assert values.issubset(first_10_primes)
 
@@ -180,7 +175,7 @@ class TestRandomPrimeRanges:
     def test_k_20_in_bounds(self, cli_runner: CliRunner) -> None:
         """Test k=20 generates primes up to 71 (20th prime)."""
 
-        values = []
+        values: list[int] = []
         for i in range(50):
 
             @command()
@@ -191,15 +186,13 @@ class TestRandomPrimeRanges:
             result = cli_runner.invoke(cmd)
             values.append(int(result.output.strip()))
 
-        # All should be <= 71 (20th prime)
         assert all(v <= 71 for v in values)
-        # All should be >= 2
         assert all(v >= 2 for v in values)
 
     def test_k_30_in_bounds(self, cli_runner: CliRunner) -> None:
         """Test k=30 generates primes up to 113 (30th prime)."""
 
-        values = []
+        values: list[int] = []
         for i in range(50):
 
             @command()
@@ -210,7 +203,6 @@ class TestRandomPrimeRanges:
             result = cli_runner.invoke(cmd)
             values.append(int(result.output.strip()))
 
-        # All should be <= 113 (30th prime)
         assert all(v <= 113 for v in values)
         assert all(v >= 2 for v in values)
 
@@ -223,7 +215,7 @@ class TestRandomPrimeDistribution:
     ) -> None:
         """Test that small primes are generated."""
 
-        values = set()
+        values: set[int] = set()
         for i in range(100):
 
             @command()
@@ -234,7 +226,6 @@ class TestRandomPrimeDistribution:
             result = cli_runner.invoke(cmd)
             values.add(int(result.output.strip()))
 
-        # Should include some small primes
         assert 2 in values or 3 in values or 5 in values
 
     def test_distribution_includes_larger_primes(
@@ -242,7 +233,7 @@ class TestRandomPrimeDistribution:
     ) -> None:
         """Test that larger primes in range are also generated."""
 
-        values = set()
+        values: set[int] = set()
         for i in range(150):
 
             @command()
@@ -253,8 +244,6 @@ class TestRandomPrimeDistribution:
             result = cli_runner.invoke(cmd)
             values.add(int(result.output.strip()))
 
-        # Should include some larger primes from the range
-        # 20th prime is 71
         large_primes_in_range = {61, 67, 71}
         assert len(values.intersection(large_primes_in_range)) > 0
 
@@ -265,7 +254,7 @@ class TestRandomPrimeSeedReproducibility:
     def test_same_seed_same_result(self, cli_runner: CliRunner) -> None:
         """Test that same seed produces same result."""
 
-        results = []
+        results: list[int] = []
         for _ in range(3):
 
             @command()
@@ -276,7 +265,6 @@ class TestRandomPrimeSeedReproducibility:
             result = cli_runner.invoke(cmd)
             results.append(int(result.output.strip()))
 
-        # All should be identical
         assert len(set(results)) == 1
 
     def test_different_seed_different_result(
@@ -284,7 +272,7 @@ class TestRandomPrimeSeedReproducibility:
     ) -> None:
         """Test that different seeds produce different results."""
 
-        values = set()
+        values: set[int] = set()
         for i in range(10):
 
             @command()
@@ -295,7 +283,6 @@ class TestRandomPrimeSeedReproducibility:
             result = cli_runner.invoke(cmd)
             values.add(int(result.output.strip()))
 
-        # Should have variety
         assert len(values) > 1
 
 
@@ -333,7 +320,6 @@ class TestRandomPrimeIntegration:
             if parts[0] == parts[1]:
                 same_count += 1
 
-        # Some should be same, some different (not all same)
         assert same_count < 50
 
 
@@ -352,7 +338,6 @@ class TestRandomPrimePractical:
         assert result.exit_code == 0
         prime = int(result.output.split("Key prime: ")[1].strip())
 
-        # Should be small prime suitable for test crypto
         assert prime >= 2
         assert prime <= 47  # 15th prime
 
@@ -368,7 +353,6 @@ class TestRandomPrimePractical:
         assert result.exit_code == 0
         size = int(result.output.split("Table size: ")[1].strip())
 
-        # Common use case: prime numbers for hash table sizes
         assert size >= 2
         assert size <= 97  # 25th prime
 
@@ -379,7 +363,6 @@ class TestRandomPrimePerformance:
     def test_k50_runs_quickly(self, cli_runner: CliRunner) -> None:
         """Test that k=50 doesn't cause slowdown."""
 
-        # Run multiple times - should complete quickly
         for i in range(20):
 
             @command()
@@ -389,12 +372,10 @@ class TestRandomPrimePerformance:
 
             result = cli_runner.invoke(cmd)
             assert result.exit_code == 0
-            # Just verify it completes without checking timing
 
     def test_k100_runs_quickly(self, cli_runner: CliRunner) -> None:
         """Test that k=100 (default) doesn't cause slowdown."""
 
-        # Run multiple times with default k
         for i in range(20):
 
             @command()
@@ -415,7 +396,6 @@ class TestRandomPrimeCaching:
     def test_small_primes_use_cache(self, cli_runner: CliRunner) -> None:
         """Test that small k values use cached primes."""
 
-        # This should use the cached _SMALL_PRIMES
         @command()
         @random_prime("value", k=50, seed=5140)
         def cmd(value: int) -> None:
@@ -425,13 +405,11 @@ class TestRandomPrimeCaching:
         assert result.exit_code == 0
         value = int(result.output.strip())
 
-        # 50th prime is 229
         assert value <= 229
 
     def test_exact_cache_boundary(self, cli_runner: CliRunner) -> None:
         """Test k at cache boundary."""
 
-        # k=99 is within cache (100 primes cached)
         @command()
         @random_prime("value", k=99, seed=5141)
         def cmd(value: int) -> None:
@@ -441,6 +419,5 @@ class TestRandomPrimeCaching:
         assert result.exit_code == 0
         value = int(result.output.strip())
 
-        # 99th prime is 523
         assert value <= 523
         assert value >= 2

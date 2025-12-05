@@ -1,16 +1,24 @@
 """Comprehensive tests for ChildNode functionality."""
 
 import asyncio
+import ipaddress
 import json
+import os
+import re
+import tempfile
 from datetime import datetime
 from typing import Any, cast
+from urllib.parse import urlparse, urlunparse
 
 import click
 import pytest
 from click.testing import CliRunner
 
+from click_extended.core.decorators.argument import argument
 from click_extended.core.decorators.command import command
+from click_extended.core.decorators.env import env
 from click_extended.core.decorators.option import option
+from click_extended.core.decorators.tag import tag
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.other.context import Context
 
@@ -93,7 +101,6 @@ class TestSyncHandlerDispatch:
 
         class JSONValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
-                # Validate it's valid JSON
                 try:
                     json.loads(value)
                     return value
@@ -105,7 +112,6 @@ class TestSyncHandlerDispatch:
         @JSONValidator.as_decorator()
         def cmd(data: str) -> None:
             data_dict = json.loads(data)
-            # Transform in command logic, not handler
             data_dict = {
                 k: v.upper() if isinstance(v, str) else v
                 for k, v in data_dict.items()
@@ -123,7 +129,6 @@ class TestSyncHandlerDispatch:
 
         class PathValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
-                # Validate path exists
                 from pathlib import Path
 
                 p = Path(value)
@@ -148,7 +153,6 @@ class TestSyncHandlerDispatch:
 
         class DateParser(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
-                # Parse and validate date format
                 try:
                     date_obj = datetime.strptime(value, "%Y-%m-%d")
                     return date_obj.strftime("%Y-%m-%d")
@@ -182,10 +186,10 @@ class TestSyncHandlerDispatch:
             def handle_tuple(
                 self, value: tuple[Any, ...], context: Context
             ) -> tuple[Any, ...]:
-                result = []
+                result: list[tuple[int]] = []
                 for item in value:
                     if isinstance(item, tuple):
-                        result.append(tuple(x * 2 for x in item))
+                        result.append(tuple(x * 2 for x in item))  # type: ignore
                     else:
                         result.append(item * 2)
                 return tuple(result)
@@ -546,7 +550,6 @@ class TestAsyncHandlerDispatch:
         class AsyncJSONValidator(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
                 await asyncio.sleep(0.001)
-                # Validate JSON
                 try:
                     json.loads(value)
                     return value
@@ -558,7 +561,6 @@ class TestAsyncHandlerDispatch:
         @AsyncJSONValidator.as_decorator()
         def cmd(data: str) -> None:
             data_dict = json.loads(data)
-            # Transform in command
             data_dict = {
                 k: v.lower() if isinstance(v, str) else v
                 for k, v in data_dict.items()
@@ -639,10 +641,10 @@ class TestAsyncHandlerDispatch:
                 self, value: tuple[Any, ...], context: Context
             ) -> tuple[Any, ...]:
                 await asyncio.sleep(0.001)
-                result = []
+                result: list[tuple[int]] = []
                 for item in value:
                     if isinstance(item, tuple):
-                        result.append(tuple(x * 3 for x in item))
+                        result.append(tuple(x * 3 for x in item))  # type: ignore
                     else:
                         result.append(item * 3)
                 return tuple(result)
@@ -1176,7 +1178,6 @@ class TestParentNodeIntegration:
 
     def test_child_with_argument_parent(self, cli_runner: CliRunner) -> None:
         """Child node processes @argument value."""
-        from click_extended.core.decorators.argument import argument
 
         class DoubleHandler(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -1194,7 +1195,6 @@ class TestParentNodeIntegration:
 
     def test_child_with_env_parent(self, cli_runner: CliRunner) -> None:
         """Child node processes @env value."""
-        from click_extended.core.decorators.env import env
 
         class PrefixHandler(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1303,7 +1303,6 @@ class TestParentNodeIntegration:
 
     def test_env_with_async_transformer(self, cli_runner: CliRunner) -> None:
         """Env value transformed by async handler."""
-        from click_extended.core.decorators.env import env
 
         class AsyncEnvHandler(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
@@ -1326,7 +1325,6 @@ class TestTagValidation:
 
     def test_tag_validation_single_parent(self, cli_runner: CliRunner) -> None:
         """@tag with one parent node."""
-        from click_extended.core.decorators.tag import tag
 
         class SingleTagValidator(ChildNode):
             def handle_tag(
@@ -1343,11 +1341,9 @@ class TestTagValidation:
         def cmd(name: str) -> None:
             click.echo(f"Name: {name}")
 
-        # Valid case
         result = cli_runner.invoke(cmd, ["--name", "alice"])
         assert result.exit_code == 0
 
-        # Invalid case
         result = cli_runner.invoke(cmd, ["--name", "ab"])
         assert result.exit_code == 1
         assert "name too short" in result.output.lower()
@@ -1356,7 +1352,6 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """@tag validates across multiple parameters."""
-        from click_extended.core.decorators.tag import tag
 
         class MultiTagValidator(ChildNode):
             def handle_tag(
@@ -1379,13 +1374,11 @@ class TestTagValidation:
         def cmd(username: str, email: str) -> None:
             click.echo(f"User: {username}, Email: {email}")
 
-        # Valid case
         result = cli_runner.invoke(
             cmd, ["--username", "john", "--email", "john@example.com"]
         )
         assert result.exit_code == 0
 
-        # Invalid case
         result = cli_runner.invoke(
             cmd, ["--username", "bob", "--email", "alice@example.com"]
         )
@@ -1396,7 +1389,6 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """handle_tag gets dict with all tagged params."""
-        from click_extended.core.decorators.tag import tag
 
         received_values: dict[str, Any] = {}
 
@@ -1427,13 +1419,11 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """@tag handlers cannot transform values."""
-        from click_extended.core.decorators.tag import tag
 
         class InvalidTransformTag(ChildNode):
             def handle_tag(
                 self, value: dict[str, Any], context: Context
             ) -> dict[str, Any]:
-                # This should fail - tag handlers can't return values
                 return {"transformed": True}
 
         @command()
@@ -1444,14 +1434,12 @@ class TestTagValidation:
             click.echo(f"Value: {value}")
 
         result = cli_runner.invoke(cmd)
-        # Should fail because handle_tag returned a value
         assert result.exit_code == 1
 
     def test_tag_async_validation_multiple_parents(
         self, cli_runner: CliRunner
     ) -> None:
         """Async @tag validation across multiple parameters."""
-        from click_extended.core.decorators.tag import tag
 
         class AsyncMultiTagValidator(ChildNode):
             async def handle_tag(
@@ -1473,11 +1461,9 @@ class TestTagValidation:
         def cmd(min_val: int, max_val: int) -> None:
             click.echo(f"Range: {min_val} to {max_val}")
 
-        # Valid case
         result = cli_runner.invoke(cmd, ["--min-val", "10", "--max-val", "20"])
         assert result.exit_code == 0
 
-        # Invalid case
         result = cli_runner.invoke(cmd, ["--min-val", "50", "--max-val", "30"])
         assert result.exit_code == 1
         assert "min must be less than max" in result.output.lower()
@@ -1488,7 +1474,6 @@ class TestRealWorldValidators:
 
     def test_email_validator_sync(self, cli_runner: CliRunner) -> None:
         """Email format validation with regex (sync)."""
-        import re
 
         class EmailValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1503,7 +1488,6 @@ class TestRealWorldValidators:
         def cmd(email: str) -> None:
             click.echo(f"Email: {email}")
 
-        # Valid emails
         result = cli_runner.invoke(cmd, ["--email", "user@domain.com"])
         assert result.exit_code == 0
 
@@ -1512,7 +1496,6 @@ class TestRealWorldValidators:
         )
         assert result.exit_code == 0
 
-        # Invalid emails
         result = cli_runner.invoke(cmd, ["--email", "invalid.email"])
         assert result.exit_code == 1
         assert "invalid email format" in result.output.lower()
@@ -1522,7 +1505,6 @@ class TestRealWorldValidators:
 
     def test_email_validator_async(self, cli_runner: CliRunner) -> None:
         """Email format validation with regex (async)."""
-        import re
 
         class AsyncEmailValidator(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
@@ -1546,7 +1528,6 @@ class TestRealWorldValidators:
 
     def test_url_validator(self, cli_runner: CliRunner) -> None:
         """URL format validation."""
-        from urllib.parse import urlparse
 
         class URLValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1564,7 +1545,6 @@ class TestRealWorldValidators:
         def cmd(url: str) -> None:
             click.echo(f"URL: {url}")
 
-        # Valid URLs
         result = cli_runner.invoke(
             cmd, ["--url", "https://github.com/user/repo"]
         )
@@ -1573,7 +1553,6 @@ class TestRealWorldValidators:
         result = cli_runner.invoke(cmd, ["--url", "http://localhost:8000/path"])
         assert result.exit_code == 0
 
-        # Invalid URLs
         result = cli_runner.invoke(cmd, ["--url", "not-a-url"])
         assert result.exit_code == 1
 
@@ -1582,7 +1561,6 @@ class TestRealWorldValidators:
 
     def test_phone_number_validator(self, cli_runner: CliRunner) -> None:
         """Phone number format validation."""
-        import re
 
         class PhoneValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1597,7 +1575,6 @@ class TestRealWorldValidators:
         def cmd(phone: str) -> None:
             click.echo(f"Phone: {phone}")
 
-        # Valid phones
         result = cli_runner.invoke(cmd, ["--phone", "5551234567"])
         assert result.exit_code == 0
 
@@ -1607,7 +1584,6 @@ class TestRealWorldValidators:
         result = cli_runner.invoke(cmd, ["--phone", "+15551234567"])
         assert result.exit_code == 0
 
-        # Invalid phones
         result = cli_runner.invoke(cmd, ["--phone", "123"])
         assert result.exit_code == 1
 
@@ -1626,11 +1602,9 @@ class TestRealWorldValidators:
         def cmd(count: int) -> None:
             click.echo(f"Count: {count}")
 
-        # Valid
         result = cli_runner.invoke(cmd, ["--count", "10"])
         assert result.exit_code == 0
 
-        # Invalid
         result = cli_runner.invoke(cmd, ["--count", "0"])
         assert result.exit_code == 1
 
@@ -1662,7 +1636,6 @@ class TestRealWorldValidators:
         def cmd(score: int) -> None:
             click.echo(f"Score: {score}")
 
-        # Valid
         result = cli_runner.invoke(cmd, ["--score", "75"])
         assert result.exit_code == 0
 
@@ -1672,7 +1645,6 @@ class TestRealWorldValidators:
         result = cli_runner.invoke(cmd, ["--score", "100"])
         assert result.exit_code == 0
 
-        # Invalid
         result = cli_runner.invoke(cmd, ["--score", "101"])
         assert result.exit_code == 1
 
@@ -1681,8 +1653,6 @@ class TestRealWorldValidators:
 
     def test_file_exists_validator_sync(self, cli_runner: CliRunner) -> None:
         """Path must exist validation (sync)."""
-        import os
-        import tempfile
 
         class FileExistsValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1696,16 +1666,13 @@ class TestRealWorldValidators:
         def cmd(file: str) -> None:
             click.echo(f"File: {file}")
 
-        # Create temp file
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp_path = tmp.name
 
         try:
-            # Valid - file exists
             result = cli_runner.invoke(cmd, ["--file", tmp_path])
             assert result.exit_code == 0
 
-            # Invalid - file doesn't exist
             result = cli_runner.invoke(cmd, ["--file", "/nonexistent/file.txt"])
             assert result.exit_code == 1
             assert "file not found" in result.output.lower()
@@ -1714,8 +1681,6 @@ class TestRealWorldValidators:
 
     def test_file_exists_validator_async(self, cli_runner: CliRunner) -> None:
         """Path must exist validation (async)."""
-        import os
-        import tempfile
 
         class AsyncFileExistsValidator(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
@@ -1741,8 +1706,6 @@ class TestRealWorldValidators:
 
     def test_directory_exists_validator(self, cli_runner: CliRunner) -> None:
         """Directory must exist validation."""
-        import os
-        import tempfile
 
         class DirExistsValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1757,11 +1720,9 @@ class TestRealWorldValidators:
             click.echo(f"Dir: {dir}")
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-            # Valid - dir exists
             result = cli_runner.invoke(cmd, ["--dir", tmp_dir])
             assert result.exit_code == 0
 
-        # Invalid - dir doesn't exist
         result = cli_runner.invoke(cmd, ["--dir", "/nonexistent/directory"])
         assert result.exit_code == 1
 
@@ -1791,14 +1752,12 @@ class TestRealWorldValidators:
         def cmd(file: str) -> None:
             click.echo(f"File: {file}")
 
-        # Valid
         result = cli_runner.invoke(cmd, ["--file", "document.txt"])
         assert result.exit_code == 0
 
         result = cli_runner.invoke(cmd, ["--file", "README.md"])
         assert result.exit_code == 0
 
-        # Invalid
         result = cli_runner.invoke(cmd, ["--file", "script.py"])
         assert result.exit_code == 1
         assert "must have one of these extensions" in result.output.lower()
@@ -1831,7 +1790,6 @@ class TestRealWorldTransformers:
         assert result.exit_code == 0
         assert "Parsed: {'name': 'test', 'count': 42}" in result.output
 
-        # Invalid JSON
         result = cli_runner.invoke(cmd, ["--data", "not json"])
         assert result.exit_code == 1
         assert "invalid json" in result.output.lower()
@@ -1928,7 +1886,6 @@ class TestRealWorldTransformers:
 
     def test_slug_transformer(self, cli_runner: CliRunner) -> None:
         """Convert to URL slug transformation."""
-        import re
 
         class SlugTransformer(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1994,11 +1951,9 @@ class TestRealWorldTransformers:
 
     def test_currency_parser(self, cli_runner: CliRunner) -> None:
         """Parse '$1,234.56' to float."""
-        import re
 
         class CurrencyParser(ChildNode):
             def handle_str(self, value: str, context: Context) -> float:
-                # Remove currency symbol and commas
                 cleaned = re.sub(r"[$,]", "", value)
                 try:
                     return float(cleaned)
@@ -2023,7 +1978,6 @@ class TestRealWorldChained:
         self, cli_runner: CliRunner
     ) -> None:
         """Validate email then lowercase (mixed sync/async)."""
-        import re
 
         class EmailValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -2052,7 +2006,6 @@ class TestRealWorldChained:
         self, cli_runner: CliRunner
     ) -> None:
         """Validate URL then normalize."""
-        from urllib.parse import urlparse, urlunparse
 
         class URLValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -2064,7 +2017,6 @@ class TestRealWorldChained:
         class URLNormalizer(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
                 parsed = urlparse(value)
-                # Remove trailing slash
                 path = parsed.path.rstrip("/")
                 return urlunparse(
                     (
@@ -2097,7 +2049,6 @@ class TestRealWorldChained:
 
         class ConditionalValidator(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
-                # Access context data for conditional logic
                 strict_mode = context.data.get("strict", False)
                 if strict_mode and value < 10:
                     raise ValueError("Value must be >= 10 in strict mode")
@@ -2111,17 +2062,13 @@ class TestRealWorldChained:
         def cmd(value: int) -> None:
             click.echo(f"Value: {value}")
 
-        # Non-strict mode
         result = cli_runner.invoke(cmd, ["--value", "5"])
         assert result.exit_code == 0
-
-        # Would fail in strict mode (can't easily test without context injection)
 
     def test_password_strength_validator_complex(
         self, cli_runner: CliRunner
     ) -> None:
         """Complex multi-rule validation."""
-        import re
 
         class PasswordValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -2150,22 +2097,18 @@ class TestRealWorldChained:
         def cmd(password: str) -> None:
             click.echo("Password accepted")
 
-        # Valid
         result = cli_runner.invoke(cmd, ["--password", "SecurePass123!"])
         assert result.exit_code == 0
 
-        # Too short
         result = cli_runner.invoke(cmd, ["--password", "Short1!"])
         assert result.exit_code == 1
         assert "at least 8 characters" in result.output.lower()
 
-        # Missing uppercase
         result = cli_runner.invoke(cmd, ["--password", "password123!"])
         assert result.exit_code == 1
 
     def test_ip_address_validator(self, cli_runner: CliRunner) -> None:
         """IPv4/IPv6 validation."""
-        import ipaddress
 
         class IPValidator(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -2181,17 +2124,14 @@ class TestRealWorldChained:
         def cmd(ip: str) -> None:
             click.echo(f"IP: {ip}")
 
-        # Valid IPv4
         result = cli_runner.invoke(cmd, ["--ip", "192.168.1.1"])
         assert result.exit_code == 0
 
-        # Valid IPv6
         result = cli_runner.invoke(
             cmd, ["--ip", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"]
         )
         assert result.exit_code == 0
 
-        # Invalid
         result = cli_runner.invoke(cmd, ["--ip", "256.1.1.1"])
         assert result.exit_code == 1
 
@@ -2253,7 +2193,6 @@ class TestEdgeCases:
         def cmd(value: str) -> None:
             click.echo(f"Value: {value}")
 
-        # None provided
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         assert "Value: GOT_NONE" in result.output
@@ -2267,7 +2206,6 @@ class TestEdgeCases:
 
         class TrackingHandler(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
-                # Track that processing occurred
                 processed.append(value)
                 return value.upper()
 
@@ -2277,14 +2215,12 @@ class TestEdgeCases:
         def cmd(text: str) -> None:
             click.echo(f"Text: {text}")
 
-        # User provides value - should be processed
         processed.clear()
         result = cli_runner.invoke(cmd, ["--text", "hello"])
         assert result.exit_code == 0
         assert len(processed) > 0
         assert "Text: HELLO" in result.output
 
-        # User doesn't provide value - default used, still processed
         processed.clear()
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
@@ -2300,7 +2236,6 @@ class TestChildNodeStructure:
             pass
 
         child = TestChild(name="test")
-        # ChildNode.get() always returns None (not like dict.get())
         assert child.get("any_key") is None  # type: ignore[func-returns-value]
 
     def test_child_node_getitem_raises_key_error(self) -> None:

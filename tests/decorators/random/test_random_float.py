@@ -50,7 +50,6 @@ class TestRandomFloatBasic:
         assert result.exit_code == 0
         value_str = result.output.split("Value: ")[1].strip()
 
-        # Check decimal places (may be fewer if trailing zeros)
         if "." in value_str:
             decimal_places = len(value_str.split(".")[1])
             assert decimal_places <= 3
@@ -76,7 +75,7 @@ class TestRandomFloatBasic:
     def test_generates_different_values(self, cli_runner: CliRunner) -> None:
         """Test that multiple invocations generate different values."""
 
-        results = []
+        results: list[str] = []
         for i in range(10):
 
             @command()
@@ -88,7 +87,6 @@ class TestRandomFloatBasic:
 
             results.append(cli_runner.invoke(cmd).output)
         values = [float(r.split("Value: ")[1].strip()) for r in results]
-        # Should have variety
         assert len(set(values)) > 1
 
 
@@ -182,7 +180,6 @@ class TestRandomFloatDecimals:
         assert result.exit_code == 0
         score_str = result.output.split("Score: ")[1].strip()
 
-        # Verify rounding
         if "." in score_str:
             decimal_places = len(score_str.split(".")[1])
             assert decimal_places <= 1
@@ -230,8 +227,7 @@ class TestRandomFloatDistribution:
     ) -> None:
         """Test that values near boundaries can be generated."""
 
-        # Collect samples
-        values = []
+        values: list[float] = []
         for i in range(100):
 
             @command()
@@ -245,14 +241,13 @@ class TestRandomFloatDistribution:
             value = float(result.output.strip())
             values.append(value)
 
-        # Should see values near both ends
         assert any(v < 0.2 for v in values)  # Near min
         assert any(v > 0.8 for v in values)  # Near max
 
     def test_coverage_across_range(self, cli_runner: CliRunner) -> None:
         """Test that values cover the range."""
 
-        values = []
+        values: list[float] = []
         for i in range(50):
 
             @command()
@@ -270,9 +265,8 @@ class TestRandomFloatDistribution:
             value = float(result.output.strip())
             values.append(value)
 
-        # Should see variety across the range
         unique_values = len(set(values))
-        assert unique_values >= 5  # At least half the range
+        assert unique_values >= 5
 
 
 class TestRandomFloatIntegration:

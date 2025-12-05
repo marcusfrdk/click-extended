@@ -2,9 +2,16 @@
 
 from typing import Any
 
+import click
 import pytest
 
+from click_extended.core.decorators.argument import Argument, argument
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import option
 from click_extended.core.nodes.argument_node import ArgumentNode
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other._tree import Tree
 from click_extended.core.other.context import Context
 
 
@@ -30,16 +37,16 @@ class TestArgumentNodeInit:
         node = ConcreteArgumentNode(name="test_arg")
 
         assert node.name == "test_arg"
-        assert node.param == "test_arg"  # defaults to name
+        assert node.param == "test_arg"
         assert node.help is None
-        assert node.required is True  # Arguments default to required
+        assert node.required is True
         assert node.default is None
         assert node.tags == []
-        assert node.nargs == 1  # Default nargs
+        assert node.nargs == 1
         assert node.type is None
         assert node.was_provided is False
         assert node.cached_value is None
-        assert node._value_computed is False
+        assert node._value_computed is False  # type: ignore
         assert node.decorator_kwargs == {}
         assert node.children == {}
 
@@ -163,25 +170,20 @@ class TestArgumentNodeMethods:
 
     def test_load_is_abstract_in_base_class(self) -> None:
         """Test that ArgumentNode.load is abstract."""
-        # Cannot instantiate abstract class
         with pytest.raises(TypeError):
             ArgumentNode(name="test")  # type: ignore
 
     def test_concrete_load_implementation(self) -> None:
         """Test that concrete subclass can implement load."""
-        from click_extended.core.decorators.command import command
-        from click_extended.core.other._tree import Tree
 
         node = ConcreteArgumentNode(name="test_arg")
 
-        # Create a mock context
         @command()
-        def dummy() -> None:
+        def dummy() -> None:  # type: ignore
             pass
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
-        # We can call load on concrete implementation
         result = node.load("test_value", None)  # type: ignore
         assert result == "test_value"
 
@@ -202,12 +204,11 @@ class TestArgumentNodeMethods:
 
     def test_argument_node_extends_parent_node(self) -> None:
         """Test that ArgumentNode properly extends ParentNode."""
-        from click_extended.core.nodes.parent_node import ParentNode
 
         assert issubclass(ArgumentNode, ParentNode)
 
     def test_argument_node_has_nargs_attribute(self) -> None:
-        """Test that ArgumentNode has nargs attribute (unique to ArgumentNode)."""
+        """Test that ArgumentNode has nargs attribute."""
         node = ConcreteArgumentNode(name="test_arg", nargs=5)
 
         assert hasattr(node, "nargs")
@@ -238,13 +239,11 @@ class TestArgumentDecorator:
 
     def test_decorator_can_be_applied_to_function(self) -> None:
         """Test that @argument decorator can be applied to a function."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("filename")
-        def process_file(filename: str) -> None:
+        def process_file(filename: str) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -253,7 +252,6 @@ class TestArgumentDecorator:
 
     def test_decorator_preserves_function_name(self) -> None:
         """Test that decorator preserves function name."""
-        from click_extended.core.decorators.argument import argument
 
         @argument("filename")
         def my_function(filename: str) -> None:
@@ -264,7 +262,6 @@ class TestArgumentDecorator:
 
     def test_decorator_preserves_function_docstring(self) -> None:
         """Test that decorator preserves function docstring."""
-        from click_extended.core.decorators.argument import argument
 
         @argument("filename")
         def my_function(filename: str) -> None:
@@ -275,13 +272,11 @@ class TestArgumentDecorator:
 
     def test_decorator_queues_in_tree(self) -> None:
         """Test that decorator registers in Tree."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("filename")
-        def process_file(filename: str) -> None:
+        def process_file(filename: str) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -292,13 +287,11 @@ class TestArgumentDecorator:
 
     def test_decorator_creates_argument_instance(self) -> None:
         """Test that decorator creates Argument instance."""
-        from click_extended.core.decorators.argument import Argument, argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("filename")
-        def process_file(filename: str) -> None:
+        def process_file(filename: str) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
@@ -307,13 +300,11 @@ class TestArgumentDecorator:
 
     def test_argument_name_snake_case(self) -> None:
         """Test argument with snake_case name."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("input_file")
-        def process(input_file: str) -> None:
+        def process(input_file: str) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
@@ -322,29 +313,24 @@ class TestArgumentDecorator:
 
     def test_argument_name_kebab_case_converts(self) -> None:
         """Test that kebab-case name converts to snake_case."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("input-file")
-        def process(input_file: str) -> None:
+        def process(input_file: str) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
         assert isinstance(node, ArgumentNode)
-        # Name validation happens in Argument class
         assert node.param == "input_file"
 
     def test_argument_name_screaming_snake_case_converts(self) -> None:
         """Test that SCREAMING_SNAKE_CASE converts to snake_case."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("INPUT_FILE")
-        def process(input_file: str) -> None:
+        def process(input_file: str) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
@@ -353,13 +339,11 @@ class TestArgumentDecorator:
 
     def test_param_override_with_custom_name(self) -> None:
         """Test that param parameter overrides default naming."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("input_file", param="custom_name")
-        def process(custom_name: str) -> None:
+        def process(custom_name: str) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
@@ -368,10 +352,8 @@ class TestArgumentDecorator:
 
     def test_decorator_kwargs_stored(self) -> None:
         """Test that all configuration is stored in decorator_kwargs."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument(
             "filename",
@@ -382,7 +364,7 @@ class TestArgumentDecorator:
             default=None,
             tags=["input"],
         )
-        def process(filename: str) -> None:
+        def process(filename: str) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
@@ -395,19 +377,16 @@ class TestArgumentDecorator:
 
     def test_multiple_arguments_queue_in_order(self) -> None:
         """Test that multiple @argument decorators queue in order."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("first")
         @argument("second")
-        def process(first: str, second: str) -> None:
+        def process(first: str, second: str) -> None:  # type: ignore
             pass
 
         pending = Tree.get_pending_nodes()
         assert len(pending) == 2
-        # Decorators apply bottom-to-top, so second is queued first
         node1 = pending[0][1]
         node2 = pending[1][1]
         assert isinstance(node1, ArgumentNode)
@@ -417,13 +396,11 @@ class TestArgumentDecorator:
 
     def test_type_inference_from_default_value(self) -> None:
         """Test that type is inferred from default value."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("port", default=8080)
-        def serve(port: int) -> None:
+        def serve(port: int) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
@@ -432,13 +409,11 @@ class TestArgumentDecorator:
 
     def test_default_makes_argument_optional(self) -> None:
         """Test that providing default makes argument optional."""
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.other._tree import Tree
 
-        Tree._pending_nodes.clear()
+        Tree._pending_nodes.clear()  # type: ignore
 
         @argument("filename", default="input.txt")
-        def process(filename: str) -> None:
+        def process(filename: str) -> None:  # type: ignore
             pass
 
         node = Tree.get_pending_nodes()[0][1]
@@ -451,21 +426,15 @@ class TestArgumentCommandIntegration:
 
     def test_single_argument_required(self, cli_runner: Any) -> None:
         """Test that required argument must be provided."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("filename")
         def process(filename: str) -> None:
             click.echo(f"File: {filename}")
 
-        # Without argument - should fail
         result = cli_runner.invoke(process, [])
         assert result.exit_code != 0
 
-        # With argument - should succeed
         result = cli_runner.invoke(process, ["test.txt"])
         assert result.exit_code == 0
         assert "File: test.txt" in result.output
@@ -474,32 +443,22 @@ class TestArgumentCommandIntegration:
         self, cli_runner: Any
     ) -> None:
         """Test optional argument with default value."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("filename", default="default.txt")
         def process(filename: str) -> None:
             click.echo(f"File: {filename}")
 
-        # Without argument - uses default
         result = cli_runner.invoke(process, [])
         assert result.exit_code == 0
         assert "File: default.txt" in result.output
 
-        # With argument - uses provided value
         result = cli_runner.invoke(process, ["custom.txt"])
         assert result.exit_code == 0
         assert "File: custom.txt" in result.output
 
     def test_single_argument_receives_value(self, cli_runner: Any) -> None:
         """Test that argument value is injected correctly."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("name")
@@ -512,10 +471,6 @@ class TestArgumentCommandIntegration:
 
     def test_multiple_arguments_in_order(self, cli_runner: Any) -> None:
         """Test that multiple arguments are parsed in order."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("third")
@@ -530,11 +485,6 @@ class TestArgumentCommandIntegration:
 
     def test_mix_arguments_and_options(self, cli_runner: Any) -> None:
         """Test mixing argument and option nodes."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.decorators.option import option
 
         @command()
         @argument("filename")
@@ -545,22 +495,16 @@ class TestArgumentCommandIntegration:
             else:
                 click.echo(filename)
 
-        # Without flag
         result = cli_runner.invoke(process, ["test.txt"])
         assert result.exit_code == 0
         assert result.output.strip() == "test.txt"
 
-        # With flag
         result = cli_runner.invoke(process, ["test.txt", "--verbose"])
         assert result.exit_code == 0
         assert "Processing file: test.txt" in result.output
 
     def test_argument_nargs_single(self, cli_runner: Any) -> None:
         """Test argument with nargs=1 (single value)."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", nargs=1)
@@ -573,10 +517,6 @@ class TestArgumentCommandIntegration:
 
     def test_argument_nargs_multiple_fixed(self, cli_runner: Any) -> None:
         """Test argument with nargs=3 (tuple of 3 values)."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("coords", nargs=3, type=int)
@@ -590,10 +530,6 @@ class TestArgumentCommandIntegration:
 
     def test_argument_nargs_unlimited(self, cli_runner: Any) -> None:
         """Test argument with nargs=-1 (list of all values)."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("files", nargs=-1)
@@ -609,10 +545,6 @@ class TestArgumentCommandIntegration:
 
     def test_argument_type_int(self, cli_runner: Any) -> None:
         """Test argument with type conversion to int."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("count", type=int)
@@ -626,10 +558,6 @@ class TestArgumentCommandIntegration:
 
     def test_argument_type_float(self, cli_runner: Any) -> None:
         """Test argument with type conversion to float."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", type=float)
@@ -642,10 +570,6 @@ class TestArgumentCommandIntegration:
 
     def test_argument_invalid_type_raises_error(self, cli_runner: Any) -> None:
         """Test that invalid type conversion fails gracefully."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("number", type=int)
@@ -657,37 +581,26 @@ class TestArgumentCommandIntegration:
 
     def test_argument_was_provided_flag(self, cli_runner: Any) -> None:
         """Test that was_provided flag is set correctly."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", default="default")
         def check(value: str) -> None:
             click.echo(f"Value: {value}")
 
-        # With argument provided
         result = cli_runner.invoke(check, ["custom"])
         assert result.exit_code == 0
         assert "Value: custom" in result.output
 
-        # Without argument - uses default
         result = cli_runner.invoke(check, [])
         assert result.exit_code == 0
         assert "Value: default" in result.output
 
     def test_argument_cached_value_is_set(self, cli_runner: Any) -> None:
         """Test that cached_value is set after processing."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value")
         def check(value: str) -> None:
-            # Value is properly injected, which means it was cached
             click.echo(f"Value: {value}")
 
         result = cli_runner.invoke(check, ["test"])
@@ -696,10 +609,6 @@ class TestArgumentCommandIntegration:
 
     def test_argument_param_injection_name(self, cli_runner: Any) -> None:
         """Test that param determines injection name."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("input_file", param="filename")
@@ -718,12 +627,6 @@ class TestArgumentNodeWithChildren:
         self, cli_runner: Any
     ) -> None:
         """Test argument with one child validator."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class MinLength(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -737,12 +640,10 @@ class TestArgumentNodeWithChildren:
         def greet(name: str) -> None:
             click.echo(f"Hello {name}")
 
-        # Valid input
         result = cli_runner.invoke(greet, ["Alice"])
         assert result.exit_code == 0
         assert "Hello Alice" in result.output
 
-        # Invalid input
         result = cli_runner.invoke(greet, ["Al"])
         assert result.exit_code != 0
 
@@ -750,12 +651,6 @@ class TestArgumentNodeWithChildren:
         self, cli_runner: Any
     ) -> None:
         """Test argument with one child transformer."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -775,12 +670,6 @@ class TestArgumentNodeWithChildren:
         self, cli_runner: Any
     ) -> None:
         """Test argument with multiple child nodes chained."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class StripWhitespace(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -803,12 +692,6 @@ class TestArgumentNodeWithChildren:
 
     def test_argument_with_child_sync(self, cli_runner: Any) -> None:
         """Test argument with sync child handler."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Double(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -826,12 +709,6 @@ class TestArgumentNodeWithChildren:
 
     def test_argument_with_child_async(self, cli_runner: Any) -> None:
         """Test argument with async child handler."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class AsyncUpper(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
@@ -851,12 +728,6 @@ class TestArgumentNodeWithChildren:
         self, cli_runner: Any
     ) -> None:
         """Test that child receives the argument value."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class AddPrefix(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -874,12 +745,6 @@ class TestArgumentNodeWithChildren:
 
     def test_argument_processed_value_cached(self, cli_runner: Any) -> None:
         """Test that final value after children is what gets injected."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class Multiply(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -899,12 +764,6 @@ class TestArgumentNodeWithChildren:
         self, cli_runner: Any
     ) -> None:
         """Test that validation errors from children are handled."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
-        from click_extended.core.nodes.child_node import ChildNode
-        from click_extended.core.other.context import Context
 
         class PositiveOnly(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -918,11 +777,9 @@ class TestArgumentNodeWithChildren:
         def process(num: int) -> None:
             click.echo(f"Number: {num}")
 
-        # Valid
         result = cli_runner.invoke(process, ["5"])
         assert result.exit_code == 0
 
-        # Invalid
         result = cli_runner.invoke(process, ["-5"])
         assert result.exit_code != 0
 
@@ -930,15 +787,10 @@ class TestArgumentNodeWithChildren:
         self, cli_runner: Any
     ) -> None:
         """Test nargs=-1 argument receives values correctly."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("names", nargs=-1)
         def greet(names: tuple[str, ...]) -> None:
-            # Verify we receive a tuple
             assert isinstance(names, tuple)
             for name in names:
                 click.echo(f"Hello {name.upper()}")
@@ -955,10 +807,6 @@ class TestArgumentNodeEdgeCases:
 
     def test_argument_with_none_value_optional(self, cli_runner: Any) -> None:
         """Test handling None for optional argument."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", required=False, default=None)
@@ -968,17 +816,12 @@ class TestArgumentNodeEdgeCases:
             else:
                 click.echo(f"Value: {value}")
 
-        # Without argument
         result = cli_runner.invoke(show, [])
         assert result.exit_code == 0
         assert "No value" in result.output
 
     def test_empty_string_argument(self, cli_runner: Any) -> None:
         """Test that empty string is a valid argument value."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value")
@@ -991,10 +834,6 @@ class TestArgumentNodeEdgeCases:
 
     def test_argument_name_with_underscores(self, cli_runner: Any) -> None:
         """Test argument name normalization with underscores."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("input_file_name")
@@ -1007,10 +846,6 @@ class TestArgumentNodeEdgeCases:
 
     def test_argument_name_with_numbers(self, cli_runner: Any) -> None:
         """Test argument names with numbers at the end."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("file_v2")
@@ -1023,10 +858,6 @@ class TestArgumentNodeEdgeCases:
 
     def test_variadic_arguments_empty_list(self, cli_runner: Any) -> None:
         """Test nargs=-1 with no values provided."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("files", nargs=-1, required=False)
@@ -1042,10 +873,6 @@ class TestArgumentNodeEdgeCases:
 
     def test_argument_with_special_characters(self, cli_runner: Any) -> None:
         """Test arguments with special characters in values."""
-        import click
-
-        from click_extended.core.decorators.argument import argument
-        from click_extended.core.decorators.command import command
 
         @command()
         @argument("path")

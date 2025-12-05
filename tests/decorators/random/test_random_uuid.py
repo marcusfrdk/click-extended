@@ -13,7 +13,6 @@ import pytest
 from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
-from click_extended.core.decorators.option import option
 from click_extended.decorators.random.random_uuid import random_uuid
 
 
@@ -45,16 +44,15 @@ class TestRandomUUIDVersion1:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         assert "Type: UUID" in result.output
-        # Verify it's a valid UUID format
         uuid_str = result.output.split("UUID: ")[1].strip()
-        assert len(uuid_str) == 36  # Standard UUID string length
+        assert len(uuid_str) == 36
         assert uuid_str.count("-") == 4
 
     def test_version_1_different_on_multiple_calls(
         self, cli_runner: CliRunner
     ) -> None:
         """Test that version 1 generates different UUIDs (time-based)."""
-        results = []
+        results: list[str] = []
 
         for _ in range(3):
 
@@ -66,7 +64,6 @@ class TestRandomUUIDVersion1:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be different due to time component
         assert len(set(results)) == 3
 
 
@@ -90,7 +87,7 @@ class TestRandomUUIDVersion3:
 
     def test_version_3_is_deterministic(self, cli_runner: CliRunner) -> None:
         """Test that same namespace and name produce same UUID."""
-        results = []
+        results: list[str] = []
 
         for _ in range(3):
 
@@ -107,14 +104,13 @@ class TestRandomUUIDVersion3:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be identical (deterministic)
         assert len(set(results)) == 1
 
     def test_version_3_different_names_different_uuids(
         self, cli_runner: CliRunner
     ) -> None:
         """Test that different names produce different UUIDs."""
-        results = []
+        results: list[str] = []
         names = ["name1", "name2", "name3"]
 
         for name in names:
@@ -129,14 +125,13 @@ class TestRandomUUIDVersion3:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be different (different names)
         assert len(set(results)) == 3
 
     def test_version_3_different_namespaces_different_uuids(
         self, cli_runner: CliRunner
     ) -> None:
         """Test that different namespaces produce different UUIDs."""
-        results = []
+        results: list[str] = []
         namespaces = [NAMESPACE_DNS, NAMESPACE_URL, NAMESPACE_OID]
 
         for ns in namespaces:
@@ -149,7 +144,6 @@ class TestRandomUUIDVersion3:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be different (different namespaces)
         assert len(set(results)) == 3
 
     def test_version_3_with_string_namespace(
@@ -243,7 +237,7 @@ class TestRandomUUIDVersion4:
         self, cli_runner: CliRunner
     ) -> None:
         """Test that same seed produces same UUID."""
-        results = []
+        results: list[str] = []
 
         for _ in range(3):
 
@@ -255,14 +249,13 @@ class TestRandomUUIDVersion4:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be identical (same seed)
         assert len(set(results)) == 1
 
     def test_version_4_different_seeds_different_uuids(
         self, cli_runner: CliRunner
     ) -> None:
         """Test that different seeds produce different UUIDs."""
-        results = []
+        results: list[str] = []
 
         for seed in [300, 301, 302]:
 
@@ -274,12 +267,11 @@ class TestRandomUUIDVersion4:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be different (different seeds)
         assert len(set(results)) == 3
 
     def test_version_4_without_seed(self, cli_runner: CliRunner) -> None:
         """Test that version 4 without seed generates random UUIDs."""
-        results = []
+        results: list[str] = []
 
         for _ in range(3):
 
@@ -291,7 +283,6 @@ class TestRandomUUIDVersion4:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # Should be different (no seed, random)
         assert len(set(results)) == 3
 
 
@@ -315,7 +306,7 @@ class TestRandomUUIDVersion5:
 
     def test_version_5_is_deterministic(self, cli_runner: CliRunner) -> None:
         """Test that same namespace and name produce same UUID."""
-        results = []
+        results: list[str] = []
 
         for _ in range(3):
 
@@ -332,21 +323,20 @@ class TestRandomUUIDVersion5:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # All should be identical (deterministic)
         assert len(set(results)) == 1
 
     def test_version_5_different_from_version_3(
         self, cli_runner: CliRunner
     ) -> None:
         """Test that version 5 produces different UUID than version 3 with same inputs."""
-        results = []
+        results: list[str] = []
 
         for version in [3, 5]:
 
             @command()
             @random_uuid(
                 "uuid",
-                version=version,  # type: ignore[arg-type]
+                version=version,  # type: ignore
                 namespace=NAMESPACE_DNS,
                 uuid_name="test",
             )
@@ -356,7 +346,6 @@ class TestRandomUUIDVersion5:
             result = cli_runner.invoke(cmd)
             results.append(result.output)
 
-        # Should be different (different hash algorithms)
         assert len(set(results)) == 2
 
     def test_version_5_with_all_namespace_constants(
@@ -469,8 +458,7 @@ class TestRandomUUIDEdgeCases:
 
     def test_seed_affects_only_version_4(self, cli_runner: CliRunner) -> None:
         """Test that seed parameter only affects version 4."""
-        # Version 1 should be different even with same seed
-        results_v1 = []
+        results_v1: list[str] = []
         for _ in range(2):
 
             @command()
@@ -481,7 +469,6 @@ class TestRandomUUIDEdgeCases:
             result = cli_runner.invoke(cmd)
             results_v1.append(result.output)
 
-        # Version 1 should differ (time-based, seed doesn't affect it)
         assert len(set(results_v1)) == 2
 
 
@@ -540,6 +527,5 @@ class TestRandomUUIDIntegration:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         assert "Type: UUID" in result.output
-        # Verify the UUID was generated (36 characters including dashes)
         uuid_str = result.output.split("UUID: ")[1].split("\n")[0].strip()
         assert len(uuid_str) == 36

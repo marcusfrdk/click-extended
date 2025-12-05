@@ -24,7 +24,6 @@ class TestRandomDateTimeBasic:
 
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
-        # Parse the datetime from output
         created_str = result.output.split("Created: ")[1].strip()
         created = datetime.fromisoformat(created_str)
 
@@ -57,7 +56,6 @@ class TestRandomDateTimeBasic:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         output = result.output.split("Time: ")[1].strip()
-        # Verify it's a valid time format
         datetime.strptime(output, "%H:%M:%S")
 
     def test_datetime_object_input(self, cli_runner: CliRunner) -> None:
@@ -81,7 +79,7 @@ class TestRandomDateTimeBasic:
     ) -> None:
         """Test that different seeds produce different results."""
 
-        results = []
+        results: list[str] = []
         for i in range(10):
 
             @command()
@@ -97,7 +95,6 @@ class TestRandomDateTimeBasic:
             result = cli_runner.invoke(cmd)
             results.append(result.output.strip())
 
-        # Should have some variety
         assert len(set(results)) > 1
 
 
@@ -128,7 +125,6 @@ class TestRandomDateTimeKeywords:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
         date_str = result.output.split("Date: ")[1].strip()
-        # Should be today's date
         assert date_str == datetime.now().strftime("%Y-%m-%d")
 
     def test_keyword_yesterday(self, cli_runner: CliRunner) -> None:
@@ -141,7 +137,6 @@ class TestRandomDateTimeKeywords:
 
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
-        # Just verify it runs without error
 
     def test_keyword_tomorrow(self, cli_runner: CliRunner) -> None:
         """Test 'tomorrow' keyword."""
@@ -153,7 +148,6 @@ class TestRandomDateTimeKeywords:
 
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
-        # Just verify it runs without error
 
 
 class TestRandomDateTimeTimezones:
@@ -211,7 +205,7 @@ class TestRandomDateTimeTimezones:
 
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 0
-        assert "TZ Name: CEST" in result.output  # Central European Summer Time
+        assert "TZ Name: CEST" in result.output
 
     def test_timezone_naive_by_default(self, cli_runner: CliRunner) -> None:
         """Test that datetime is timezone-naive by default."""
@@ -292,7 +286,7 @@ class TestRandomDateTimeDistribution:
     def test_covers_full_range(self, cli_runner: CliRunner) -> None:
         """Test that generated datetimes cover the full range."""
 
-        hours = set()
+        hours: set[int] = set()
         for i in range(50):
 
             @command()
@@ -309,13 +303,12 @@ class TestRandomDateTimeDistribution:
             hour = int(result.output.strip())
             hours.add(hour)
 
-        # Should see variety of hours (at least 10 different hours)
         assert len(hours) >= 10
 
     def test_same_seed_same_result(self, cli_runner: CliRunner) -> None:
         """Test that same seed produces same result."""
 
-        results = []
+        results: list[str] = []
         for _ in range(3):
 
             @command()
@@ -331,7 +324,6 @@ class TestRandomDateTimeDistribution:
             result = cli_runner.invoke(cmd)
             results.append(result.output.strip())
 
-        # All should be identical
         assert len(set(results)) == 1
 
 
@@ -410,7 +402,7 @@ class TestRandomDateTimePractical:
     def test_historical_data_generation(self, cli_runner: CliRunner) -> None:
         """Test generating historical timestamps."""
 
-        years = set()
+        years: set[int] = set()
         for i in range(20):
 
             @command()
@@ -427,5 +419,4 @@ class TestRandomDateTimePractical:
             year = int(result.output.strip())
             years.add(year)
 
-        # Should cover multiple years
         assert len(years) >= 3
