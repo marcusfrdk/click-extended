@@ -9,11 +9,6 @@
 - Add documentation for `@option` decorator (concatenated flags, new multiple flags, etc.)
 - Add documentation for `@argument` decorator.
 
-### Prompts
-
-- `@confirm(prompt, truthy)`
-- `@confirm_if(prompt, fn)`
-
 ### Checks
 
 - `@requires(*name)`

@@ -663,6 +663,8 @@ class RootNode(Node):
                 except ContextAwareError as e:
                     e.show()
                     sys.exit(1)
+                except click.Abort:
+                    raise
                 except Exception as e:
                     context = click.get_current_context()
                     meta = context.meta.get("click_extended", {})
