@@ -26,9 +26,7 @@
 
 ### String
 
-- `@length(min, max)` (replaced min_length, max_length)
 - `@expand_vars()`
-- `@not_empty(n)`
 - `@contains(*text)`
 - `@strip(*chars)`
 - `@lstrip(*chars)`
