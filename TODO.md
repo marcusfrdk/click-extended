@@ -15,8 +15,6 @@
 - `@not_empty(n)`
 - `@flatten()`
 - `@contains(*text, all_of, none_of)`
-- `@starts_with(*text)`
-- `@ends_with(*text)`
 - `@divisible_by(n)`
 - `@choice(*values)`
 - `@strip(chars)`

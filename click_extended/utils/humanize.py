@@ -123,7 +123,7 @@ def humanize_iterable(
         prefix = prefix_plural if prefix_plural is not None else ""
         suffix = suffix_plural if suffix_plural is not None else ""
 
-    return prefix + formatted + suffix
+    return str(prefix.strip() + " " + formatted + " " + suffix.strip()).strip()
 
 
 def humanize_type(value: Any) -> str:
