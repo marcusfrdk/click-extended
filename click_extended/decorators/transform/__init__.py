@@ -1,6 +1,10 @@
 """Initialization file for the `click_extended.decorators.transform` module."""
 
+from click_extended.decorators.transform.add_prefix import add_prefix
+from click_extended.decorators.transform.add_suffix import add_suffix
 from click_extended.decorators.transform.apply import apply
+from click_extended.decorators.transform.remove_prefix import remove_prefix
+from click_extended.decorators.transform.remove_suffix import remove_suffix
 from click_extended.decorators.transform.strip import lstrip, rstrip, strip
 from click_extended.decorators.transform.to_case import (
     to_camel_case,
@@ -24,8 +28,12 @@ from click_extended.decorators.transform.to_time import to_time
 from click_extended.decorators.transform.to_timestamp import to_timestamp
 
 __all__ = [
+    "add_prefix",
+    "add_suffix",
     "apply",
     "lstrip",
+    "remove_prefix",
+    "remove_suffix",
     "rstrip",
     "strip",
     "to_camel_case",

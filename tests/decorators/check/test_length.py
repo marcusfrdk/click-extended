@@ -7,9 +7,9 @@ from click_extended.core.decorators.command import command
 from click_extended.core.decorators.option import option
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.other._tree import Tree
-from click_extended.decorators.add.add_prefix import add_prefix
 from click_extended.decorators.check.length import Length, length
 from click_extended.decorators.check.starts_with import starts_with
+from click_extended.decorators.transform.add_prefix import add_prefix
 
 
 class TestLengthInit:

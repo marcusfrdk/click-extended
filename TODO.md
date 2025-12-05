@@ -26,7 +26,6 @@
 - `@contains(*text)`
 - `@truncate()`
 - `@split(sep, maxsplit)`
-- `@join(sep)`
 - `@replace(old, new, count=-1)`
 - `@regex(pattern)`
 - `@url()`
@@ -35,8 +34,6 @@
 - `@ipv6()`
 - `@port()`
 - `@slugify()`
-- `@remove_prefix(prefix)`
-- `@remove_suffix(suffix)`
 
 ### Path
 

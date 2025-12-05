@@ -1,7 +1,5 @@
 """Initialization file for the `click_extended.decorators` module."""
 
-from click_extended.decorators.add import *
-from click_extended.decorators.add import __all__ as add_all
 from click_extended.decorators.check import *
 from click_extended.decorators.check import __all__ as check_all
 from click_extended.decorators.compare import *
@@ -16,7 +14,6 @@ from click_extended.decorators.transform import *
 from click_extended.decorators.transform import __all__ as transform_all
 
 __all__ = [
-    *add_all,
     *check_all,
     *compare_all,
     *load_all,

@@ -7,7 +7,10 @@ from click_extended.core.decorators.command import command
 from click_extended.core.decorators.option import option
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.other._tree import Tree
+from click_extended.decorators.check.length import length
 from click_extended.decorators.check.not_empty import NotEmpty, not_empty
+from click_extended.decorators.check.starts_with import starts_with
+from click_extended.decorators.transform.add_prefix import add_prefix
 
 
 class TestNotEmptyInit:
@@ -232,7 +235,6 @@ class TestNotEmptyChaining:
 
     def test_chain_with_length(self, cli_runner: CliRunner) -> None:
         """Test chaining not_empty with length."""
-        from click_extended.decorators.check.length import length
 
         @command()
         @option("password", default="secret123")
@@ -246,7 +248,6 @@ class TestNotEmptyChaining:
 
     def test_chain_with_starts_with(self, cli_runner: CliRunner) -> None:
         """Test chaining not_empty with starts_with."""
-        from click_extended.decorators.check.starts_with import starts_with
 
         @command()
         @option("url", default="https://example.com")
@@ -260,7 +261,6 @@ class TestNotEmptyChaining:
 
     def test_chain_with_add_prefix(self, cli_runner: CliRunner) -> None:
         """Test chaining not_empty with add_prefix."""
-        from click_extended.decorators.add.add_prefix import add_prefix
 
         @command()
         @option("name", default="Alice")
@@ -277,7 +277,6 @@ class TestNotEmptyChaining:
         self, cli_runner: CliRunner
     ) -> None:
         """Test that empty string fails at not_empty before reaching length."""
-        from click_extended.decorators.check.length import length
 
         @command()
         @option("text", default="")
@@ -302,7 +301,6 @@ class TestNotEmptyPractical:
 
     def test_username_validation(self, cli_runner: CliRunner) -> None:
         """Test not_empty for username validation."""
-        from click_extended.decorators.check.length import length
 
         @command()
         @option("username", default="john_doe")
@@ -328,7 +326,6 @@ class TestNotEmptyPractical:
 
     def test_comment_validation(self, cli_runner: CliRunner) -> None:
         """Test not_empty for comment validation."""
-        from click_extended.decorators.check.length import length
 
         @command()
         @option("comment", default="Great work!")
@@ -342,7 +339,6 @@ class TestNotEmptyPractical:
 
     def test_api_key_validation(self, cli_runner: CliRunner) -> None:
         """Test not_empty for API key validation."""
-        from click_extended.decorators.check.length import length
 
         @command()
         @option("api_key", default="sk_test_1234567890")

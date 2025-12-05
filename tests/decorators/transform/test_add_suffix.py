@@ -6,7 +6,7 @@ from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
 from click_extended.core.decorators.option import option
-from click_extended.decorators.add.add_suffix import add_suffix
+from click_extended.decorators.transform.add_suffix import add_suffix
 
 
 class TestAddSuffixBasic:

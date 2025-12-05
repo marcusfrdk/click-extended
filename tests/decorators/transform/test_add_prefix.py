@@ -6,7 +6,7 @@ from click.testing import CliRunner
 
 from click_extended.core.decorators.command import command
 from click_extended.core.decorators.option import option
-from click_extended.decorators.add.add_prefix import add_prefix
+from click_extended.decorators.transform.add_prefix import add_prefix
 
 
 class TestAddPrefixBasic:
