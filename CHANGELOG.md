@@ -10,6 +10,7 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@strip`, `@lstrip`, `@rstrip`**: Child decorators to strip characters from strings.
 - **`@choice`**: Child decorator to check if value is an element of a list.
 - **`@not_empty`**: Child decorator to check if a string is empty.
 - **`@starts_with`**: Child decorator to check if a string starts with one or more patterns.

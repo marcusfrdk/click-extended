@@ -24,9 +24,6 @@
 
 - `@expand_vars()`
 - `@contains(*text)`
-- `@strip(*chars)`
-- `@lstrip(*chars)`
-- `@rstrip(*chars)`
 - `@truncate()`
 - `@split(sep, maxsplit)`
 - `@join(sep)`
