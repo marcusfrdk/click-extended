@@ -13,10 +13,26 @@ class AddPrefix(ChildNode):
     def handle_str(
         self, value: str, context: Context, *args: Any, **kwargs: Any
     ) -> Any:
-        return kwargs["prefix"] + value
+        prefix = kwargs["prefix"]
+        skip = kwargs["skip"]
+        case_sensitive = kwargs["case_sensitive"]
+
+        if skip:
+            if case_sensitive:
+                if value.startswith(prefix):
+                    return value
+            else:
+                if value.lower().startswith(prefix.lower()):
+                    return value
+
+        return prefix + value
 
 
-def add_prefix(prefix: str) -> Decorator:
+def add_prefix(
+    prefix: str,
+    skip: bool = True,
+    case_sensitive: bool = False,
+) -> Decorator:
     """
     Add a prefix to a string.
 
@@ -27,9 +43,16 @@ def add_prefix(prefix: str) -> Decorator:
     Args:
         prefix (str):
             The prefix to add.
-
+        skip (bool, optional):
+            Skip adding the prefix if it already exists. Defaults to `True`.
+        case_sensitive (bool)
+            Check for exact case matching when `skip=True`. Defaults to `False`.
     Returns:
         Decorator:
             The decorated function.
     """
-    return AddPrefix.as_decorator(prefix=prefix)
+    return AddPrefix.as_decorator(
+        prefix=prefix,
+        skip=skip,
+        case_sensitive=case_sensitive,
+    )

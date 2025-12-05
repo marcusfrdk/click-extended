@@ -351,3 +351,257 @@ class TestAddSuffixPractical:
             cmd, ["--files", "processing", "cache", "download"]
         )
         assert result.exit_code == 0
+
+
+class TestAddSuffixSkipParameter:
+    """Test add_suffix skip parameter functionality."""
+
+    def test_skip_true_suffix_already_exists(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test skip=True when suffix already exists (default behavior)."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "file.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.txt"])
+        assert result.exit_code == 0
+
+    def test_skip_true_suffix_not_exists(self, cli_runner: CliRunner) -> None:
+        """Test skip=True when suffix doesn't exist."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "file.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file"])
+        assert result.exit_code == 0
+
+    def test_skip_false_adds_duplicate_suffix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test skip=False adds suffix even if it already exists."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=False)
+        def cmd(text: Any) -> None:
+            assert text == "file.txt.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.txt"])
+        assert result.exit_code == 0
+
+    def test_skip_default_behavior(self, cli_runner: CliRunner) -> None:
+        """Test that skip defaults to True."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".log")
+        def cmd(text: Any) -> None:
+            assert text == "app.log"
+
+        result = cli_runner.invoke(cmd, ["--text", "app.log"])
+        assert result.exit_code == 0
+
+    def test_skip_with_backup_extension(self, cli_runner: CliRunner) -> None:
+        """Test skip parameter with backup file extensions."""
+
+        @command()
+        @option("filename", default=None)
+        @add_suffix(".backup", skip=True)
+        def cmd(filename: Any) -> None:
+            assert filename == "data.backup"
+
+        result = cli_runner.invoke(cmd, ["--filename", "data.backup"])
+        assert result.exit_code == 0
+
+    def test_skip_with_tuple(self, cli_runner: CliRunner) -> None:
+        """Test skip parameter with tuple values."""
+
+        @command()
+        @option("files", default=None, nargs=3)
+        @add_suffix(".json", skip=True)
+        def cmd(files: Any) -> None:
+            assert files[0] == "config.json"
+            assert files[1] == "data.json"
+            assert files[2] == "settings.json"
+
+        result = cli_runner.invoke(
+            cmd, ["--files", "config.json", "data", "settings.json"]
+        )
+        assert result.exit_code == 0
+
+
+class TestAddSuffixCaseSensitive:
+    """Test add_suffix case_sensitive parameter functionality."""
+
+    def test_case_insensitive_uppercase_suffix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test case_sensitive=False with uppercase suffix in value."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "file.TXT"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.TXT"])
+        assert result.exit_code == 0
+
+    def test_case_insensitive_lowercase_suffix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test case_sensitive=False with lowercase suffix in value."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".TXT", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "file.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.txt"])
+        assert result.exit_code == 0
+
+    def test_case_insensitive_mixed_case(self, cli_runner: CliRunner) -> None:
+        """Test case_sensitive=False with mixed case."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".log", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "app.LoG"
+
+        result = cli_runner.invoke(cmd, ["--text", "app.LoG"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_exact_match(self, cli_runner: CliRunner) -> None:
+        """Test case_sensitive=True with exact case match."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            assert text == "file.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.txt"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_different_case_adds_suffix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test case_sensitive=True adds suffix when case differs."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            assert text == "file.TXT.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.TXT"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_default_behavior(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test that case_sensitive defaults to False."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".json", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "config.JSON"
+
+        result = cli_runner.invoke(cmd, ["--text", "config.JSON"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_with_tuple(self, cli_runner: CliRunner) -> None:
+        """Test case_sensitive parameter with tuple values."""
+
+        @command()
+        @option("files", default=None, nargs=3)
+        @add_suffix(".Log", skip=True, case_sensitive=False)
+        def cmd(files: Any) -> None:
+            assert files[0] == "app.log"
+            assert files[1] == "error.Log"
+            assert files[2] == "debug.LOG"
+
+        result = cli_runner.invoke(
+            cmd, ["--files", "app.log", "error", "debug.LOG"]
+        )
+        assert result.exit_code == 0
+
+
+class TestAddSuffixCombinedParameters:
+    """Test add_suffix with combined parameter scenarios."""
+
+    def test_skip_false_case_sensitive_ignored(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test that case_sensitive is ignored when skip=False."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".txt", skip=False, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            assert text == "file.TXT.txt"
+
+        result = cli_runner.invoke(cmd, ["--text", "file.TXT"])
+        assert result.exit_code == 0
+
+    def test_skip_true_case_sensitive_true(self, cli_runner: CliRunner) -> None:
+        """Test skip=True with case_sensitive=True."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".Json", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            # Different case, so suffix is added
+            assert text == "config.json.Json"
+
+        result = cli_runner.invoke(cmd, ["--text", "config.json"])
+        assert result.exit_code == 0
+
+    def test_empty_suffix_with_skip(self, cli_runner: CliRunner) -> None:
+        """Test empty suffix with skip parameter."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix("", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "file"
+
+        result = cli_runner.invoke(cmd, ["--text", "file"])
+        assert result.exit_code == 0
+
+    def test_multiple_extensions_case_insensitive(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test compound extensions with case insensitive matching."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix(".tar.gz", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "archive.TAR.GZ"
+
+        result = cli_runner.invoke(cmd, ["--text", "archive.TAR.GZ"])
+        assert result.exit_code == 0
+
+    def test_version_suffix_case_sensitive(self, cli_runner: CliRunner) -> None:
+        """Test version suffixes with case sensitivity."""
+
+        @command()
+        @option("text", default=None)
+        @add_suffix("-v1", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            # Case differs, so suffix is added
+            assert text == "package-V1-v1"
+
+        result = cli_runner.invoke(cmd, ["--text", "package-V1"])
+        assert result.exit_code == 0

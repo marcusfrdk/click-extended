@@ -362,3 +362,244 @@ class TestAddPrefixPractical:
             ],
         )
         assert result.exit_code == 0
+
+
+class TestAddPrefixSkipParameter:
+    """Test add_prefix skip parameter functionality."""
+
+    def test_skip_true_prefix_already_exists(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test skip=True when prefix already exists (default behavior)."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("pre_", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "pre_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "pre_value"])
+        assert result.exit_code == 0
+
+    def test_skip_true_prefix_not_exists(self, cli_runner: CliRunner) -> None:
+        """Test skip=True when prefix doesn't exist."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("pre_", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "pre_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "value"])
+        assert result.exit_code == 0
+
+    def test_skip_false_adds_duplicate_prefix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test skip=False adds prefix even if it already exists."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("pre_", skip=False)
+        def cmd(text: Any) -> None:
+            assert text == "pre_pre_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "pre_value"])
+        assert result.exit_code == 0
+
+    def test_skip_default_behavior(self, cli_runner: CliRunner) -> None:
+        """Test that skip defaults to True."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("test_")
+        def cmd(text: Any) -> None:
+            assert text == "test_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "test_value"])
+        assert result.exit_code == 0
+
+    def test_skip_with_url_prefix(self, cli_runner: CliRunner) -> None:
+        """Test skip parameter with URL prefixes."""
+
+        @command()
+        @option("url", default=None)
+        @add_prefix("https://", skip=True)
+        def cmd(url: Any) -> None:
+            assert url == "https://example.com"
+
+        result = cli_runner.invoke(cmd, ["--url", "https://example.com"])
+        assert result.exit_code == 0
+
+    def test_skip_with_tuple(self, cli_runner: CliRunner) -> None:
+        """Test skip parameter with tuple values."""
+
+        @command()
+        @option("names", default=None, nargs=3)
+        @add_prefix("user_", skip=True)
+        def cmd(names: Any) -> None:
+            assert names[0] == "user_alice"
+            assert names[1] == "user_bob"
+            assert names[2] == "user_charlie"
+
+        result = cli_runner.invoke(
+            cmd, ["--names", "user_alice", "bob", "user_charlie"]
+        )
+        assert result.exit_code == 0
+
+
+class TestAddPrefixCaseSensitive:
+    """Test add_prefix case_sensitive parameter functionality."""
+
+    def test_case_insensitive_uppercase_prefix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test case_sensitive=False with uppercase prefix in value."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("prefix_", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "PREFIX_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "PREFIX_value"])
+        assert result.exit_code == 0
+
+    def test_case_insensitive_lowercase_prefix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test case_sensitive=False with lowercase prefix in value."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("PREFIX_", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "prefix_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "prefix_value"])
+        assert result.exit_code == 0
+
+    def test_case_insensitive_mixed_case(self, cli_runner: CliRunner) -> None:
+        """Test case_sensitive=False with mixed case."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("test_", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "TeSt_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "TeSt_value"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_exact_match(self, cli_runner: CliRunner) -> None:
+        """Test case_sensitive=True with exact case match."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("pre_", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            assert text == "pre_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "pre_value"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_different_case_adds_prefix(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test case_sensitive=True adds prefix when case differs."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("pre_", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            assert text == "pre_PRE_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "PRE_value"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_default_behavior(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test that case_sensitive defaults to False."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("test_", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "TEST_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "TEST_value"])
+        assert result.exit_code == 0
+
+    def test_case_sensitive_with_tuple(self, cli_runner: CliRunner) -> None:
+        """Test case_sensitive parameter with tuple values."""
+
+        @command()
+        @option("names", default=None, nargs=3)
+        @add_prefix("User_", skip=True, case_sensitive=False)
+        def cmd(names: Any) -> None:
+            assert names[0] == "user_alice"
+            assert names[1] == "User_bob"
+            assert names[2] == "USER_charlie"
+
+        result = cli_runner.invoke(
+            cmd, ["--names", "user_alice", "bob", "USER_charlie"]
+        )
+        assert result.exit_code == 0
+
+
+class TestAddPrefixCombinedParameters:
+    """Test add_prefix with combined parameter scenarios."""
+
+    def test_skip_false_case_sensitive_ignored(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test that case_sensitive is ignored when skip=False."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("pre_", skip=False, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            assert text == "pre_PRE_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "PRE_value"])
+        assert result.exit_code == 0
+
+    def test_skip_true_case_sensitive_true(self, cli_runner: CliRunner) -> None:
+        """Test skip=True with case_sensitive=True."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("Test_", skip=True, case_sensitive=True)
+        def cmd(text: Any) -> None:
+            # Different case, so prefix is added
+            assert text == "Test_test_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "test_value"])
+        assert result.exit_code == 0
+
+    def test_empty_prefix_with_skip(self, cli_runner: CliRunner) -> None:
+        """Test empty prefix with skip parameter."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("", skip=True)
+        def cmd(text: Any) -> None:
+            assert text == "value"
+
+        result = cli_runner.invoke(cmd, ["--text", "value"])
+        assert result.exit_code == 0
+
+    def test_special_chars_case_insensitive(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test special characters with case insensitive matching."""
+
+        @command()
+        @option("text", default=None)
+        @add_prefix("@Test_", skip=True, case_sensitive=False)
+        def cmd(text: Any) -> None:
+            assert text == "@test_value"
+
+        result = cli_runner.invoke(cmd, ["--text", "@test_value"])
+        assert result.exit_code == 0

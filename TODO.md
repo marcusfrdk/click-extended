@@ -14,7 +14,7 @@
 - `@in_range(min, max, inclusive=True)` (supports int, float, datetime)
 - `@not_empty(n)`
 - `@flatten()`
-- `@contains(*text, all_of, none_of)`
+- `@contains(*text)`
 - `@divisible_by(n)`
 - `@choice(*values)`
 - `@strip(chars)`
@@ -23,7 +23,6 @@
 - `@replace(old, new, count=-1)`
 - `@regex(pattern)`
 - `@add_timezone(tz)`
-- `@add_protocol(protocol)` (Add protocol if missing, e.g. google.com -> https://google.com)
 - `@normalize(min, max)`
 - `@standardize()`
 - `@clamp(min, max)`

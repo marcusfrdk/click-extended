@@ -13,10 +13,26 @@ class AddSuffix(ChildNode):
     def handle_str(
         self, value: str, context: Context, *args: Any, **kwargs: Any
     ) -> Any:
-        return value + kwargs["suffix"]
+        suffix = kwargs["suffix"]
+        skip = kwargs["skip"]
+        case_sensitive = kwargs["case_sensitive"]
+
+        if skip:
+            if case_sensitive:
+                if value.endswith(suffix):
+                    return value
+            else:
+                if value.lower().endswith(suffix.lower()):
+                    return value
+
+        return value + suffix
 
 
-def add_suffix(suffix: str) -> Decorator:
+def add_suffix(
+    suffix: str,
+    skip: bool = True,
+    case_sensitive: bool = False,
+) -> Decorator:
     """
     Add a suffix to a string.
 
@@ -27,9 +43,16 @@ def add_suffix(suffix: str) -> Decorator:
     Args:
         suffix (str):
             The suffix to add.
-
+        skip (bool, optional):
+            Skip adding the suffix if it already exists. Defaults to `True`.
+        case_sensitive (bool)
+            Check for exact case matching when `skip=True`. Defaults to `False`.
     Returns:
         Decorator:
             The decorated function.
     """
-    return AddSuffix.as_decorator(suffix=suffix)
+    return AddSuffix.as_decorator(
+        suffix=suffix,
+        skip=skip,
+        case_sensitive=case_sensitive,
+    )
