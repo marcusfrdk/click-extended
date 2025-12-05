@@ -7,8 +7,8 @@
 from builtins import type as builtins_type
 from typing import Any, Type, cast
 
-from click_extended.core.argument_node import ArgumentNode
-from click_extended.core.context import Context
+from click_extended.core.nodes.argument_node import ArgumentNode
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 from click_extended.utils.casing import Casing
 from click_extended.utils.humanize import humanize_type

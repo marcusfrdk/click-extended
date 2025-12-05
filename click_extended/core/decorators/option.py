@@ -11,8 +11,8 @@ from builtins import type as builtins_type
 from functools import wraps
 from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
-from click_extended.core.context import Context
-from click_extended.core.option_node import OptionNode
+from click_extended.core.nodes.option_node import OptionNode
+from click_extended.core.other.context import Context
 from click_extended.utils.casing import Casing
 from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import (
@@ -289,7 +289,7 @@ def option(
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         """The actual decorator that wraps the function."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         instance = Option(
             name,

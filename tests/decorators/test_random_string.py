@@ -5,7 +5,7 @@ from string import ascii_lowercase, ascii_uppercase, digits, punctuation
 import click
 from click.testing import CliRunner
 
-from click_extended.core.command import command
+from click_extended.core.decorators.command import command
 from click_extended.decorators.random_string import random_string
 
 

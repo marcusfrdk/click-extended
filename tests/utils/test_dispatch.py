@@ -10,7 +10,7 @@ from uuid import UUID
 
 import pytest
 
-from click_extended.core.child_node import ChildNode
+from click_extended.core.nodes.child_node import ChildNode
 from click_extended.errors import (
     InvalidHandlerError,
     ProcessError,

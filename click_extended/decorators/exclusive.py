@@ -2,8 +2,8 @@
 
 from typing import Any
 
-from click_extended.core.context import Context
-from click_extended.core.validation_node import ValidationNode
+from click_extended.core.nodes.validation_node import ValidationNode
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 from click_extended.utils.humanize import humanize_iterable
 

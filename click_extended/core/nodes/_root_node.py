@@ -17,13 +17,13 @@ from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast, get_type_hints
 import click
 from click.utils import echo
 
-from click_extended.core._tree import Tree
-from click_extended.core.argument_node import ArgumentNode
-from click_extended.core.context import Context
-from click_extended.core.env import Env
-from click_extended.core.node import Node
-from click_extended.core.option_node import OptionNode
-from click_extended.core.tag import Tag
+from click_extended.core.decorators.env import Env
+from click_extended.core.decorators.tag import Tag
+from click_extended.core.nodes.argument_node import ArgumentNode
+from click_extended.core.nodes.node import Node
+from click_extended.core.nodes.option_node import OptionNode
+from click_extended.core.other._tree import Tree
+from click_extended.core.other.context import Context
 from click_extended.errors import (
     ContextAwareError,
     NameExistsError,
@@ -39,10 +39,10 @@ from click_extended.utils.process import (
 )
 
 if TYPE_CHECKING:
-    from click_extended.core._click_command import ClickCommand
-    from click_extended.core._click_group import ClickGroup
-    from click_extended.core.child_node import ChildNode
-    from click_extended.core.parent_node import ParentNode
+    from click_extended.core.nodes.child_node import ChildNode
+    from click_extended.core.nodes.parent_node import ParentNode
+    from click_extended.core.other._click_command import ClickCommand
+    from click_extended.core.other._click_group import ClickGroup
 
 ClickType = TypeVar("ClickType", bound=click.Command)
 
@@ -240,6 +240,9 @@ class RootNode(Node):
 
         def decorator(func: Callable[..., Any]) -> Any:
             """The actual decorator that wraps the function."""
+
+            from click_extended.core.nodes.validation_node import ValidationNode
+
             node_name = name if name is not None else func.__name__
             root = cls(name=node_name, **kwargs)
             root.tree.register_root(root)
@@ -885,9 +888,6 @@ class RootNode(Node):
                             most_recent_tag = tag_inst
                             root.tree.recent_tag = tag_inst
                         elif node_type == "validation":
-                            from click_extended.core.validation_node import (
-                                ValidationNode,
-                            )
 
                             validation_inst = cast(ValidationNode, node)
                             root.tree.validations.append(validation_inst)

@@ -3,8 +3,8 @@
 import random
 from typing import Any
 
-from click_extended.core.context import Context
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 
 

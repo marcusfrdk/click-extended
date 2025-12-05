@@ -4,7 +4,7 @@ import random
 from typing import Any, Sequence
 
 from click_extended.classes import ParentNode
-from click_extended.core.context import Context
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 
 

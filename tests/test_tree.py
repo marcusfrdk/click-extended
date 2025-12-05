@@ -4,10 +4,10 @@ from typing import Any
 
 import pytest
 
-from click_extended.core._tree import Tree
-from click_extended.core.child_node import ChildNode
-from click_extended.core.context import Context
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other._tree import Tree
+from click_extended.core.other.context import Context
 
 
 class ConcreteParentNode(ParentNode):
@@ -86,7 +86,7 @@ class TestTreeInit:
         """Test that tags dictionary can be modified."""
         tree = Tree()
 
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.tag import Tag
 
         tag1 = Tag(name="tag1")
         tree.tags["tag1"] = tag1
@@ -126,7 +126,7 @@ class TestTreePendingNodes:
 
     def test_queue_tag_adds_to_pending(self) -> None:
         """Test queue_tag() adds node with 'tag' type."""
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.tag import Tag
 
         tag = Tag(name="test_tag")
 
@@ -186,7 +186,7 @@ class TestTreePendingNodes:
 
     def test_mixed_node_types_in_queue(self) -> None:
         """Test mix of parents, children, and tags in queue."""
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.tag import Tag
 
         parent = ConcreteParentNode(name="opt1")
         child = ConcreteChildNode(name="child1")
@@ -233,7 +233,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() creates click_extended metadata."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         ctx = click.Context(click.Command("test"))
@@ -256,7 +256,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() sets scope to 'root'."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         ctx = click.Context(click.Command("test"))
@@ -269,7 +269,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() sets root_node reference."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         ctx = click.Context(click.Command("test"))
@@ -282,7 +282,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() sets parent_node and child_node to None."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         ctx = click.Context(click.Command("test"))
@@ -296,7 +296,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() builds parents dictionary."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         parent1 = ConcreteParentNode(name="opt1")
@@ -319,7 +319,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() builds children dictionary."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         parent1 = ConcreteParentNode(name="opt1")
@@ -344,8 +344,8 @@ class TestTreeContextInitialization:
         """Test initialize_context() includes tags in metadata."""
         import click
 
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         root = Command(name="test_cmd")
         tag1 = Tag(name="validation")
@@ -364,7 +364,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() enables debug mode with env var."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         monkeypatch.setenv("CLICK_EXTENDED_DEBUG", "1")
 
@@ -381,7 +381,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() debug mode disabled by default."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         monkeypatch.delenv("CLICK_EXTENDED_DEBUG", raising=False)
 
@@ -396,7 +396,7 @@ class TestTreeContextInitialization:
         """Test initialize_context() creates empty data dict."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         ctx = click.Context(click.Command("test"))
@@ -413,7 +413,7 @@ class TestTreeScopeManagement:
         """Test update_scope() updates scope to 'root'."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         ctx = click.Context(click.Command("test"))
@@ -429,7 +429,7 @@ class TestTreeScopeManagement:
         """Test update_scope() updates scope to 'parent' with parent_node."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         parent = ConcreteParentNode(name="opt1")
@@ -446,7 +446,7 @@ class TestTreeScopeManagement:
         """Test update_scope() updates scope to 'child' with both nodes."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         parent = ConcreteParentNode(name="opt1")
@@ -476,7 +476,7 @@ class TestTreeScopeManagement:
         """Test scope transitions through root → parent → child."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         root = Command(name="test_cmd")
         parent = ConcreteParentNode(name="opt1")
@@ -515,7 +515,7 @@ class TestTreeRootRegistration:
 
     def test_register_root_sets_root_node(self) -> None:
         """Test register_root() sets root node correctly."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -526,7 +526,7 @@ class TestTreeRootRegistration:
 
     def test_register_root_twice_raises_error(self) -> None:
         """Test register_root() raises RootExistsError on duplicate."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import RootExistsError
 
         tree = Tree()
@@ -540,7 +540,7 @@ class TestTreeRootRegistration:
 
     def test_register_root_stores_reference(self) -> None:
         """Test that registered root is the same object reference."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -562,7 +562,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() sets is_validated to True."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -579,7 +579,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() only validates once."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -605,7 +605,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() processes all queued nodes."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -630,7 +630,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() registers parent nodes to root."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -651,7 +651,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() attaches children to parents."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -679,8 +679,8 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() registers tags in tree.tags."""
         import click
 
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -701,7 +701,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() calls _validate_names()."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import ParentExistsError
 
         tree = Tree()
@@ -725,7 +725,7 @@ class TestTreeValidationAndBuilding:
         """Test validate_and_build() works with empty pending queue."""
         import click
 
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -749,7 +749,7 @@ class TestTreeNodeRegistration:
 
     def test_register_parent_node_adds_to_root(self) -> None:
         """Test _register_parent_node() adds parent to root.children."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -763,7 +763,7 @@ class TestTreeNodeRegistration:
 
     def test_register_parent_node_updates_recent(self) -> None:
         """Test _register_parent_node() updates tree.recent."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -776,7 +776,7 @@ class TestTreeNodeRegistration:
 
     def test_register_child_node_attaches_to_recent_parent(self) -> None:
         """Test _register_child_node() attaches child to recent parent."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -793,8 +793,8 @@ class TestTreeNodeRegistration:
 
     def test_register_child_node_attaches_to_recent_tag(self) -> None:
         """Test _register_child_node() attaches child to recent tag if set."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -811,8 +811,8 @@ class TestTreeNodeRegistration:
 
     def test_register_tag_node_adds_to_tags_dict(self) -> None:
         """Test _register_tag_node() adds tag to tree.tags."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -826,8 +826,8 @@ class TestTreeNodeRegistration:
 
     def test_register_tag_node_updates_recent_tag(self) -> None:
         """Test _register_tag_node() updates tree.recent_tag."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -840,7 +840,7 @@ class TestTreeNodeRegistration:
 
     def test_register_multiple_children_to_parent(self) -> None:
         """Test multiple children can be registered to same parent."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -888,7 +888,7 @@ class TestTreeErrorHandling:
 
     def test_parent_exists_error_duplicate_name(self) -> None:
         """Test _register_parent_node() raises ParentExistsError for duplicate."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import ParentExistsError
 
         tree = Tree()
@@ -905,7 +905,7 @@ class TestTreeErrorHandling:
 
     def test_no_parent_error_child_without_parent(self) -> None:
         """Test _register_child_node() raises NoParentError when no parent/tag."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import NoParentError
 
         tree = Tree()
@@ -928,7 +928,7 @@ class TestTreeErrorHandling:
 
     def test_root_exists_error_duplicate_root(self) -> None:
         """Test register_root() raises RootExistsError for duplicate root."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import RootExistsError
 
         tree = Tree()
@@ -942,8 +942,8 @@ class TestTreeErrorHandling:
 
     def test_child_on_tag_without_handle_tag_exits(self, capsys: Any) -> None:
         """Test child on tag without handle_tag() prints error and exits."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -974,8 +974,8 @@ class TestTreeTagSystem:
 
     def test_tag_registration_stores_in_dict(self) -> None:
         """Test tags stored with name as key in tree.tags."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -989,8 +989,8 @@ class TestTreeTagSystem:
 
     def test_recent_tag_tracking(self) -> None:
         """Test recent_tag updated on tag registration."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -1025,8 +1025,8 @@ class TestTreeTagSystem:
 
     def test_child_attached_to_tag_validates_handle_tag(self) -> None:
         """Test child attached to tag requires handle_tag() implementation."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -1047,8 +1047,8 @@ class TestTreeTagSystem:
 
     def test_tag_children_processed_correctly(self) -> None:
         """Test children under tags are indexed correctly."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -1068,8 +1068,8 @@ class TestTreeTagSystem:
 
     def test_multiple_tags_stored_independently(self) -> None:
         """Test multiple tags stored independently in tree.tags."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -1098,7 +1098,7 @@ class TestTreeNameValidation:
 
     def test_validate_names_allows_unique_names(self) -> None:
         """Test _validate_names() allows unique names without error."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -1114,7 +1114,7 @@ class TestTreeNameValidation:
 
     def test_validate_names_detects_duplicate_parents(self) -> None:
         """Test _validate_names() detects duplicate parent names."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import NameExistsError
 
         tree = Tree()
@@ -1140,8 +1140,8 @@ class TestTreeNameValidation:
 
     def test_validate_names_detects_parent_tag_collision(self) -> None:
         """Test _validate_names() detects parent name conflicts with tag."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
         from click_extended.errors import NameExistsError
 
         tree = Tree()
@@ -1159,8 +1159,8 @@ class TestTreeNameValidation:
 
     def test_validate_names_detects_duplicate_tags(self) -> None:
         """Test _validate_names() detects duplicate tag names."""
-        from click_extended.core.command import Command
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.tag import Tag
         from click_extended.errors import NameExistsError
 
         tree = Tree()
@@ -1202,7 +1202,7 @@ class TestTreeNameValidation:
 
     def test_validate_names_with_empty_tree(self) -> None:
         """Test _validate_names() with tree containing only root."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="test_cmd")
@@ -1212,7 +1212,7 @@ class TestTreeNameValidation:
 
     def test_validate_names_detects_parent_using_own_name_as_tag(self) -> None:
         """Test _validate_names() detects when a parent uses its own name as a tag."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import NameExistsError
 
         tree = Tree()
@@ -1232,7 +1232,7 @@ class TestTreeNameValidation:
         self,
     ) -> None:
         """Test _validate_names() detects when a parent's name is in its tag list."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
         from click_extended.errors import NameExistsError
 
         tree = Tree()
@@ -1261,7 +1261,7 @@ class TestTreeVisualization:
 
     def test_visualize_prints_tree_structure(self, capsys: Any) -> None:
         """Test visualize() prints root → parents → children structure."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="my_app")
@@ -1297,7 +1297,7 @@ class TestTreeVisualization:
 
     def test_visualize_with_empty_tree(self, capsys: Any) -> None:
         """Test visualize() handles tree with only root."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         tree = Tree()
         root = Command(name="empty_app")
@@ -1320,8 +1320,8 @@ class TestTreeIntegration:
         """Test full flow: command + options."""
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name", default="World")
@@ -1343,8 +1343,8 @@ class TestTreeIntegration:
         """Test full flow: command + arguments."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("filename")
@@ -1366,10 +1366,10 @@ class TestTreeIntegration:
         """Test full flow: option + child processing."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1389,11 +1389,11 @@ class TestTreeIntegration:
         """Test full flow: tags with children."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.decorators.tag import tag
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Validate(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1422,7 +1422,7 @@ class TestTreeIntegration:
         """Test group command tree structure."""
         import click
 
-        from click_extended.core.group import group
+        from click_extended.core.decorators.group import group
 
         @group()
         def cli() -> None:
@@ -1450,8 +1450,8 @@ class TestTreeIntegration:
         """Test context metadata available in function."""
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         metadata_captured = {}
 
@@ -1472,7 +1472,7 @@ class TestTreeIntegration:
 
     def test_multiple_commands_have_separate_trees(self) -> None:
         """Test tree isolation between commands."""
-        from click_extended.core.command import command
+        from click_extended.core.decorators.command import command
 
         @command()
         def cmd1() -> None:
@@ -1490,10 +1490,10 @@ class TestTreeIntegration:
         """Test all 4 phases working together."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         execution_log: list[str] = []
 

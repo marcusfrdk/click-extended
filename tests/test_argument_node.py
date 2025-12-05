@@ -4,8 +4,8 @@ from typing import Any
 
 import pytest
 
-from click_extended.core.argument_node import ArgumentNode
-from click_extended.core.context import Context
+from click_extended.core.nodes.argument_node import ArgumentNode
+from click_extended.core.other.context import Context
 
 
 class ConcreteArgumentNode(ArgumentNode):
@@ -169,8 +169,8 @@ class TestArgumentNodeMethods:
 
     def test_concrete_load_implementation(self) -> None:
         """Test that concrete subclass can implement load."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.command import command
+        from click_extended.core.decorators.command import command
+        from click_extended.core.other._tree import Tree
 
         node = ConcreteArgumentNode(name="test_arg")
 
@@ -202,7 +202,7 @@ class TestArgumentNodeMethods:
 
     def test_argument_node_extends_parent_node(self) -> None:
         """Test that ArgumentNode properly extends ParentNode."""
-        from click_extended.core.parent_node import ParentNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         assert issubclass(ArgumentNode, ParentNode)
 
@@ -238,8 +238,8 @@ class TestArgumentDecorator:
 
     def test_decorator_can_be_applied_to_function(self) -> None:
         """Test that @argument decorator can be applied to a function."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -253,7 +253,7 @@ class TestArgumentDecorator:
 
     def test_decorator_preserves_function_name(self) -> None:
         """Test that decorator preserves function name."""
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
 
         @argument("filename")
         def my_function(filename: str) -> None:
@@ -264,7 +264,7 @@ class TestArgumentDecorator:
 
     def test_decorator_preserves_function_docstring(self) -> None:
         """Test that decorator preserves function docstring."""
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
 
         @argument("filename")
         def my_function(filename: str) -> None:
@@ -275,8 +275,8 @@ class TestArgumentDecorator:
 
     def test_decorator_queues_in_tree(self) -> None:
         """Test that decorator registers in Tree."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -292,8 +292,8 @@ class TestArgumentDecorator:
 
     def test_decorator_creates_argument_instance(self) -> None:
         """Test that decorator creates Argument instance."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import Argument, argument
+        from click_extended.core.decorators.argument import Argument, argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -307,8 +307,8 @@ class TestArgumentDecorator:
 
     def test_argument_name_snake_case(self) -> None:
         """Test argument with snake_case name."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -322,8 +322,8 @@ class TestArgumentDecorator:
 
     def test_argument_name_kebab_case_converts(self) -> None:
         """Test that kebab-case name converts to snake_case."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -338,8 +338,8 @@ class TestArgumentDecorator:
 
     def test_argument_name_screaming_snake_case_converts(self) -> None:
         """Test that SCREAMING_SNAKE_CASE converts to snake_case."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -353,8 +353,8 @@ class TestArgumentDecorator:
 
     def test_param_override_with_custom_name(self) -> None:
         """Test that param parameter overrides default naming."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -368,8 +368,8 @@ class TestArgumentDecorator:
 
     def test_decorator_kwargs_stored(self) -> None:
         """Test that all configuration is stored in decorator_kwargs."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -395,8 +395,8 @@ class TestArgumentDecorator:
 
     def test_multiple_arguments_queue_in_order(self) -> None:
         """Test that multiple @argument decorators queue in order."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -417,8 +417,8 @@ class TestArgumentDecorator:
 
     def test_type_inference_from_default_value(self) -> None:
         """Test that type is inferred from default value."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -432,8 +432,8 @@ class TestArgumentDecorator:
 
     def test_default_makes_argument_optional(self) -> None:
         """Test that providing default makes argument optional."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -453,8 +453,8 @@ class TestArgumentCommandIntegration:
         """Test that required argument must be provided."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("filename")
@@ -476,8 +476,8 @@ class TestArgumentCommandIntegration:
         """Test optional argument with default value."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("filename", default="default.txt")
@@ -498,8 +498,8 @@ class TestArgumentCommandIntegration:
         """Test that argument value is injected correctly."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("name")
@@ -514,8 +514,8 @@ class TestArgumentCommandIntegration:
         """Test that multiple arguments are parsed in order."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("third")
@@ -532,9 +532,9 @@ class TestArgumentCommandIntegration:
         """Test mixing argument and option nodes."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         @command()
         @argument("filename")
@@ -559,8 +559,8 @@ class TestArgumentCommandIntegration:
         """Test argument with nargs=1 (single value)."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", nargs=1)
@@ -575,8 +575,8 @@ class TestArgumentCommandIntegration:
         """Test argument with nargs=3 (tuple of 3 values)."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("coords", nargs=3, type=int)
@@ -592,8 +592,8 @@ class TestArgumentCommandIntegration:
         """Test argument with nargs=-1 (list of all values)."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("files", nargs=-1)
@@ -611,8 +611,8 @@ class TestArgumentCommandIntegration:
         """Test argument with type conversion to int."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("count", type=int)
@@ -628,8 +628,8 @@ class TestArgumentCommandIntegration:
         """Test argument with type conversion to float."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", type=float)
@@ -644,8 +644,8 @@ class TestArgumentCommandIntegration:
         """Test that invalid type conversion fails gracefully."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("number", type=int)
@@ -659,8 +659,8 @@ class TestArgumentCommandIntegration:
         """Test that was_provided flag is set correctly."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", default="default")
@@ -681,8 +681,8 @@ class TestArgumentCommandIntegration:
         """Test that cached_value is set after processing."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value")
@@ -698,8 +698,8 @@ class TestArgumentCommandIntegration:
         """Test that param determines injection name."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("input_file", param="filename")
@@ -720,10 +720,10 @@ class TestArgumentNodeWithChildren:
         """Test argument with one child validator."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class MinLength(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -752,10 +752,10 @@ class TestArgumentNodeWithChildren:
         """Test argument with one child transformer."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -777,10 +777,10 @@ class TestArgumentNodeWithChildren:
         """Test argument with multiple child nodes chained."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class StripWhitespace(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -805,10 +805,10 @@ class TestArgumentNodeWithChildren:
         """Test argument with sync child handler."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Double(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -828,10 +828,10 @@ class TestArgumentNodeWithChildren:
         """Test argument with async child handler."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class AsyncUpper(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
@@ -853,10 +853,10 @@ class TestArgumentNodeWithChildren:
         """Test that child receives the argument value."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class AddPrefix(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -876,10 +876,10 @@ class TestArgumentNodeWithChildren:
         """Test that final value after children is what gets injected."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Multiply(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -901,10 +901,10 @@ class TestArgumentNodeWithChildren:
         """Test that validation errors from children are handled."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class PositiveOnly(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -932,8 +932,8 @@ class TestArgumentNodeWithChildren:
         """Test nargs=-1 argument receives values correctly."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("names", nargs=-1)
@@ -957,8 +957,8 @@ class TestArgumentNodeEdgeCases:
         """Test handling None for optional argument."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value", required=False, default=None)
@@ -977,8 +977,8 @@ class TestArgumentNodeEdgeCases:
         """Test that empty string is a valid argument value."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("value")
@@ -993,8 +993,8 @@ class TestArgumentNodeEdgeCases:
         """Test argument name normalization with underscores."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("input_file_name")
@@ -1009,8 +1009,8 @@ class TestArgumentNodeEdgeCases:
         """Test argument names with numbers at the end."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("file_v2")
@@ -1025,8 +1025,8 @@ class TestArgumentNodeEdgeCases:
         """Test nargs=-1 with no values provided."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("files", nargs=-1, required=False)
@@ -1044,8 +1044,8 @@ class TestArgumentNodeEdgeCases:
         """Test arguments with special characters in values."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("path")

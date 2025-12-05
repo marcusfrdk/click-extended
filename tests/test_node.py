@@ -1,6 +1,6 @@
 """Tests for the base Node class."""
 
-from click_extended.core.node import Node
+from click_extended.core.nodes.node import Node
 
 
 class ConcreteNode(Node):

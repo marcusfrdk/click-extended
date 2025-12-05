@@ -4,9 +4,9 @@ import click
 from click.testing import CliRunner
 from conftest import SimpleChild, ValidatingChild, assert_error, assert_success
 
-from click_extended.core.child_node import ChildNode
-from click_extended.core.command import command
-from click_extended.core.option import option
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import option
+from click_extended.core.nodes.child_node import ChildNode
 
 
 class TestPhase1Collection:
@@ -61,7 +61,7 @@ class TestPhase3Validation:
 
     def test_validates_type_mismatch(self, cli_runner: CliRunner) -> None:
         """Test that type mismatches are caught during runtime."""
-        from click_extended.core.context import Context
+        from click_extended.core.other.context import Context
 
         class IntChild(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -118,7 +118,7 @@ class TestPhase4Runtime:
         self, cli_runner: CliRunner
     ) -> None:
         """Test that scope is tracked as execution moves through nodes."""
-        from click_extended.core.context import Context
+        from click_extended.core.other.context import Context
 
         scopes: list[str] = []
 

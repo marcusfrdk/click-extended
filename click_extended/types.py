@@ -2,7 +2,7 @@
 
 from typing import Any, Callable
 
-from click_extended.core.context import Context
+from click_extended.core.other.context import Context
 
 Decorator = Callable[[Callable[..., Any]], Callable[..., Any]]
 

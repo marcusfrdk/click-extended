@@ -29,11 +29,11 @@ from click_extended.errors import (
 )
 
 if TYPE_CHECKING:
-    from click_extended.core._root_node import RootNode
-    from click_extended.core.child_node import ChildNode
-    from click_extended.core.parent_node import ParentNode
-    from click_extended.core.tag import Tag
-    from click_extended.core.validation_node import ValidationNode
+    from click_extended.core.decorators.tag import Tag
+    from click_extended.core.nodes._root_node import RootNode
+    from click_extended.core.nodes.child_node import ChildNode
+    from click_extended.core.nodes.parent_node import ParentNode
+    from click_extended.core.nodes.validation_node import ValidationNode
 
 
 class Tree:
@@ -336,7 +336,7 @@ class Tree:
 
     def has_handle_tag_implemented(self, node: "ChildNode") -> bool:
         """Check if a child node has `handle_tag` implemented."""
-        from click_extended.core.child_node import ChildNode
+        from click_extended.core.nodes.child_node import ChildNode
 
         handle_tag_method = getattr(type(node), "handle_tag", None)
 

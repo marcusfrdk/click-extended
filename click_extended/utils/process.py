@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Mapping, cast
 
 import click
 
-from click_extended.core._tree import Tree
-from click_extended.core.context import Context
+from click_extended.core.other._tree import Tree
+from click_extended.core.other.context import Context
 from click_extended.errors import ContextAwareError
 from click_extended.utils.dispatch import (
     dispatch_to_child,
@@ -18,10 +18,10 @@ from click_extended.utils.dispatch import (
 )
 
 if TYPE_CHECKING:
-    from click_extended.core._root_node import RootNode
-    from click_extended.core.child_node import ChildNode
-    from click_extended.core.parent_node import ParentNode
-    from click_extended.core.tag import Tag
+    from click_extended.core.decorators.tag import Tag
+    from click_extended.core.nodes._root_node import RootNode
+    from click_extended.core.nodes.child_node import ChildNode
+    from click_extended.core.nodes.parent_node import ParentNode
 
 
 def process_children(

@@ -6,15 +6,15 @@ from unittest.mock import MagicMock, Mock
 import click
 import pytest
 
-from click_extended.core._root_node import RootNode
-from click_extended.core.argument import Argument
-from click_extended.core.child_node import ChildNode
-from click_extended.core.context import Context
-from click_extended.core.env import Env
-from click_extended.core.group import Group
-from click_extended.core.node import Node
-from click_extended.core.option import Option
-from click_extended.core.tag import Tag
+from click_extended.core.decorators.argument import Argument
+from click_extended.core.decorators.env import Env
+from click_extended.core.decorators.group import Group
+from click_extended.core.decorators.option import Option
+from click_extended.core.decorators.tag import Tag
+from click_extended.core.nodes._root_node import RootNode
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.nodes.node import Node
+from click_extended.core.other.context import Context
 
 
 class StubNode(Node):

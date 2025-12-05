@@ -11,8 +11,8 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib  # type: ignore[import-not-found]
 
-from click_extended.core.child_node import ChildNode
-from click_extended.core.context import Context
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 
 

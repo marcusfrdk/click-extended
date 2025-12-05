@@ -11,14 +11,14 @@ from typing import TYPE_CHECKING, Any, overload
 if TYPE_CHECKING:
     from click import Context as ClickContext
 
-    from click_extended.core._root_node import RootNode
-    from click_extended.core.argument import Argument
-    from click_extended.core.child_node import ChildNode
-    from click_extended.core.env import Env
-    from click_extended.core.node import Node
-    from click_extended.core.option import Option
-    from click_extended.core.parent_node import ParentNode
-    from click_extended.core.tag import Tag
+    from click_extended.core.decorators.argument import Argument
+    from click_extended.core.decorators.env import Env
+    from click_extended.core.decorators.option import Option
+    from click_extended.core.decorators.tag import Tag
+    from click_extended.core.nodes._root_node import RootNode
+    from click_extended.core.nodes.child_node import ChildNode
+    from click_extended.core.nodes.node import Node
+    from click_extended.core.nodes.parent_node import ParentNode
 
 
 @dataclass(frozen=True)
@@ -71,7 +71,7 @@ class Context:
             bool:
                 `True` if current node is a `RootNode`, `False` otherwise.
         """
-        from click_extended.core._root_node import RootNode
+        from click_extended.core.nodes._root_node import RootNode
 
         return isinstance(self.current, RootNode)
 
@@ -83,7 +83,7 @@ class Context:
             bool:
                 `True` if current node is a `ParentNode`, `False` otherwise.
         """
-        from click_extended.core.parent_node import ParentNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         return isinstance(self.current, ParentNode)
 
@@ -95,7 +95,7 @@ class Context:
             bool:
                 `True` if parent is a `Tag`, `False` otherwise.
         """
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.tag import Tag
 
         return isinstance(self.parent, Tag)
 
@@ -107,7 +107,7 @@ class Context:
             bool:
                 `True` if current node is a `ChildNode`, `False` otherwise.
         """
-        from click_extended.core.child_node import ChildNode
+        from click_extended.core.nodes.child_node import ChildNode
 
         return isinstance(self.current, ChildNode)
 
@@ -119,7 +119,7 @@ class Context:
             bool:
                 `True` if current node is an `Argument`, `False` otherwise.
         """
-        from click_extended.core.argument import Argument
+        from click_extended.core.decorators.argument import Argument
 
         return isinstance(self.current, Argument)
 
@@ -131,7 +131,7 @@ class Context:
             bool:
                 `True` if current node is an `Option`, `False` otherwise.
         """
-        from click_extended.core.option import Option
+        from click_extended.core.decorators.option import Option
 
         return isinstance(self.current, Option)
 
@@ -143,7 +143,7 @@ class Context:
             bool:
                 `True` if current node is an `Env`, `False` otherwise.
         """
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         return isinstance(self.current, Env)
 
@@ -155,7 +155,7 @@ class Context:
             bool:
                 `True` if current node has tags, `False` otherwise.
         """
-        from click_extended.core.parent_node import ParentNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         if isinstance(self.current, ParentNode):
             return len(self.current.tags) > 0
@@ -184,9 +184,9 @@ class Context:
             list[ChildNode]:
                 List of child nodes under the specified parent.
         """
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.parent_node import ParentNode
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.tag import Tag
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         if name is not None:
             parent: "ParentNode | Tag | None" = self.get_parent(name)
@@ -215,7 +215,7 @@ class Context:
             list[ChildNode]:
                 List of sibling child nodes.
         """
-        from click_extended.core.child_node import ChildNode
+        from click_extended.core.nodes.child_node import ChildNode
 
         if not isinstance(self.current, ChildNode):
             return []
@@ -320,7 +320,7 @@ class Context:
             list[Argument]:
                 List of provided argument nodes.
         """
-        from click_extended.core.argument import Argument
+        from click_extended.core.decorators.argument import Argument
 
         return [
             parent
@@ -336,7 +336,7 @@ class Context:
             list[Option]:
                 List of provided option nodes.
         """
-        from click_extended.core.option import Option
+        from click_extended.core.decorators.option import Option
 
         return [
             parent
@@ -352,7 +352,7 @@ class Context:
             list[Env]:
                 List of provided env nodes.
         """
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         return [
             parent
@@ -400,7 +400,7 @@ class Context:
             list[Argument]:
                 List of all argument nodes.
         """
-        from click_extended.core.argument import Argument
+        from click_extended.core.decorators.argument import Argument
 
         return [
             parent
@@ -416,7 +416,7 @@ class Context:
             list[Option]:
                 List of all option nodes.
         """
-        from click_extended.core.option import Option
+        from click_extended.core.decorators.option import Option
 
         return [
             parent
@@ -432,7 +432,7 @@ class Context:
             list[Env]:
                 List of all env nodes.
         """
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         return [
             parent
@@ -448,7 +448,7 @@ class Context:
             list[str]:
                 List of tag names for the current node.
         """
-        from click_extended.core.parent_node import ParentNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         if isinstance(self.current, ParentNode):
             return list(self.current.tags)
@@ -466,7 +466,7 @@ class Context:
             RuntimeError:
                 If called outside child node context or the parent is a `Tag`.
         """
-        from click_extended.core.tag import Tag
+        from click_extended.core.decorators.tag import Tag
 
         if self.parent is None:
             raise RuntimeError("No parent node in current context")
@@ -487,7 +487,7 @@ class Context:
                 If called outside child node context or
                 the parent is a `ParentNode`.
         """
-        from click_extended.core.parent_node import ParentNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         if self.parent is None:
             raise RuntimeError("No parent node in current context")

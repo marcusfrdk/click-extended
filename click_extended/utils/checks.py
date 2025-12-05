@@ -3,10 +3,10 @@
 from typing import TYPE_CHECKING, TypeGuard
 
 if TYPE_CHECKING:
-    from click_extended.core.argument import Argument
-    from click_extended.core.node import Node
-    from click_extended.core.option import Option
-    from click_extended.core.tag import Tag
+    from click_extended.core.decorators.argument import Argument
+    from click_extended.core.decorators.option import Option
+    from click_extended.core.decorators.tag import Tag
+    from click_extended.core.nodes.node import Node
 
 
 def is_option(node: "Node") -> TypeGuard["Option"]:
@@ -17,7 +17,7 @@ def is_option(node: "Node") -> TypeGuard["Option"]:
         TypeGuard:
             `True` if the parent is an `Option` instance, `False` otherwise.
     """
-    from click_extended.core.option import Option
+    from click_extended.core.decorators.option import Option
 
     return isinstance(node, Option)
 
@@ -30,7 +30,7 @@ def is_argument(node: "Node") -> TypeGuard["Argument"]:
         TypeGuard:
             `True` if the parent is an `Argument` instance, `False` otherwise.
     """
-    from click_extended.core.argument import Argument
+    from click_extended.core.decorators.argument import Argument
 
     return isinstance(node, Argument)
 
@@ -43,6 +43,6 @@ def is_tag(node: "Node") -> TypeGuard["Tag"]:
         TypeGuard:
             `True` if the parent is an `Tag` instance, `False` otherwise.
     """
-    from click_extended.core.tag import Tag
+    from click_extended.core.decorators.tag import Tag
 
     return isinstance(node, Tag)

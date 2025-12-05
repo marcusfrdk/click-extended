@@ -4,8 +4,8 @@ from typing import Any
 
 import pytest
 
-from click_extended.core.context import Context
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other.context import Context
 
 
 class ConcreteParentNode(ParentNode):
@@ -283,7 +283,7 @@ class TestParentNodeMethods:
         node = ConcreteParentNode(name="test_node", default="loaded_value")
 
         # Create a minimal context
-        from click_extended.core.command import command
+        from click_extended.core.decorators.command import command
 
         @command()
         def dummy_cmd() -> None:
@@ -355,7 +355,7 @@ class TestParentNodeDecorator:
 
     def test_decorator_kwargs_stores_all_config(self) -> None:
         """Test that decorator_kwargs stores all configuration."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         # Clear any pending nodes
         Tree._pending_nodes.clear()
@@ -387,7 +387,7 @@ class TestParentNodeDecorator:
 
     def test_decorator_kwargs_includes_extra_kwargs(self) -> None:
         """Test that extra kwargs are included in decorator_kwargs."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -406,7 +406,7 @@ class TestParentNodeDecorator:
 
     def test_decorator_creates_instance(self) -> None:
         """Test that decorator creates a node instance."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -424,7 +424,7 @@ class TestParentNodeDecorator:
 
     def test_decorator_queues_parent_in_tree(self) -> None:
         """Test that Tree.queue_parent() is called."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -439,7 +439,7 @@ class TestParentNodeDecorator:
 
     def test_multiple_decorators_queue_in_order(self) -> None:
         """Test that multiple decorators are queued correctly."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -499,7 +499,7 @@ class TestParentNodeDecorator:
 
     def test_decorator_with_all_parameters(self) -> None:
         """Test decorator with all possible parameters."""
-        from click_extended.core._tree import Tree
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -531,14 +531,14 @@ class TestParentNodeSubclassIntegration:
 
     def test_option_node_extends_parent_node(self) -> None:
         """Test that OptionNode properly extends ParentNode."""
-        from click_extended.core.option_node import OptionNode
+        from click_extended.core.nodes.option_node import OptionNode
 
         assert issubclass(OptionNode, ParentNode)
 
     def test_option_node_inherits_parent_attributes(self) -> None:
         """Test that OptionNode inherits all ParentNode attributes."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -561,14 +561,14 @@ class TestParentNodeSubclassIntegration:
 
     def test_argument_node_extends_parent_node(self) -> None:
         """Test that ArgumentNode properly extends ParentNode."""
-        from click_extended.core.argument_node import ArgumentNode
+        from click_extended.core.nodes.argument_node import ArgumentNode
 
         assert issubclass(ArgumentNode, ParentNode)
 
     def test_argument_node_inherits_parent_attributes(self) -> None:
         """Test that ArgumentNode inherits all ParentNode attributes."""
-        from click_extended.core._tree import Tree
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -588,13 +588,13 @@ class TestParentNodeSubclassIntegration:
 
     def test_env_node_extends_parent_node(self) -> None:
         """Test that Env properly extends ParentNode."""
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         assert issubclass(Env, ParentNode)
 
     def test_env_node_inherits_parent_attributes(self) -> None:
         """Test that Env inherits all ParentNode attributes."""
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         env_node = Env(name="TEST_VAR", env_name="TEST_ENV")
 
@@ -614,8 +614,8 @@ class TestParentNodeCommandIntegration:
         """Test option parent node in a simple command."""
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("--name", default="World")
@@ -630,8 +630,8 @@ class TestParentNodeCommandIntegration:
         """Test argument parent node in a simple command."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
 
         @command()
         @argument("name", default="World")
@@ -648,8 +648,8 @@ class TestParentNodeCommandIntegration:
 
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.env import env
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("TEST_VAR", default="default_value")
@@ -672,8 +672,8 @@ class TestParentNodeCommandIntegration:
         """Test multiple option parent nodes on same command."""
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("--first", default="A")
@@ -689,9 +689,9 @@ class TestParentNodeCommandIntegration:
         """Test mix of option and argument parent nodes."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         @command()
         @argument("name")
@@ -707,8 +707,8 @@ class TestParentNodeCommandIntegration:
         """Test that param determines injection name."""
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("my_option", param="injected_name", default="test")
@@ -724,9 +724,9 @@ class TestParentNodeCommandIntegration:
         """Test that was_provided flag is set correctly."""
         import click
 
-        from click_extended.core._tree import Tree
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.other._tree import Tree
 
         Tree._pending_nodes.clear()
 
@@ -752,8 +752,8 @@ class TestParentNodeCommandIntegration:
         """Test that cached_value is set after processing."""
         import click
 
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
 
         captured_value = None
 
@@ -779,10 +779,10 @@ class TestParentNodeWithChildren:
         """Test parent node with one child node."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -802,10 +802,10 @@ class TestParentNodeWithChildren:
         """Test parent node with multiple child nodes."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class AddPrefix(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -830,10 +830,10 @@ class TestParentNodeWithChildren:
         """Test that processed value (after children) is cached."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Double(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -855,8 +855,8 @@ class TestEnvNode:
 
     def test_env_load_with_missing_env_name(self) -> None:
         """Test that load raises ValueError when env_name is not provided."""
-        from click_extended.core.context import Context
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
+        from click_extended.core.other.context import Context
 
         env_node = Env(name="test")
         context = Context(
@@ -878,8 +878,8 @@ class TestEnvNode:
         """Test that required env var raises ValueError when not set."""
         import os
 
-        from click_extended.core.context import Context
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
+        from click_extended.core.other.context import Context
 
         # Ensure the env var doesn't exist
         env_name = "NONEXISTENT_REQUIRED_VAR_12345"
@@ -909,7 +909,7 @@ class TestEnvNode:
         """Test check_required returns env name when required and missing."""
         import os
 
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         env_name = "NONEXISTENT_CHECK_VAR_67890"
         if env_name in os.environ:
@@ -927,7 +927,7 @@ class TestEnvNode:
         """Test check_required returns None when not required."""
         import os
 
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         env_name = "NONEXISTENT_OPTIONAL_VAR"
         if env_name in os.environ:
@@ -944,7 +944,7 @@ class TestEnvNode:
         """Test check_required returns None when env var is set."""
         import os
 
-        from click_extended.core.env import Env
+        from click_extended.core.decorators.env import Env
 
         env_name = "EXISTING_REQUIRED_VAR"
         os.environ[env_name] = "some_value"

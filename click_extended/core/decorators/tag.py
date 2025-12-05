@@ -2,11 +2,11 @@
 
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
-from click_extended.core._tree import Tree
-from click_extended.core.node import Node
+from click_extended.core.nodes.node import Node
+from click_extended.core.other._tree import Tree
 
 if TYPE_CHECKING:
-    from click_extended.core.parent_node import ParentNode
+    from click_extended.core.nodes.parent_node import ParentNode
 
 P = ParamSpec("P")
 T = TypeVar("T")

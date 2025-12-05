@@ -9,10 +9,10 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from click_extended.core.child_node import ChildNode
-from click_extended.core.command import command
-from click_extended.core.context import Context
-from click_extended.core.option import option
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import option
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.other.context import Context
 
 
 class TestSyncHandlerDispatch:
@@ -1176,7 +1176,7 @@ class TestParentNodeIntegration:
 
     def test_child_with_argument_parent(self, cli_runner: CliRunner) -> None:
         """Child node processes @argument value."""
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
 
         class DoubleHandler(ChildNode):
             def handle_int(self, value: int, context: Context) -> int:
@@ -1194,7 +1194,7 @@ class TestParentNodeIntegration:
 
     def test_child_with_env_parent(self, cli_runner: CliRunner) -> None:
         """Child node processes @env value."""
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         class PrefixHandler(ChildNode):
             def handle_str(self, value: str, context: Context) -> str:
@@ -1303,7 +1303,7 @@ class TestParentNodeIntegration:
 
     def test_env_with_async_transformer(self, cli_runner: CliRunner) -> None:
         """Env value transformed by async handler."""
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         class AsyncEnvHandler(ChildNode):
             async def handle_str(self, value: str, context: Context) -> str:
@@ -1326,7 +1326,7 @@ class TestTagValidation:
 
     def test_tag_validation_single_parent(self, cli_runner: CliRunner) -> None:
         """@tag with one parent node."""
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.tag import tag
 
         class SingleTagValidator(ChildNode):
             def handle_tag(
@@ -1356,7 +1356,7 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """@tag validates across multiple parameters."""
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.tag import tag
 
         class MultiTagValidator(ChildNode):
             def handle_tag(
@@ -1396,7 +1396,7 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """handle_tag gets dict with all tagged params."""
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.tag import tag
 
         received_values: dict[str, Any] = {}
 
@@ -1427,7 +1427,7 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """@tag handlers cannot transform values."""
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.tag import tag
 
         class InvalidTransformTag(ChildNode):
             def handle_tag(
@@ -1451,7 +1451,7 @@ class TestTagValidation:
         self, cli_runner: CliRunner
     ) -> None:
         """Async @tag validation across multiple parameters."""
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.tag import tag
 
         class AsyncMultiTagValidator(ChildNode):
             async def handle_tag(

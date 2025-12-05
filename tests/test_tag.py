@@ -4,9 +4,9 @@ from typing import Any
 
 import pytest
 
-from click_extended.core._tree import Tree
-from click_extended.core.parent_node import ParentNode
-from click_extended.core.tag import Tag, tag
+from click_extended.core.decorators.tag import Tag, tag
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other._tree import Tree
 
 
 class ConcreteParentNode(ParentNode):
@@ -46,7 +46,7 @@ class TestTagInit:
 
     def test_tag_extends_node_class(self) -> None:
         """Test that Tag inherits from Node."""
-        from click_extended.core.node import Node
+        from click_extended.core.nodes.node import Node
 
         tag_node = Tag(name="test_tag")
 
@@ -501,7 +501,7 @@ class TestTagDecoratorFunction:
         """Test tag() decorator works with @command."""
         import click
 
-        from click_extended.core.command import command
+        from click_extended.core.decorators.command import command
 
         @command()
         @tag(name="test_tag")
@@ -514,7 +514,7 @@ class TestTagDecoratorFunction:
 
     def test_tag_decorator_on_group(self, cli_runner: Any) -> None:
         """Test tag() decorator works with @group."""
-        from click_extended.core.group import group
+        from click_extended.core.decorators.group import group
 
         @group()
         @tag(name="test_tag")
@@ -553,9 +553,9 @@ class TestTagIntegrationWithChildren:
         """Test ChildNode.handle_tag() receives tag values."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
 
         tag_values_received = {}
 
@@ -580,9 +580,9 @@ class TestTagIntegrationWithChildren:
         """Test ChildNode can validate via handle_tag()."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
 
         class ValidatingChild(ChildNode):
             def handle_tag(
@@ -614,9 +614,9 @@ class TestTagIntegrationWithChildren:
         """Test ChildNode can access tag values via handle_tag()."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
 
         captured_values: dict[str, Any] = {}
 
@@ -643,9 +643,9 @@ class TestTagIntegrationWithChildren:
         """Test multiple ChildNodes can handle same tag."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.command import command
-        from click_extended.core.option import option
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
 
         child1_called: list[str] = []
         child2_called: list[str] = []
@@ -749,10 +749,10 @@ class TestTagEdgeCases:
         """Test tag works with options, arguments, and env mixed."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.command import command
-        from click_extended.core.env import env
-        from click_extended.core.option import option
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.command import command
+        from click_extended.core.decorators.env import env
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("--opt", tags=["mixed"])

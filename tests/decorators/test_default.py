@@ -4,8 +4,8 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from click_extended.core.command import command
-from click_extended.core.option import option
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import option
 from click_extended.decorators.default import default
 
 

@@ -2,8 +2,8 @@
 
 from typing import Any, cast
 
-from click_extended.core.child_node import ChildNode
-from click_extended.core.context import Context
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 from click_extended.utils.casing import Casing
 

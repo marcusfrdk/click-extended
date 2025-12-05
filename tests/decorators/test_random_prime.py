@@ -3,7 +3,7 @@
 import click
 from click.testing import CliRunner
 
-from click_extended.core.command import command
+from click_extended.core.decorators.command import command
 from click_extended.decorators.random_prime import random_prime
 
 

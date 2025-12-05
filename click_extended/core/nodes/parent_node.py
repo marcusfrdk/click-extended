@@ -10,12 +10,12 @@ from abc import ABC, abstractmethod
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar, cast
 
-from click_extended.core._tree import Tree
-from click_extended.core.node import Node
+from click_extended.core.nodes.node import Node
+from click_extended.core.other._tree import Tree
 
 if TYPE_CHECKING:
-    from click_extended.core._root_node import RootNode
-    from click_extended.core.context import Context
+    from click_extended.core.nodes._root_node import RootNode
+    from click_extended.core.other.context import Context
 
 P = ParamSpec("P")
 T = TypeVar("T")

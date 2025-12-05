@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from click_extended import selection
-from click_extended.core.selection import Selection
+from click_extended.core.decorators.selection import Selection
 from click_extended.interactive import selection as interactive_selection
 
 
@@ -318,7 +318,7 @@ class TestSelectionNode:
 
     def test_selection_is_parent_node(self) -> None:
         """Test that Selection extends ParentNode."""
-        from click_extended.core.parent_node import ParentNode
+        from click_extended.core.nodes.parent_node import ParentNode
 
         assert issubclass(Selection, ParentNode)
 

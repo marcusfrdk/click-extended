@@ -3,8 +3,8 @@
 from datetime import date, datetime, time, timezone
 from typing import Any, Literal
 
-from click_extended.core.child_node import ChildNode
-from click_extended.core.context import Context
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 
 

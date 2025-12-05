@@ -6,8 +6,8 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from click_extended.core.command import command
-from click_extended.core.option import option
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import option
 from click_extended.decorators.to_date import to_date
 from click_extended.decorators.to_datetime import to_datetime
 from click_extended.decorators.to_time import to_time

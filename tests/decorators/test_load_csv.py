@@ -6,8 +6,8 @@ from typing import Any
 import click
 from click.testing import CliRunner
 
-from click_extended.core.command import command
-from click_extended.core.option import option
+from click_extended.core.decorators.command import command
+from click_extended.core.decorators.option import option
 from click_extended.decorators.load_csv import load_csv
 from click_extended.decorators.to_path import to_path
 

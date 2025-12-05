@@ -4,12 +4,12 @@ from abc import ABC
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
-from click_extended.core._tree import Tree
-from click_extended.core.node import Node
+from click_extended.core.nodes.node import Node
+from click_extended.core.other._tree import Tree
 from click_extended.utils.casing import Casing
 
 if TYPE_CHECKING:
-    from click_extended.core.context import Context
+    from click_extended.core.other.context import Context
     from click_extended.types import Decorator
 
 P = ParamSpec("P")

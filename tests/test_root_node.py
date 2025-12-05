@@ -4,8 +4,8 @@ from typing import Any
 
 import pytest
 
-from click_extended.core.command import Command, command
-from click_extended.core.group import Group, group
+from click_extended.core.decorators.command import Command, command
+from click_extended.core.decorators.group import Group, group
 
 
 class TestRootNodeInit:
@@ -316,7 +316,7 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_option_parent(self, cli_runner: Any) -> None:
         """Test command with option decorator."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -331,7 +331,7 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_argument_parent(self, cli_runner: Any) -> None:
         """Test command with argument decorator."""
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
 
         @command()
         @argument("filename")
@@ -346,8 +346,8 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_multiple_parents(self, cli_runner: Any) -> None:
         """Test command with multiple parent decorators."""
-        from click_extended.core.argument import argument
-        from click_extended.core.option import option
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
@@ -366,9 +366,9 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_child_on_parent(self, cli_runner: Any) -> None:
         """Test command with child node attached to parent."""
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -390,8 +390,8 @@ class TestRootNodeTreeBuilding:
 
     def test_command_with_tag(self, cli_runner: Any) -> None:
         """Test command with tag decorator."""
-        from click_extended.core.option import option
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.option import option
+        from click_extended.core.decorators.tag import tag
 
         @command()
         @option("name", tags="input")
@@ -407,7 +407,7 @@ class TestRootNodeTreeBuilding:
 
     def test_auto_tag_creation(self, cli_runner: Any) -> None:
         """Test that tags are auto-created when referenced but not declared."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name", tags="auto_tag")
@@ -422,7 +422,7 @@ class TestRootNodeTreeBuilding:
 
     def test_duplicate_short_flags_raises_error(self) -> None:
         """Test that duplicate short flags raise NameExistsError."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
         from click_extended.errors import NameExistsError
 
         with pytest.raises(NameExistsError):
@@ -441,7 +441,7 @@ class TestRootNodeTreeBuilding:
 
     def test_help_option_names_when_h_not_taken(self, cli_runner: Any) -> None:
         """Test that -h is added to help options when not taken."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("verbose", "-v", is_flag=True)
@@ -454,7 +454,7 @@ class TestRootNodeTreeBuilding:
 
     def test_help_option_when_h_flag_taken(self, cli_runner: Any) -> None:
         """Test that -h is not added when taken by an option."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("host", "-h")
@@ -470,8 +470,8 @@ class TestRootNodeTreeBuilding:
 
     def test_tag_with_multiple_parents(self, cli_runner: Any) -> None:
         """Test tag associated with multiple parents."""
-        from click_extended.core.option import option
-        from click_extended.core.tag import tag
+        from click_extended.core.decorators.option import option
+        from click_extended.core.decorators.tag import tag
 
         @command()
         @option("first", tags="group1")
@@ -492,7 +492,7 @@ class TestRootNodeValueProcessing:
 
     def test_option_value_injection(self, cli_runner: Any) -> None:
         """Test that option values are injected into function."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -507,7 +507,7 @@ class TestRootNodeValueProcessing:
 
     def test_argument_value_injection(self, cli_runner: Any) -> None:
         """Test that argument values are injected."""
-        from click_extended.core.argument import argument
+        from click_extended.core.decorators.argument import argument
 
         @command()
         @argument("filename")
@@ -522,7 +522,7 @@ class TestRootNodeValueProcessing:
 
     def test_option_default_value_used(self, cli_runner: Any) -> None:
         """Test that default values are used when option not provided."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
@@ -539,7 +539,7 @@ class TestRootNodeValueProcessing:
         self, cli_runner: Any
     ) -> None:
         """Test that missing required option raises error."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("config", required=True)
@@ -551,8 +551,8 @@ class TestRootNodeValueProcessing:
 
     def test_multiple_values_injected(self, cli_runner: Any) -> None:
         """Test that multiple parent values are injected."""
-        from click_extended.core.argument import argument
-        from click_extended.core.option import option
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("verbose", is_flag=True)
@@ -573,7 +573,7 @@ class TestRootNodeValueProcessing:
 
     def test_was_provided_tracking_true(self, cli_runner: Any) -> None:
         """Test that was_provided is True when value provided."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         was_provided_value = None
 
@@ -595,7 +595,7 @@ class TestRootNodeValueProcessing:
         self, cli_runner: Any
     ) -> None:
         """Test that was_provided is False when default used."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("port", type=int, default=8080)
@@ -610,7 +610,7 @@ class TestRootNodeValueProcessing:
 
     def test_custom_param_name_injection(self, cli_runner: Any) -> None:
         """Test that custom param names work correctly."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("configuration_file", param="cfg")
@@ -625,7 +625,7 @@ class TestRootNodeValueProcessing:
 
     def test_value_type_conversion(self, cli_runner: Any) -> None:
         """Test that values are converted to correct types."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int)
@@ -650,9 +650,9 @@ class TestRootNodeChildrenProcessing:
         """Test that children execute after parent load."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         execution_order = []
 
@@ -679,9 +679,9 @@ class TestRootNodeChildrenProcessing:
         """Test that multiple children execute in top-to-bottom order."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         execution_order = []
 
@@ -721,9 +721,9 @@ class TestRootNodeChildrenProcessing:
 
     def test_child_error_propagates(self, cli_runner: Any) -> None:
         """Test that child errors propagate correctly."""
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
         from click_extended.errors import ContextAwareError
 
         class FailingChild(ChildNode):
@@ -748,9 +748,9 @@ class TestRootNodeChildrenProcessing:
         """Test that children receive output from previous children."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Double(ChildNode):
             def handle_int(
@@ -784,9 +784,9 @@ class TestRootNodeAsync:
         """Test that async child handlers are detected."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class AsyncChild(ChildNode):
             async def handle_str(
@@ -808,9 +808,9 @@ class TestRootNodeAsync:
         """Test multiple async children execute correctly."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class AsyncFirst(ChildNode):
             async def handle_str(
@@ -839,9 +839,9 @@ class TestRootNodeAsync:
         """Test mixing sync and async children."""
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class SyncChild(ChildNode):
             def handle_str(
@@ -874,9 +874,9 @@ class TestRootNodeErrorHandling:
         self, cli_runner: Any
     ) -> None:
         """Test that ContextAwareError results in exit code 1."""
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
         from click_extended.errors import ContextAwareError
 
         class FailingChild(ChildNode):
@@ -896,9 +896,9 @@ class TestRootNodeErrorHandling:
 
     def test_generic_exception_exits_with_code_1(self, cli_runner: Any) -> None:
         """Test that generic exceptions result in exit code 1."""
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class FailingChild(ChildNode):
             def handle_str(
@@ -918,7 +918,7 @@ class TestRootNodeErrorHandling:
 
     def test_error_message_displayed(self, cli_runner: Any) -> None:
         """Test that error messages are displayed to user."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
         from click_extended.errors import ContextAwareError
 
         @command()
@@ -933,7 +933,7 @@ class TestRootNodeErrorHandling:
 
     def test_missing_required_option_error(self, cli_runner: Any) -> None:
         """Test error when required option is missing."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("config", required=True)
@@ -949,7 +949,7 @@ class TestRootNodeErrorHandling:
 
     def test_type_conversion_error(self, cli_runner: Any) -> None:
         """Test error when type conversion fails."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int)
@@ -961,7 +961,7 @@ class TestRootNodeErrorHandling:
 
     def test_empty_function_with_parents(self, cli_runner: Any) -> None:
         """Test empty function with parent nodes works."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -979,7 +979,7 @@ class TestRootNodeClickIntegration:
         """Test that Click context is accessible in function."""
         import click
 
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -994,7 +994,7 @@ class TestRootNodeClickIntegration:
 
     def test_help_option_works(self, cli_runner: Any) -> None:
         """Test that --help option displays help."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command(help="A greeting command")
         @option("name", help="The name to greet")
@@ -1020,7 +1020,7 @@ class TestRootNodeClickIntegration:
 
     def test_multiple_options_in_help(self, cli_runner: Any) -> None:
         """Test that all options appear in help."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name", help="User name")
@@ -1056,7 +1056,7 @@ class TestRootNodeEdgeCases:
         """Test option with None as default value."""
         import click
 
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("value", default=None)
@@ -1071,7 +1071,7 @@ class TestRootNodeEdgeCases:
         """Test option with 0 as default value."""
         import click
 
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int, default=0)
@@ -1086,7 +1086,7 @@ class TestRootNodeEdgeCases:
         """Test option with empty string as default."""
         import click
 
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("text", default="")
@@ -1099,7 +1099,7 @@ class TestRootNodeEdgeCases:
 
     def test_function_with_return_value(self, cli_runner: Any) -> None:
         """Test that function return values are preserved."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("value", type=int)
@@ -1113,10 +1113,10 @@ class TestRootNodeEdgeCases:
         """Test complex scenario with multiple node types."""
         import click
 
-        from click_extended.core.argument import argument
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.argument import argument
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Validate(ChildNode):
             def handle_str(
@@ -1280,7 +1280,7 @@ class TestRootNodeGroupFunctionality:
         """Test group with options passed to handler."""
         import click
 
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @group()
         @option("verbose", is_flag=True)
@@ -1303,7 +1303,7 @@ class TestRootNodeGroupFunctionality:
         """Test subcommand with its own options."""
         import click
 
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @group()
         def cli() -> None:
@@ -1467,7 +1467,7 @@ class TestRootNodeEnvIntegration:
 
         import click
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("TEST_VAR")
@@ -1488,7 +1488,7 @@ class TestRootNodeEnvIntegration:
         """Test error when single env variable is missing."""
         import os
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("MISSING_VAR", required=True)
@@ -1507,7 +1507,7 @@ class TestRootNodeEnvIntegration:
         """Test error message when multiple env variables are missing."""
         import os
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("VAR_ONE", required=True)
@@ -1534,7 +1534,7 @@ class TestRootNodeEnvIntegration:
 
         import click
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("OPTIONAL_VAR", default="default_value")
@@ -1555,9 +1555,9 @@ class TestRootNodeEnvIntegration:
 
         import click
 
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
 
         class Uppercase(ChildNode):
             def handle_str(
@@ -1585,7 +1585,7 @@ class TestRootNodeEnvIntegration:
 
         import click
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("PORT_NUMBER", type=int)
@@ -1606,8 +1606,8 @@ class TestRootNodeEnvIntegration:
 
         import click
 
-        from click_extended.core.env import env
-        from click_extended.core.option import option
+        from click_extended.core.decorators.env import env
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("name")
@@ -1627,7 +1627,7 @@ class TestRootNodeEnvIntegration:
         """Test error message format for single missing variable."""
         import os
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("DATABASE_URL", required=True)
@@ -1652,7 +1652,7 @@ class TestRootNodeEnvIntegration:
         """Test error message format for multiple missing variables."""
         import os
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("DB_HOST", required=True)
@@ -1675,7 +1675,7 @@ class TestRootNodeEnvIntegration:
 
         import click
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @group()
         @env("CONFIG_PATH")
@@ -1703,7 +1703,7 @@ class TestRootNodeDebugMode:
 
     def test_error_handling_basic(self, cli_runner: Any) -> None:
         """Test basic error handling with ContextAwareError."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
         from click_extended.errors import ContextAwareError
 
         @command()
@@ -1718,7 +1718,7 @@ class TestRootNodeDebugMode:
 
     def test_error_with_type_conversion(self, cli_runner: Any) -> None:
         """Test error handling with type conversion error."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("count", type=int)
@@ -1730,9 +1730,9 @@ class TestRootNodeDebugMode:
 
     def test_error_with_child_validation(self, cli_runner: Any) -> None:
         """Test error handling in child node validation."""
-        from click_extended.core.child_node import ChildNode
-        from click_extended.core.context import Context
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
+        from click_extended.core.nodes.child_node import ChildNode
+        from click_extended.core.other.context import Context
         from click_extended.errors import ContextAwareError
 
         class Validator(ChildNode):
@@ -1757,7 +1757,7 @@ class TestRootNodeDebugMode:
         """Test error handling with missing required environment variable."""
         import os
 
-        from click_extended.core.env import env
+        from click_extended.core.decorators.env import env
 
         @command()
         @env("MISSING_DEBUG_VAR", required=True)
@@ -1773,7 +1773,7 @@ class TestRootNodeDebugMode:
 
     def test_error_with_generic_exception(self, cli_runner: Any) -> None:
         """Test error handling with generic Python exception."""
-        from click_extended.core.option import option
+        from click_extended.core.decorators.option import option
 
         @command()
         @option("value")
@@ -1837,7 +1837,7 @@ class TestRootNodeAliasInvocation:
 
     def test_format_name_with_aliases_in_help(self, cli_runner: Any) -> None:
         """Test that format_name_with_aliases works for help display."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         cmd = Command(name="deploy", aliases=["d", "push"])
         formatted = cmd.format_name_with_aliases()
@@ -1846,7 +1846,7 @@ class TestRootNodeAliasInvocation:
 
     def test_empty_aliases_filtered_in_format(self, cli_runner: Any) -> None:
         """Test that empty aliases are filtered out in formatting."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         cmd = Command(name="build", aliases=["b", "", "compile", ""])
         formatted = cmd.format_name_with_aliases()
@@ -1910,7 +1910,7 @@ class TestRootNodeAliasInvocation:
         self, cli_runner: Any
     ) -> None:
         """Test that empty aliases are filtered out."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         cmd = Command(name="build", aliases=["", "b", "", "compile"])
         filtered = [a for a in cmd.aliases if a]  # type: ignore[union-attr]
@@ -1925,7 +1925,7 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_command_requires_root_instance(self) -> None:
         """Test that ClickCommand raises ValueError without root_instance."""
-        from click_extended.core._click_command import ClickCommand
+        from click_extended.core.other._click_command import ClickCommand
 
         with pytest.raises(
             ValueError, match="root_instance is required for ClickCommand"
@@ -1934,7 +1934,7 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_group_requires_root_instance(self) -> None:
         """Test that ClickGroup raises ValueError without root_instance."""
-        from click_extended.core._click_group import ClickGroup
+        from click_extended.core.other._click_group import ClickGroup
 
         with pytest.raises(
             ValueError, match="root_instance is required for ClickGroup"
@@ -1943,8 +1943,8 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_command_with_root_instance(self) -> None:
         """Test that ClickCommand works with valid root_instance."""
-        from click_extended.core._click_command import ClickCommand
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.other._click_command import ClickCommand
 
         root = Command(name="test")
         click_cmd = ClickCommand(name="test", root_instance=root)
@@ -1954,8 +1954,8 @@ class TestClickCommandAndGroupClasses:
 
     def test_click_group_with_root_instance(self) -> None:
         """Test that ClickGroup works with valid root_instance."""
-        from click_extended.core._click_group import ClickGroup
-        from click_extended.core.group import Group
+        from click_extended.core.decorators.group import Group
+        from click_extended.core.other._click_group import ClickGroup
 
         root = Group(name="test")
         click_grp = ClickGroup(name="test", root_instance=root)
@@ -1969,9 +1969,9 @@ class TestClickCommandAndGroupClasses:
         """Test ClickGroup.add_command with command that has string alias."""
         import click
 
-        from click_extended.core._click_group import ClickGroup
-        from click_extended.core.command import Command
-        from click_extended.core.group import Group
+        from click_extended.core.decorators.command import Command
+        from click_extended.core.decorators.group import Group
+        from click_extended.core.other._click_group import ClickGroup
 
         # Create a group
         root_group = Group(name="cli")
@@ -1997,8 +1997,8 @@ class TestClickCommandAndGroupClasses:
         """Test ClickGroup.add_command with command that has list of aliases."""
         import click
 
-        from click_extended.core._click_group import ClickGroup
-        from click_extended.core.group import Group
+        from click_extended.core.decorators.group import Group
+        from click_extended.core.other._click_group import ClickGroup
 
         # Create a group
         root_group = Group(name="cli")
@@ -2131,8 +2131,8 @@ class TestClickCommandAndGroupClasses:
         """Test format_commands with command that has empty string aliases."""
         import click
 
-        from click_extended.core._click_group import ClickGroup
-        from click_extended.core.group import Group
+        from click_extended.core.decorators.group import Group
+        from click_extended.core.other._click_group import ClickGroup
 
         # Create a group
         root_group = Group(name="cli")
@@ -2176,8 +2176,8 @@ class TestClickCommandAndGroupClasses:
         """Test that ClickGroup.add() returns self for chaining."""
         import click
 
-        from click_extended.core._click_group import ClickGroup
-        from click_extended.core.group import Group
+        from click_extended.core.decorators.group import Group
+        from click_extended.core.other._click_group import ClickGroup
 
         root_group = Group(name="cli")
         click_grp = ClickGroup(name="cli", root_instance=root_group)
@@ -2225,7 +2225,7 @@ class TestClickDecoratorMethods:
 
     def test_command_get_click_decorator(self) -> None:
         """Test Command._get_click_decorator returns click.command."""
-        from click_extended.core.command import Command
+        from click_extended.core.decorators.command import Command
 
         decorator = Command._get_click_decorator()
         # Should return click.command function
@@ -2233,7 +2233,7 @@ class TestClickDecoratorMethods:
 
     def test_group_get_click_decorator(self) -> None:
         """Test Group._get_click_decorator returns click.group."""
-        from click_extended.core.group import Group
+        from click_extended.core.decorators.group import Group
 
         decorator = Group._get_click_decorator()
         # Should return click.group function

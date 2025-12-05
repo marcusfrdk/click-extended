@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any, Callable
 import click
 
 if TYPE_CHECKING:
-    from click_extended.core._click_command import ClickCommand
-    from click_extended.core._root_node import RootNode
+    from click_extended.core.nodes._root_node import RootNode
+    from click_extended.core.other._click_command import ClickCommand
 
 
 class ClickGroup(click.Group):
@@ -186,7 +186,7 @@ class ClickGroup(click.Group):
             kwargs["help"] = help
 
         def decorator(func: Callable[..., Any]) -> ClickCommand:
-            from click_extended.core.command import Command
+            from click_extended.core.decorators.command import Command
 
             if help is None and func.__doc__:
                 first_line = func.__doc__.strip().split("\n")[0].strip()
@@ -232,7 +232,7 @@ class ClickGroup(click.Group):
             kwargs["help"] = help
 
         def decorator(func: Callable[..., Any]) -> ClickGroup:
-            from click_extended.core.group import Group
+            from click_extended.core.decorators.group import Group
 
             if help is None and func.__doc__:
                 first_line = func.__doc__.strip().split("\n")[0].strip()

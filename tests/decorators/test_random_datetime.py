@@ -5,7 +5,7 @@ from datetime import datetime
 import click
 from click.testing import CliRunner
 
-from click_extended.core.command import command
+from click_extended.core.decorators.command import command
 from click_extended.decorators.random_datetime import random_datetime
 
 

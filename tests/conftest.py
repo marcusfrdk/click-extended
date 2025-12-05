@@ -5,9 +5,9 @@ from typing import Any
 import pytest
 from click.testing import CliRunner
 
-from click_extended.core.child_node import ChildNode
-from click_extended.core.context import Context
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other.context import Context
 
 
 @pytest.fixture

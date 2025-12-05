@@ -9,8 +9,8 @@ from typing import Any, Callable, ParamSpec, TypeVar, cast
 
 from dotenv import load_dotenv
 
-from click_extended.core.context import Context
-from click_extended.core.parent_node import ParentNode
+from click_extended.core.nodes.parent_node import ParentNode
+from click_extended.core.other.context import Context
 from click_extended.utils.casing import Casing
 
 load_dotenv()

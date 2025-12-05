@@ -1,8 +1,6 @@
-"""Classes used in `click_extended`."""
+"""Initialization file for the `click_extended.core.nodes` module."""
 
-from click_extended.core.decorators.command import Command
-from click_extended.core.decorators.group import Group
-from click_extended.core.decorators.tag import Tag
+from click_extended.core.nodes._root_node import RootNode
 from click_extended.core.nodes.argument_node import ArgumentNode
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.nodes.node import Node
@@ -11,13 +9,11 @@ from click_extended.core.nodes.parent_node import ParentNode
 from click_extended.core.nodes.validation_node import ValidationNode
 
 __all__ = [
-    "Node",
-    "ChildNode",
-    "ParentNode",
+    "RootNode",
     "ArgumentNode",
+    "ChildNode",
+    "Node",
     "OptionNode",
-    "Command",
-    "Group",
-    "Tag",
+    "ParentNode",
     "ValidationNode",
 ]

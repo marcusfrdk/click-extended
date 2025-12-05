@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import click
 
 if TYPE_CHECKING:
-    from click_extended.core._root_node import RootNode
+    from click_extended.core.nodes._root_node import RootNode
 
 
 class ClickCommand(click.Command):

@@ -31,7 +31,7 @@ from typing import (
 )
 from uuid import UUID
 
-from click_extended.core.child_node import ChildNode
+from click_extended.core.nodes.child_node import ChildNode
 from click_extended.errors import (
     InvalidHandlerError,
     ProcessError,
@@ -39,7 +39,7 @@ from click_extended.errors import (
 )
 
 if TYPE_CHECKING:
-    from click_extended.core.context import Context
+    from click_extended.core.other.context import Context
 
 
 TYPE_SPECIFIC_HANDLERS = [
