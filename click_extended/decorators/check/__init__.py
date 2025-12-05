@@ -1,13 +1,13 @@
 """Initialization file for the `click_extended.decorators.check` module."""
 
+from click_extended.decorators.check.ends_with import ends_with
 from click_extended.decorators.check.exclusive import exclusive
-from click_extended.decorators.check.max_length import max_length
-from click_extended.decorators.check.min_length import min_length
+from click_extended.decorators.check.length import length
 from click_extended.decorators.check.starts_with import starts_with
 
 __all__ = [
+    "ends_with",
     "exclusive",
-    "max_length",
-    "min_length",
+    "length",
     "starts_with",
 ]

@@ -12,8 +12,7 @@
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
 - **`@starts_with`**: Child decorator to check if a strings starts with one or more patterns.
 - **`@ends_with`**: Child decorator to check if a strings ends with one or more patterns.
-- **`@min_length`**: Child decorator to enforce a minimum length of a string.
-- **`@max_length`**: Child decorator to enforce a maximum length of a string.
+- **`@length`**: Child decorator to check if a string is within length bounds.
 - **`@less_than`**: Child decorator to check is a value is less or equal (inclusive=True) to a threshold.
 - **`@greater_than`**: Child decorator to check is a value is greater or equal (inclusive=True) to a threshold.
 - **`@to_timestamp`**: Child decorator to convert a `date`, `time`, or `datetime` object to a unix timestamp.

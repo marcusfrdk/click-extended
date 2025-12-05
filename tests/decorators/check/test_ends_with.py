@@ -10,7 +10,7 @@ from click_extended.core.decorators.option import option
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.other._tree import Tree
 from click_extended.decorators.check.ends_with import EndsWith, ends_with
-from click_extended.decorators.check.max_length import max_length
+from click_extended.decorators.check.length import length
 from click_extended.decorators.check.starts_with import starts_with
 
 
@@ -380,7 +380,7 @@ class TestEndsWithChaining:
         @command()
         @option("filename", default="file.txt")
         @ends_with(".txt")
-        @max_length(20)
+        @length(max=20)
         def cmd(filename: str) -> None:
             click.echo(f"File: {filename}")
 

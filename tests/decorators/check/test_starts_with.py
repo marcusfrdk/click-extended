@@ -9,7 +9,7 @@ from click_extended.core.decorators.command import command
 from click_extended.core.decorators.option import option
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.other._tree import Tree
-from click_extended.decorators.check.max_length import max_length
+from click_extended.decorators.check.length import length
 from click_extended.decorators.check.starts_with import StartsWith, starts_with
 
 
@@ -374,7 +374,7 @@ class TestStartsWithChaining:
         @command()
         @option("code", default="ABC123")
         @starts_with("ABC")
-        @max_length(10)
+        @length(max=10)
         def cmd(code: str) -> None:
             click.echo(f"Code: {code}")
 
