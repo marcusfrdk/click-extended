@@ -311,31 +311,27 @@ class TestArgumentDecorator:
         assert isinstance(node, ArgumentNode)
         assert node.param == "input_file"
 
-    def test_argument_name_kebab_case_converts(self) -> None:
-        """Test that kebab-case name converts to snake_case."""
+    def test_argument_name_kebab_case_raises_error(self) -> None:
+        """Test that kebab-case name raises validation error."""
 
         Tree._pending_nodes.clear()  # type: ignore
 
-        @argument("input-file")
-        def process(input_file: str) -> None:  # type: ignore
-            pass
+        with pytest.raises(SystemExit):
 
-        node = Tree.get_pending_nodes()[0][1]
-        assert isinstance(node, ArgumentNode)
-        assert node.param == "input_file"
+            @argument("input-file")
+            def process(input_file: str) -> None:  # type: ignore
+                pass
 
-    def test_argument_name_screaming_snake_case_converts(self) -> None:
-        """Test that SCREAMING_SNAKE_CASE converts to snake_case."""
+    def test_argument_name_screaming_snake_case_raises_error(self) -> None:
+        """Test that SCREAMING_SNAKE_CASE raises validation error."""
 
         Tree._pending_nodes.clear()  # type: ignore
 
-        @argument("INPUT_FILE")
-        def process(input_file: str) -> None:  # type: ignore
-            pass
+        with pytest.raises(SystemExit):
 
-        node = Tree.get_pending_nodes()[0][1]
-        assert isinstance(node, ArgumentNode)
-        assert node.param == "input_file"
+            @argument("INPUT_FILE")
+            def process(input_file: str) -> None:  # type: ignore
+                pass
 
     def test_param_override_with_custom_name(self) -> None:
         """Test that param parameter overrides default naming."""

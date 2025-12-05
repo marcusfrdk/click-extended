@@ -412,7 +412,7 @@ class TestChoicePractical:
         """Test choice for log level validation."""
 
         @command()
-        @option("log-level", default="INFO")
+        @option("log_level", "--log-level", default="INFO")
         @choice("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
         def cmd(log_level: str) -> None:
             click.echo(f"Log level: {log_level}")

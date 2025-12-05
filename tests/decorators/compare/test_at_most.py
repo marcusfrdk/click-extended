@@ -277,9 +277,14 @@ class TestAtMostPractical:
         """Test allowing at most one override option."""
 
         @command()
-        @option("--override-config", default=None, tags="override")
-        @option("--override-env", default=None, tags="override")
-        @option("--override-cli", default=None, tags="override")
+        @option(
+            "override_config",
+            "--override-config",
+            default=None,
+            tags="override",
+        )
+        @option("override_env", "--override-env", default=None, tags="override")
+        @option("override_cli", "--override-cli", default=None, tags="override")
         @tag("override")
         @at_most(1)
         def run(

@@ -13,11 +13,11 @@ from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
 from click_extended.core.nodes.option_node import OptionNode
 from click_extended.core.other.context import Context
-from click_extended.utils.casing import Casing
 from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import (
     is_long_flag,
     is_short_flag,
+    is_valid_name,
     validate_name,
 )
 
@@ -57,10 +57,10 @@ class Option(OptionNode):
                 Optional flags for the option. Can include any number of short
                 flags (e.g., \"-p\", \"-P\") and long flags (e.g., \"--port\",
                 \"--p\"). If no long flags provided, auto-generates
-                \"--kebab-case(name)\".
+                "--kebab-case(name)".
             param (str, optional):
                 Custom parameter name for the function.
-                If not provided, derived from name as `snake_case`.
+                If not provided, uses the name directly.
             is_flag (bool):
                 Whether this is a boolean flag (no value needed).
                 Defaults to `False`.
@@ -85,15 +85,19 @@ class Option(OptionNode):
         if name.startswith("--"):
             if is_long_flag(name):
                 derived_name = name[2:]
+                if not is_valid_name(derived_name):
+                    raise ValueError(
+                        f"Invalid option name '{name}'. When using a long "
+                        "flag as name, it must be snake_case after removing "
+                        f"'--'. Use '{name.replace('-', '_')}' or provide an "
+                        "explicit snake_case name parameter."
+                    )
                 if not flags or not any(f.startswith("--") for f in flags):
                     flags = (name,) + flags
             else:
                 raise ValueError(
-                    f"Invalid option name '{name}'. Must follow one of these "
-                    "conventions:\n"
-                    "  - snake_case (e.g., my_option, config_file)\n"
-                    "  - SCREAMING_SNAKE_CASE (e.g., MY_OPTION, CONFIG_FILE)\n"
-                    "  - kebab-case (e.g., my-option, config-file)"
+                    f"Invalid option name '{name}'. "
+                    f"Must be snake_case (e.g., my_option, config_file)"
                 )
         else:
             validate_name(name, "option name")
@@ -125,9 +129,7 @@ class Option(OptionNode):
                     )
                 short_flags_list.append(flag)
 
-        param_name = (
-            param if param is not None else Casing.to_snake_case(derived_name)
-        )
+        param_name = param if param is not None else derived_name
 
         validate_name(param_name, "parameter name")
 
@@ -223,9 +225,8 @@ def option(
 
     Args:
         name (str):
-            The option name (parameter name) in snake_case,
-            SCREAMING_SNAKE_CASE, or kebab-case. Examples: "verbose",
-            "config_file", "CONFIG_FILE"
+            The option name (parameter name) in snake_case.
+            Examples: "verbose", "config_file"
         *flags (str):
             Optional flags for the option. Can include any number of short flags
             (e.g., "-v", "-V") and long flags (e.g., "--verbose", "--verb").
@@ -236,7 +237,7 @@ def option(
                 @option("verbose", "-v", "-V", "--verbose", "--verb")
         param (str, optional):
             Custom parameter name for the function.
-            If not provided, derived from name as snake_case.
+            If not provided, uses the name directly.
         is_flag (bool):
             Whether this is a boolean flag (no value needed).
             Defaults to `False`.

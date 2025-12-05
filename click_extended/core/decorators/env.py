@@ -88,13 +88,14 @@ def env(
     A `ParentNode` decorator to inject an environment variable value
     into a command.
 
-    If name is not provided, it defaults to env_name converted to snake_case.
+    Type: `ParentNode`
 
     Args:
         env_name (str):
-            The name of the environment variable to read.
+            The name of the environment variable to read (e.g., "API_KEY").
+            Can be in any format, typically SCREAMING_SNAKE_CASE.
         name (str, optional):
-            Internal node name. If not provided,
+            Internal node name (must be snake_case). If not provided,
             uses env_name converted to snake_case.
         param (str, optional):
             The parameter name to inject into the function.

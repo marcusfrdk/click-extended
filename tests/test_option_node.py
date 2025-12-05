@@ -307,21 +307,17 @@ class TestOptionNaming:
         assert opt.param == "config_file"
         assert opt.long_flags == ["--config-file"]
 
-    def test_kebab_case_name(self) -> None:
-        """Test option with kebab-case name."""
+    def test_kebab_case_name_raises_error(self) -> None:
+        """Test option with kebab-case name raises validation error."""
 
-        opt = Option(name="config-file")
+        with pytest.raises(SystemExit):
+            Option(name="config-file")
 
-        assert opt.param == "config_file"  # converted to snake_case for param
-        assert opt.long_flags == ["--config-file"]
+    def test_screaming_snake_case_name_raises_error(self) -> None:
+        """Test option with SCREAMING_SNAKE_CASE raises validation error."""
 
-    def test_screaming_snake_case_name(self) -> None:
-        """Test option with SCREAMING_SNAKE_CASE name."""
-
-        opt = Option(name="CONFIG_FILE")
-
-        assert opt.param == "config_file"  # converted to snake_case for param
-        assert opt.long_flags == ["--config-file"]
+        with pytest.raises(SystemExit):
+            Option(name="CONFIG_FILE")
 
     def test_long_flag_as_name(self) -> None:
         """Test providing long flag directly as name."""
@@ -382,13 +378,13 @@ class TestOptionNaming:
     def test_name_validation_empty(self) -> None:
         """Test empty name raises error."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             Option(name="")
 
     def test_name_validation_spaces(self) -> None:
         """Test name with spaces raises error."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             Option(name="my option")
 
     def test_auto_kebab_case_conversion(self) -> None:
@@ -419,7 +415,7 @@ class TestOptionNaming:
     def test_param_validation(self) -> None:
         """Test that param name is validated."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             Option(name="test", param="invalid name")
 
 
@@ -1076,13 +1072,13 @@ class TestOptionNodeEdgeCases:
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises error."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             Option(name="")
 
     def test_name_with_spaces_raises_error(self) -> None:
         """Test that name with spaces raises error."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             Option(name="my option")
 
     def test_option_none_vs_empty_string_default(self) -> None:

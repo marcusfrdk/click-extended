@@ -1454,8 +1454,8 @@ class TestTagValidation:
                         raise ValueError("Min must be less than max")
 
         @command()
-        @option("--min-val", type=int, default=0, tags="range")
-        @option("--max-val", type=int, default=100, tags="range")
+        @option("min_val", "--min-val", type=int, default=0, tags="range")
+        @option("max_val", "--max-val", type=int, default=100, tags="range")
         @tag("range")
         @AsyncMultiTagValidator.as_decorator()
         def cmd(min_val: int, max_val: int) -> None:

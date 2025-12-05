@@ -23,23 +23,21 @@ class TestIsValidName:
         assert is_valid_name("option_1") is True
         assert is_valid_name("option_123") is True
 
-    def test_valid_screaming_snake_case(self) -> None:
-        """Test valid SCREAMING_SNAKE_CASE names."""
-        assert is_valid_name("MY_OPTION") is True
-        assert is_valid_name("CONFIG_FILE") is True
-        assert is_valid_name("TEST") is True
-        assert is_valid_name("A") is True
-        assert is_valid_name("OPTION_1") is True
-        assert is_valid_name("OPTION_123") is True
+    def test_invalid_screaming_snake_case(self) -> None:
+        """Test that SCREAMING_SNAKE_CASE names are now invalid."""
+        assert is_valid_name("MY_OPTION") is False
+        assert is_valid_name("CONFIG_FILE") is False
+        assert is_valid_name("TEST") is False
+        assert is_valid_name("A") is False
+        assert is_valid_name("OPTION_1") is False
+        assert is_valid_name("OPTION_123") is False
 
-    def test_valid_kebab_case(self) -> None:
-        """Test valid kebab-case names."""
-        assert is_valid_name("my-option") is True
-        assert is_valid_name("config-file") is True
-        assert is_valid_name("test") is True
-        assert is_valid_name("a") is True
-        assert is_valid_name("option-1") is True
-        assert is_valid_name("option-123") is True
+    def test_invalid_kebab_case(self) -> None:
+        """Test that kebab-case names are now invalid."""
+        assert is_valid_name("my-option") is False
+        assert is_valid_name("config-file") is False
+        assert is_valid_name("option-1") is False
+        assert is_valid_name("option-123") is False
 
     def test_invalid_names(self) -> None:
         """Test invalid names."""
@@ -106,17 +104,17 @@ class TestValidateName:
     def test_validate_valid_names(self) -> None:
         """Test that valid names don't raise."""
         validate_name("my_option")
-        validate_name("MY_OPTION")
-        validate_name("my-option")
+        validate_name("config_file")
+        validate_name("test")
 
     def test_validate_invalid_name_raises(self) -> None:
-        """Test that invalid names raise ValueError."""
-        with pytest.raises(ValueError, match="Invalid name 'Invalid'"):
+        """Test that invalid names raise SystemExit."""
+        with pytest.raises(SystemExit):
             validate_name("Invalid")
 
     def test_validate_with_custom_context(self) -> None:
         """Test that custom context appears in error message."""
-        with pytest.raises(ValueError, match="Invalid option name 'Invalid'"):
+        with pytest.raises(SystemExit):
             validate_name("Invalid", context="option name")
 
 
@@ -167,8 +165,8 @@ class TestParseOptionArgs:
             parse_option_args("--my-option", "-m")
 
     def test_invalid_name_raises(self) -> None:
-        """Test that invalid name raises ValueError."""
-        with pytest.raises(ValueError, match="Invalid option name"):
+        """Test that invalid name raises SystemExit."""
+        with pytest.raises(SystemExit):
             parse_option_args("Invalid")
 
     def test_two_names_raises(self) -> None:

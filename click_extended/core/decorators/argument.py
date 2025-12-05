@@ -10,13 +10,10 @@ from typing import Any, Type, cast
 from click_extended.core.nodes.argument_node import ArgumentNode
 from click_extended.core.other.context import Context
 from click_extended.types import Decorator
-from click_extended.utils.casing import Casing
 from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import validate_name
 
 _MISSING = object()
-
-# Supported primitive types for Click type parameter
 SUPPORTED_TYPES = (str, int, float, bool)
 
 
@@ -40,12 +37,11 @@ class Argument(ArgumentNode):
 
         Args:
             name (str):
-                The argument name in snake_case, SCREAMING_SNAKE_CASE,
-                or kebab-case. Examples: "filename", "input_file",
-                "INPUT_FILE", "input-file"
+                The argument name in snake_case.
+                Examples: "filename", "input_file"
             param (str, optional):
                 Custom parameter name for the function.
-                If not provided, derived from name as snake_case.
+                If not provided, uses the name directly.
             nargs (int):
                 Number of arguments to accept. Use `-1` for unlimited.
                 Defaults to `1`.
@@ -70,7 +66,7 @@ class Argument(ArgumentNode):
         """
         validate_name(name, "argument name")
 
-        param_name = param if param is not None else Casing.to_snake_case(name)
+        param_name = param if param is not None else name
 
         validate_name(param_name, "parameter name")
 
@@ -152,12 +148,11 @@ def argument(
 
     Args:
         name (str):
-            The argument name in snake_case, SCREAMING_SNAKE_CASE,
-            or kebab-case. Examples: "filename", "input_file",
-            "INPUT_FILE", "input-file"
+            The argument name in snake_case.
+            Examples: "filename", "input_file"
         param (str, optional):
             Custom parameter name for the function.
-            If not provided, derived from name as snake_case.
+            If not provided, uses the name directly.
         nargs (int):
             Number of arguments to accept. Use `-1` for unlimited.
             Defaults to `1`.
