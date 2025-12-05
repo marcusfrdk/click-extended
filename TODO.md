@@ -12,8 +12,6 @@
 - `@requires(*name)`
 - `@conflicts(*names)`
 - `@in_range(min, max, inclusive=True)` (supports int, float, datetime)
-- `@min_length(n)`
-- `@max_length(n)`
 - `@not_empty(n)`
 - `@flatten()`
 - `@contains(*text, all_of, none_of)`
