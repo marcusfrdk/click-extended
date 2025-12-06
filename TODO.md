@@ -9,11 +9,6 @@
 - Add documentation for `@option` decorator (concatenated flags, new multiple flags, etc.)
 - Add documentation for `@argument` decorator.
 
-### Checks
-
-- `@truthy`
-- `@falsy`
-
 ### String
 
 - `@expand_vars()`

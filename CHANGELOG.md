@@ -10,6 +10,8 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@truthy`**: Child node to check if a value is truthy.
+- **`@falsy`**: Child node to check if a value is falsy.
 - **`@between`**: Child node to check if a value is within bounds.
 - **`@conflicts`**: Child node to check for conflicts between tags.
 - **`@dependencies`**: Validation node to add bi-directional requirements.
