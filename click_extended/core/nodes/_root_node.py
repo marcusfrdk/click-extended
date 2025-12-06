@@ -475,6 +475,7 @@ class RootNode(Node):
                                         parent_node.was_provided = was_provided
 
                                     inject_name = parent_node.param
+                                    parent_node.cached_value = raw_value
 
                                     if parent_node.children:
                                         Tree.update_scope(
@@ -502,7 +503,6 @@ class RootNode(Node):
                                         async_parent_values[inject_name] = (
                                             raw_value
                                         )
-                                        parent_node.cached_value = raw_value
                                 else:
                                     parent_node = cast(
                                         "ParentNode", parent_node
@@ -604,6 +604,7 @@ class RootNode(Node):
                                     parent_node.was_provided = was_provided
 
                                 inject_name = parent_node.param
+                                parent_node.cached_value = raw_value
 
                                 if parent_node.children:
                                     Tree.update_scope(
@@ -623,7 +624,6 @@ class RootNode(Node):
                                     parent_node.cached_value = processed_value
                                 else:
                                     parent_values[inject_name] = raw_value
-                                    parent_node.cached_value = raw_value
                             else:
                                 parent_node = cast("ParentNode", parent_node)
                                 if isinstance(parent_name, str):
