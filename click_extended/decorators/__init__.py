@@ -6,6 +6,8 @@ from click_extended.decorators.compare import *
 from click_extended.decorators.compare import __all__ as compare_all
 from click_extended.decorators.load import *
 from click_extended.decorators.load import __all__ as load_all
+from click_extended.decorators.math import *
+from click_extended.decorators.math import __all__ as math_all
 from click_extended.decorators.misc import *
 from click_extended.decorators.misc import __all__ as misc_all
 from click_extended.decorators.random import *
@@ -17,6 +19,7 @@ __all__ = [
     *check_all,
     *compare_all,
     *load_all,
+    *math_all,
     *misc_all,
     *random_all,
     *transform_all,
