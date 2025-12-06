@@ -10,6 +10,15 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@add`**: Child node to add int, floats or strings.
+- **`@subtract`**: Child node to subract numbers.
+- **`@divide`**: Child node to divide numbers.
+- **`@floor`**: Child node to round numbers down.
+- **`@ceil`**: Child node to round numbers up.
+- **`@modulo`**: Child node to perform the modulo operator on a number.
+- **`@multiply`**: Child node to multiple numbers or strings.
+- **`@power`**: Child node to raise a number to some power.
+- **`@sqrt`**: Child node to calculate the square root, supports complex numbers.
 - **`@truthy`**: Child node to check if a value is truthy.
 - **`@falsy`**: Child node to check if a value is falsy.
 - **`@between`**: Child node to check if a value is within bounds.
