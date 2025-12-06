@@ -146,7 +146,7 @@ class Option(OptionNode):
         if type is None:
             if is_flag:
                 type = bool
-            elif default is not None:
+            elif default is not None and not (multiple and default == ()):
                 type = cast(Type[Any], builtins_type(default))  # type: ignore
             else:
                 type = str
@@ -162,6 +162,9 @@ class Option(OptionNode):
                 "For complex types, use child decorators (e.g., @to_path, "
                 "@to_datetime, ...)."
             )
+
+        if multiple and default is None:
+            default = ()
 
         super().__init__(
             name=derived_name,

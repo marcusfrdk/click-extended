@@ -11,7 +11,6 @@
 
 ### Checks
 
-- `@conflicts(*names)`
 - `@between(min, max, inclusive)`
 
 ### String

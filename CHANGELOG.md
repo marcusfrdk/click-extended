@@ -10,6 +10,7 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@conflicts`**: Child node to check for conflicts between tags.
 - **`@dependencies`**: Validation node to add bi-directional requirements.
 - **`@requires`**: Child node to add uni-directional requirements.
 - **`@confirm_if`**: Child decorator with a conditional prompt.
@@ -80,6 +81,7 @@
 - **Error output**: Improved user-friendliness of exceptions raised outside context
 - **Child Processing Phase**: Children are now collected at first and processed later to allow children to access the full context.
 - **Argument order**: Fixed the order arguments are applied.
+- **multiple=True**: Fixed bug when multiple=True and the type would not be set correctly.
 
 ## v0.4.0
 
