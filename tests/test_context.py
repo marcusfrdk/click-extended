@@ -430,7 +430,7 @@ class TestContextProvided:
     ) -> None:
         """Test get_provided_value() with existing provided parent."""
         mock_option.was_provided = True
-        mock_option.cached_value = "test_value"
+        mock_option.raw_value = "test_value"
 
         context = Context(
             root=Mock(),  # type: ignore[arg-type]
@@ -484,11 +484,11 @@ class TestContextProvided:
     ) -> None:
         """Test get_provided_values() returns all provided parent values."""
         mock_option.was_provided = True
-        mock_option.get_value = Mock(return_value="opt_value")
+        mock_option.raw_value = "opt_value"
         mock_argument.was_provided = True
-        mock_argument.get_value = Mock(return_value="arg_value")
+        mock_argument.raw_value = "arg_value"
         mock_env.was_provided = True
-        mock_env.get_value = Mock(return_value="env_value")
+        mock_env.raw_value = "env_value"
 
         context = Context(
             root=Mock(),  # type: ignore[arg-type]
@@ -511,18 +511,15 @@ class TestContextProvided:
         assert values["test_opt"] == "opt_value"
         assert values["test_arg"] == "arg_value"
         assert values["test_env"] == "env_value"
-        mock_option.get_value.assert_called_once()
-        mock_argument.get_value.assert_called_once()
-        mock_env.get_value.assert_called_once()
 
     def test_get_provided_values_some_provided(
         self, mock_option: Any, mock_argument: Any, mock_click_context: Any
     ) -> None:
         """Test get_provided_values() filters out unprovided parents."""
         mock_option.was_provided = True
-        mock_option.get_value = Mock(return_value="opt_value")
+        mock_option.raw_value = "opt_value"
         mock_argument.was_provided = False
-        mock_argument.get_value = Mock(return_value="arg_value")
+        mock_argument.raw_value = "arg_value"
 
         context = Context(
             root=Mock(),  # type: ignore[arg-type]
@@ -540,8 +537,6 @@ class TestContextProvided:
         assert len(values) == 1
         assert values["test_opt"] == "opt_value"
         assert "test_arg" not in values
-        mock_option.get_value.assert_called_once()
-        mock_argument.get_value.assert_not_called()
 
     def test_get_provided_values_none_provided(
         self, mock_option: Any, mock_argument: Any, mock_click_context: Any

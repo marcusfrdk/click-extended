@@ -362,7 +362,7 @@ class Context:
 
     def get_provided_value(self, name: str) -> Any:
         """
-        Get the provided value of a parent node.
+        Get the provided raw value of a parent node (before processing).
 
         Args:
             name (str):
@@ -375,21 +375,21 @@ class Context:
         """
         parent = self.get_parent(name)
         if parent is not None and parent.was_provided:
-            return parent.cached_value  # type: ignore
+            return parent.raw_value  # type: ignore
         return None
 
     def get_provided_values(self) -> dict[str, Any]:
         """
-        Get the provided values in the context.
+        Get the provided raw values in the context (before processing).
 
         Returns:
             dict[str, Any]:
-                The provided values in the context.
+                The provided raw values in the context.
         """
         provided: dict[str, Any] = {}
         for name, parent in self.parents.items():
             if parent.was_provided:
-                provided[name] = parent.get_value()
+                provided[name] = parent.raw_value
         return provided
 
     def get_missing_arguments(self) -> list["Argument"]:

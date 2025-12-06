@@ -75,6 +75,7 @@ class ParentNode(Node, ABC):
             self.tags = list(tags)
 
         self.was_provided: bool = False
+        self.raw_value: Any = None
         self.cached_value: Any = None
         self._value_computed: bool = False
         self.decorator_kwargs: dict[str, Any] = {}
