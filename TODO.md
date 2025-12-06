@@ -11,7 +11,8 @@
 
 ### Checks
 
-- `@between(min, max, inclusive)`
+- `@truthy`
+- `@falsy`
 
 ### String
 
