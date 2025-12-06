@@ -16,12 +16,6 @@
 - `@truncate()`
 - `@split(sep, maxsplit)`
 - `@replace(old, new, count=-1)`
-- `@regex(pattern)`
-- `@url()`
-- `@email()`
-- `@ipv4()`
-- `@ipv6()`
-- `@port()`
 - `@slugify()`
 
 ### Path

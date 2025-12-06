@@ -26,7 +26,12 @@ repos:
     hooks:
       - id: pylint
         additional_dependencies:
-          [click>=8.3.0, python-dotenv>=1.2.1, pyyaml>=6.0.3]
+          [
+            click>=8.3.0,
+            python-dotenv>=1.2.1,
+            pyyaml>=6.0.3,
+            email-validator>=2.3.0,
+          ]
         args: [--fail-under=10.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -41,6 +46,7 @@ repos:
             pyyaml>=6.0.3,
             types-PyYAML>=6.0.12.20250915,
             tomli>=2.0.0,
+            email-validator>=2.3.0,
           ]
         args: [--strict]
 

@@ -78,6 +78,17 @@
 - **`@random_integer`**: Added parent node decorator for generating a random integer with unit tests.
 - **`@random_float`**: Added parent node decorator for generating a random floating point value with unit tests.
 - **`@random_bool`**: Added parent node decorator for generating a random boolean with unit tests.
+- **`@regex`**: Child node to check if a value matches a regex pattern.
+- **`@is_url`**: Child node to check if a value is a valid URL.
+- **`@is_email`**: Child node to check if a value is a valid email address.
+- **`@is_ipv4`**: Child node to check if a value is a valid IPv4 address.
+- **`@is_ipv6`**: Child node to check if a value is a valid IPv6 address.
+- **`@is_port`**: Child node to check if a value is a valid network port.
+- **`@is_uuid`**: Child node to check if a value is a valid UUID.
+- **`@is_json`**: Child node to check if a value is valid JSON.
+- **`@is_mac_address`**: Child node to check if a value is a valid MAC address.
+- **`@is_hostname`**: Child node to check if a value is a valid hostname.
+- **`@is_hex_color`**: Child node to check if a value is a valid hex color code.
 
 ### Updated
 
