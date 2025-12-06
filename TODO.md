@@ -4,6 +4,10 @@
 
 ## v1.0.0
 
+### Bug
+
+- Argument parsing order. The second argument is parsed before the first (bottom-to-top instead of the correct top-to-bottom order)
+
 ### Documentation
 
 - Add documentation for `@option` decorator (concatenated flags, new multiple flags, etc.)

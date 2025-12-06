@@ -59,6 +59,16 @@ class Env(ParentNode):
 
         return value
 
+    def get_display_name(self) -> str:
+        """
+        Get a formatted display name for error messages.
+
+        Returns:
+            str:
+                The environment variable name in SCREAMING_SNAKE_CASE.
+        """
+        return Casing.to_screaming_snake_case(self.name)
+
     def check_required(self) -> str | None:
         """
         Check if required environment variable is set.

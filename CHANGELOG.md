@@ -76,6 +76,8 @@
 - **Typing Issue**: Fixed typing issues for `Group.command()` and `Group.group()` methods.
 - **Existing Parents**: Fixed issue where duplicate parents were allowed.
 - **Error output**: Improved user-friendliness of exceptions raised outside context
+- **Child Processing Phase**: Children are now collected at first and processed later to allow children to access the full context.
+- **Argument order**: Fixed the order arguments are applied.
 
 ## v0.4.0
 

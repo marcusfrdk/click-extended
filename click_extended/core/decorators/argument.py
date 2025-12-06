@@ -10,6 +10,7 @@ from typing import Any, Type, cast
 from click_extended.core.nodes.argument_node import ArgumentNode
 from click_extended.core.other.context import Context
 from click_extended.types import Decorator
+from click_extended.utils.casing import Casing
 from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import validate_name
 
@@ -95,7 +96,7 @@ class Argument(ArgumentNode):
 
         super().__init__(
             name=name,
-            param=param_name,
+            param=param if param is not None else name,
             nargs=nargs,
             type=type,
             help=help,
@@ -104,6 +105,16 @@ class Argument(ArgumentNode):
             tags=tags,
         )
         self.extra_kwargs = kwargs
+
+    def get_display_name(self) -> str:
+        """
+        Get a formatted display name for error messages.
+
+        Returns:
+            str:
+                The argument name in SCREAMING_SNAKE_CASE.
+        """
+        return Casing.to_screaming_snake_case(self.name)
 
     def load(
         self,

@@ -179,6 +179,20 @@ class Option(OptionNode):
         )
         self.extra_kwargs = kwargs
 
+    def get_display_name(self) -> str:
+        """
+        Get a formatted display name for error messages.
+
+        Returns:
+            str:
+                The first long flag if available, otherwise the first flag.
+        """
+        if self.long_flags:
+            return self.long_flags[0]
+        if self.short_flags:
+            return self.short_flags[0]
+        return self.name
+
     def load(
         self,
         value: str | int | float | bool | None,

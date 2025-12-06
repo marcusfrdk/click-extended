@@ -200,6 +200,17 @@ class ParentNode(Node, ABC):
         """
         return self.cached_value
 
+    def get_display_name(self) -> str:
+        """
+        Get a formatted display name for error messages.
+
+        Returns:
+            str:
+                The formatted name for display in error messages.
+                Base implementation returns the name as-is.
+        """
+        return self.name
+
     def __repr__(self) -> str:
         """Return a detailed representation of the parent node."""
         class_name = self.__class__.__name__

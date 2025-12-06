@@ -466,12 +466,12 @@ class TestArgumentCommandIntegration:
         assert "Hello Alice!" in result.output
 
     def test_multiple_arguments_in_order(self, cli_runner: Any) -> None:
-        """Test that multiple arguments are parsed in order."""
+        """Test that multiple arguments are parsed in source code order."""
 
         @command()
-        @argument("third")
-        @argument("second")
         @argument("first")
+        @argument("second")
+        @argument("third")
         def combine(first: str, second: str, third: str) -> None:
             click.echo(f"{first}-{second}-{third}")
 

@@ -4,6 +4,7 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-lines
 # pylint: disable=broad-exception-caught
 # pylint: disable=protected-access
 # pylint: disable=invalid-name
@@ -197,7 +198,7 @@ class RootNode(Node):
 
             func = click.option(*params, **option_kwargs)(func)
 
-        for _parent_name, parent_node in reversed(argument_nodes):
+        for _parent_name, parent_node in argument_nodes:
             arg_kwargs: dict[str, Any] = {
                 "type": parent_node.type,
                 "required": parent_node.required,
@@ -409,6 +410,11 @@ class RootNode(Node):
                             assert root.tree.root is not None
                             async_parent_values: dict[str, Any] = {}
 
+                            # Phase 1
+                            loaded_async_parents: dict[
+                                str, tuple[Any, "ParentNode"]
+                            ] = {}
+
                             for (
                                 parent_name,
                                 parent_node,
@@ -478,39 +484,40 @@ class RootNode(Node):
                                     parent_node.raw_value = raw_value
                                     parent_node.cached_value = raw_value
 
-                                    if parent_node.children:
-                                        Tree.update_scope(
-                                            context,
-                                            "parent",
-                                            parent_node=parent_node,
-                                        )
-
-                                        processed_value = (
-                                            await process_children_async(
-                                                raw_value,
-                                                parent_node.children,
-                                                parent_node,
-                                                tags_dict,
-                                                context,
-                                            )
-                                        )
-                                        async_parent_values[inject_name] = (
-                                            processed_value
-                                        )
-                                        parent_node.cached_value = (
-                                            processed_value
-                                        )
-                                    else:
-                                        async_parent_values[inject_name] = (
-                                            raw_value
-                                        )
-                                else:
-                                    parent_node = cast(
-                                        "ParentNode", parent_node
+                                    loaded_async_parents[parent_name] = (
+                                        raw_value,
+                                        parent_node,
                                     )
-                                    v = parent_node.get_value()
-                                    if isinstance(parent_name, str):
-                                        async_parent_values[parent_name] = v
+
+                            # Phase 2
+                            for parent_name, (
+                                raw_value,
+                                parent_node,
+                            ) in loaded_async_parents.items():
+                                inject_name = parent_node.param
+
+                                if parent_node.children:
+                                    Tree.update_scope(
+                                        context,
+                                        "parent",
+                                        parent_node=parent_node,
+                                    )
+
+                                    processed_value = (
+                                        await process_children_async(
+                                            raw_value,
+                                            parent_node.children,
+                                            parent_node,
+                                            tags_dict,
+                                            context,
+                                        )
+                                    )
+                                    async_parent_values[inject_name] = (
+                                        processed_value
+                                    )
+                                    parent_node.cached_value = processed_value
+                                else:
+                                    async_parent_values[inject_name] = raw_value
 
                             for tag in root.tree.tags.values():
                                 if tag.children:
@@ -557,6 +564,9 @@ class RootNode(Node):
                                 ) from e
                             raise
                     else:
+                        # Phase 1
+                        loaded_parents: dict[str, tuple[Any, "ParentNode"]] = {}
+
                         for (
                             parent_name,
                             parent_node,
@@ -608,30 +618,36 @@ class RootNode(Node):
                                 parent_node.raw_value = raw_value
                                 parent_node.cached_value = raw_value
 
-                                if parent_node.children:
-                                    Tree.update_scope(
-                                        context,
-                                        "parent",
-                                        parent_node=parent_node,
-                                    )
+                                loaded_parents[parent_name] = (
+                                    raw_value,
+                                    parent_node,
+                                )
 
-                                    processed_value = process_children(
-                                        raw_value,
-                                        parent_node.children,
-                                        parent_node,
-                                        tags_dict,
-                                        context,
-                                    )
-                                    parent_values[inject_name] = processed_value
-                                    parent_node.cached_value = processed_value
-                                else:
-                                    parent_values[inject_name] = raw_value
+                        # Phase 2
+                        for parent_name, (
+                            raw_value,
+                            parent_node,
+                        ) in loaded_parents.items():
+                            inject_name = parent_node.param
+
+                            if parent_node.children:
+                                Tree.update_scope(
+                                    context,
+                                    "parent",
+                                    parent_node=parent_node,
+                                )
+
+                                processed_value = process_children(
+                                    raw_value,
+                                    parent_node.children,
+                                    parent_node,
+                                    tags_dict,
+                                    context,
+                                )
+                                parent_values[inject_name] = processed_value
+                                parent_node.cached_value = processed_value
                             else:
-                                parent_node = cast("ParentNode", parent_node)
-                                if isinstance(parent_name, str):
-                                    parent_values[parent_name] = (
-                                        parent_node.get_value()
-                                    )
+                                parent_values[inject_name] = raw_value
 
                         for tag_name, tag in root.tree.tags.items():
                             if tag.children:
