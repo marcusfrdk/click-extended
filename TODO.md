@@ -11,7 +11,7 @@
 
 ### Checks
 
-- `@requires(*name)`
+- `@requires(*names)`
 - `@conflicts(*names)`
 - `@between(min, max, inclusive)`
 

@@ -29,6 +29,7 @@ class ValidationNode(Node, ABC):
         name: str,
         process_args: tuple[Any, ...] | None = None,
         process_kwargs: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Initialize a new `ValidationNode` instance.
@@ -40,8 +41,11 @@ class ValidationNode(Node, ABC):
                 Positional arguments to pass to lifecycle methods.
             process_kwargs (dict[str, Any]):
                 Keyword arguments to pass to lifecycle methods.
+            **kwargs (Any):
+                Additional keyword arguments.
         """
-        super().__init__(name=name, children=None)
+        children = kwargs.pop("children", None)
+        super().__init__(name=name, children=children, **kwargs)
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
 
@@ -89,10 +93,6 @@ class ValidationNode(Node, ABC):
     def as_decorator(cls, *args: Any, **kwargs: Any) -> "Decorator":
         """
         Return a decorator representation of the validation node.
-
-        The provided `args` and `kwargs` are stored and later passed to
-        lifecycle methods (on_init and on_finalize) when called during
-        command execution.
 
         Args:
             *args (Any):

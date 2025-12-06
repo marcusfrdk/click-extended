@@ -40,6 +40,7 @@ class ChildNode(Node, ABC):
         name: str,
         process_args: tuple[Any, ...] | None = None,
         process_kwargs: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Initialize a new `ChildNode` instance.
@@ -51,8 +52,11 @@ class ChildNode(Node, ABC):
                 Positional arguments to pass to handler methods.
             process_kwargs (dict[str, Any]):
                 Keyword arguments to pass to handler methods.
+            **kwargs (Any):
+                Additional keyword arguments for multiple inheritance.
         """
-        super().__init__(name=name, children=None)
+        children = kwargs.pop("children", None)
+        super().__init__(name=name, children=children, **kwargs)
         self.process_args = process_args or ()
         self.process_kwargs = process_kwargs or {}
 

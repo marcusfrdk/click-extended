@@ -20,6 +20,7 @@ from click.utils import echo
 from click_extended.core.decorators.env import Env
 from click_extended.core.decorators.tag import Tag
 from click_extended.core.nodes.argument_node import ArgumentNode
+from click_extended.core.nodes.child_validation_node import ChildValidationNode
 from click_extended.core.nodes.node import Node
 from click_extended.core.nodes.option_node import OptionNode
 from click_extended.core.other._tree import Tree
@@ -894,6 +895,41 @@ class RootNode(Node):
                             validation_inst = cast(ValidationNode, node)
                             root.tree.validations.append(validation_inst)
                             most_recent_tag = None
+                        elif node_type == "child_validation":
+                            child_val_inst = cast(ChildValidationNode, node)
+                            if (
+                                most_recent_tag is not None
+                                or most_recent_parent is not None
+                            ):
+                                if most_recent_tag is not None:
+                                    if not root.tree.has_handle_tag_implemented(
+                                        child_val_inst
+                                    ):
+                                        tip = "".join(
+                                            "Child validation nodes "
+                                            "attached to @tag decorators "
+                                            "must implement the "
+                                            "handle_tag(...) method."
+                                        )
+
+                                        raise UnhandledTypeError(
+                                            child_name=child_val_inst.name,
+                                            value_type="tag",
+                                            implemented_handlers=[],
+                                            tip=tip,
+                                        )
+
+                                    most_recent_tag[len(most_recent_tag)] = (
+                                        child_val_inst
+                                    )
+                                elif most_recent_parent is not None:
+                                    parent_len = len(most_recent_parent)
+                                    most_recent_parent[parent_len] = (
+                                        child_val_inst
+                                    )
+                            else:
+                                root.tree.validations.append(child_val_inst)
+                                most_recent_tag = None
                 except ContextAwareError as e:
                     echo(
                         f"{e.__class__.__name__}: {e.message}", file=sys.stderr

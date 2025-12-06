@@ -32,6 +32,9 @@ if TYPE_CHECKING:
     from click_extended.core.decorators.tag import Tag
     from click_extended.core.nodes._root_node import RootNode
     from click_extended.core.nodes.child_node import ChildNode
+    from click_extended.core.nodes.child_validation_node import (
+        ChildValidationNode,
+    )
     from click_extended.core.nodes.parent_node import ParentNode
     from click_extended.core.nodes.validation_node import ValidationNode
 
@@ -70,16 +73,28 @@ class Tree:
 
     _pending_nodes: list[
         tuple[
-            Literal["parent", "child", "tag", "validation"],
-            "ParentNode | ChildNode | Tag | ValidationNode",
+            Literal[
+                "parent",
+                "child",
+                "tag",
+                "validation",
+                "child_validation",
+            ],
+            "ParentNode | ChildNode | Tag | ValidationNode | ChildValidationNode",  # pylint: disable=line-too-long
         ]
     ] = []
 
     @staticmethod
     def get_pending_nodes() -> list[
         tuple[
-            Literal["parent", "child", "tag", "validation"],
-            "ParentNode | ChildNode | Tag | ValidationNode",
+            Literal[
+                "parent",
+                "child",
+                "tag",
+                "validation",
+                "child_validation",
+            ],
+            "ParentNode | ChildNode | Tag | ValidationNode | ChildValidationNode",  # pylint: disable=line-too-long
         ]
     ]:
         """
@@ -137,6 +152,21 @@ class Tree:
                 The validation node to queue.
         """
         Tree._pending_nodes.append(("validation", node))
+
+    @staticmethod
+    def queue_child_validation(node: "ChildValidationNode") -> None:
+        """
+        Queue a child validation node for registration.
+
+        Child validation nodes can act as both child nodes and
+        validation nodes. The registration phase determines which
+        behavior to use based on decorator placement.
+
+        Args:
+            node (ChildValidationNode):
+                The child validation node to queue.
+        """
+        Tree._pending_nodes.append(("child_validation", node))
 
     def __init__(self) -> None:
         """Initialize a new Tree instance."""
@@ -281,6 +311,10 @@ class Tree:
                     self._register_validation_node(
                         cast("ValidationNode", node_inst)
                     )
+                elif node_type == "child_validation":
+                    self._register_child_validation_node(
+                        cast("ChildValidationNode", node_inst)
+                    )
 
         self._validate_names()
         self.is_validated = True
@@ -333,6 +367,39 @@ class Tree:
     def _register_validation_node(self, node: "ValidationNode") -> None:
         """Register a validation node during validation phase."""
         self.validations.append(node)
+
+    def _register_child_validation_node(
+        self, node: "ChildValidationNode"
+    ) -> None:
+        """
+        Register a child validation node during validation phase.
+
+        Args:
+            node (ChildValidationNode):
+                The child validation node to register.
+
+        Raises:
+            NoParentError:
+                If registering as child but no parent exists.
+                Provides enhanced message about child validation node
+                behavior.
+        """
+        if self.recent is not None or self.recent_tag is not None:
+            try:
+                self._register_child_node(node)
+            except NoParentError as e:
+                raise NoParentError(
+                    node.name,
+                    tip=(
+                        f"Child validation node '{node.name}' attempted "
+                        "to attach as a child node but no parent was "
+                        "found. Ensure a parent node "
+                        "or tag is defined before the child "
+                        "validation node decorator."
+                    ),
+                ) from e
+        else:
+            self._register_validation_node(node)
 
     def has_handle_tag_implemented(self, node: "ChildNode") -> bool:
         """Check if a child node has `handle_tag` implemented."""
@@ -418,3 +485,7 @@ class Tree:
             assert parent.children is not None
             for child in parent.children.values():
                 print(f"    {child.name}")
+
+        if self.validations:
+            for validation in self.validations:
+                print(f"    {validation.name}")

@@ -3,6 +3,7 @@
 from click_extended.core.nodes._root_node import RootNode
 from click_extended.core.nodes.argument_node import ArgumentNode
 from click_extended.core.nodes.child_node import ChildNode
+from click_extended.core.nodes.child_validation_node import ChildValidationNode
 from click_extended.core.nodes.node import Node
 from click_extended.core.nodes.option_node import OptionNode
 from click_extended.core.nodes.parent_node import ParentNode
@@ -12,6 +13,7 @@ __all__ = [
     "RootNode",
     "ArgumentNode",
     "ChildNode",
+    "ChildValidationNode",
     "Node",
     "OptionNode",
     "ParentNode",
