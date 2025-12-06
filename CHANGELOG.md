@@ -10,6 +10,8 @@
 - **Code Snippets**: Python code snippets.
 - **Dependencies**: Added `PyYAML` and `tomli` (only before 3.11) as a project dependency.
 - **Dev Dependencies**: Added `types-PyYAML` as a project dev dependency.
+- **`@dependencies`**: Validation node to add bi-directional requirements.
+- **`@requires`**: Child node to add uni-directional requirements.
 - **`@confirm_if`**: Child decorator with a conditional prompt.
 - **`@strip`, `@lstrip`, `@rstrip`**: Child decorators to strip characters from strings.
 - **`@choice`**: Child decorator to check if value is an element of a list.
