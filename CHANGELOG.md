@@ -51,6 +51,7 @@
 - **`@convert_temperature`**: Child decorator to convert between temperature units.
 - **`@convert_weight`**: Child decorator to convert between weight units.
 - **`@convert_bits`**: Child decorator to convert between bit/byte units.
+- **`@convert_distance`**: Child decorator to convert between distance units.
 - **`@load_csv`**: Child decorator to load a CSV file from a `pathlib.Path` object.
 - **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.
