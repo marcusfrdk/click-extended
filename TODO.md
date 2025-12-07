@@ -20,7 +20,6 @@
 - `@to_percent()`
 - `@normalize(min, max)`
 - `@divisible_by(n)`
-- `@convert_byte_speed(from_unit, to_unit)`
 - `@convert_distance(from_unit, to_unit)`
 - `@convert_speed(from_unit, to_unit)`
 - `@convert_volume(from_unit, to_unit)`

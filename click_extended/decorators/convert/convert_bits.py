@@ -1,4 +1,4 @@
-"""Convert between different byte units."""
+"""Convert between different bit/byte units."""
 
 from decimal import Decimal, getcontext
 from typing import Any, Literal
@@ -29,11 +29,31 @@ UNITS = {
     "EiB": Decimal("1024") ** 6,
     "ZiB": Decimal("1024") ** 7,
     "YiB": Decimal("1024") ** 8,
+    # Bit units
+    "b": Decimal("0.125"),
+    "kb": Decimal("1000") * Decimal("0.125"),
+    "Mb": Decimal("1000") ** 2 * Decimal("0.125"),
+    "Gb": Decimal("1000") ** 3 * Decimal("0.125"),
+    "Tb": Decimal("1000") ** 4 * Decimal("0.125"),
+    "Pb": Decimal("1000") ** 5 * Decimal("0.125"),
+    "Eb": Decimal("1000") ** 6 * Decimal("0.125"),
+    "Zb": Decimal("1000") ** 7 * Decimal("0.125"),
+    "Yb": Decimal("1000") ** 8 * Decimal("0.125"),
+    "Rb": Decimal("1000") ** 9 * Decimal("0.125"),
+    "Qb": Decimal("1000") ** 10 * Decimal("0.125"),
+    "Kib": Decimal("1024") * Decimal("0.125"),
+    "Mib": Decimal("1024") ** 2 * Decimal("0.125"),
+    "Gib": Decimal("1024") ** 3 * Decimal("0.125"),
+    "Tib": Decimal("1024") ** 4 * Decimal("0.125"),
+    "Pib": Decimal("1024") ** 5 * Decimal("0.125"),
+    "Eib": Decimal("1024") ** 6 * Decimal("0.125"),
+    "Zib": Decimal("1024") ** 7 * Decimal("0.125"),
+    "Yib": Decimal("1024") ** 8 * Decimal("0.125"),
 }
 
 
-class ConvertByteSize(ChildNode):
-    """Convert between different byte size units."""
+class ConvertBits(ChildNode):
+    """Convert between different bit/byte units."""
 
     def handle_numeric(
         self,
@@ -55,7 +75,7 @@ class ConvertByteSize(ChildNode):
         return float(bytes_val / UNITS[to_unit])
 
 
-def convert_byte_size(
+def convert_bits(
     from_unit: Literal[
         "B",
         "kB",
@@ -76,6 +96,25 @@ def convert_byte_size(
         "EiB",
         "ZiB",
         "YiB",
+        "b",
+        "kb",
+        "Mb",
+        "Gb",
+        "Tb",
+        "Pb",
+        "Eb",
+        "Zb",
+        "Yb",
+        "Rb",
+        "Qb",
+        "Kib",
+        "Mib",
+        "Gib",
+        "Tib",
+        "Pib",
+        "Eib",
+        "Zib",
+        "Yib",
     ],
     to_unit: Literal[
         "B",
@@ -97,10 +136,29 @@ def convert_byte_size(
         "EiB",
         "ZiB",
         "YiB",
+        "b",
+        "kb",
+        "Mb",
+        "Gb",
+        "Tb",
+        "Pb",
+        "Eb",
+        "Zb",
+        "Yb",
+        "Rb",
+        "Qb",
+        "Kib",
+        "Mib",
+        "Gib",
+        "Tib",
+        "Pib",
+        "Eib",
+        "Zib",
+        "Yib",
     ],
 ) -> Decorator:
     """
-    Convert between different byte units.
+    Convert between different bit/byte units.
 
     Type: `ChildNode`
 
@@ -126,9 +184,28 @@ def convert_byte_size(
         - **EiB**: Exbibytes
         - **ZiB**: Zebibytes
         - **YiB**: Yobibytes
+        - **b**: Bits
+        - **kb**: Kilobits
+        - **Mb**: Megabits
+        - **Gb**: Gigabits
+        - **Tb**: Terabits
+        - **Pb**: Petabits
+        - **Eb**: Exabits
+        - **Zb**: Zettabits
+        - **Yb**: Yottabits
+        - **Rb**: Ronnabits
+        - **Qb**: Quettabits
+        - **Kib**: Kibibits
+        - **Mib**: Mebibits
+        - **Gib**: Gibibits
+        - **Tib**: Tebibits
+        - **Pib**: Pebibits
+        - **Eib**: Exbibits
+        - **Zib**: Zebibits
+        - **Yib**: Yobibits
 
     Returns:
         Decorator:
             The decorated function.
     """
-    return ConvertByteSize.as_decorator(from_unit=from_unit, to_unit=to_unit)
+    return ConvertBits.as_decorator(from_unit=from_unit, to_unit=to_unit)
