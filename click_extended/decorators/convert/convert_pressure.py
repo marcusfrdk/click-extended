@@ -104,6 +104,26 @@ def convert_pressure(
 
     Supports: `int`, `float`
 
+    Units:
+        - **Pa**: Pascal
+        - **kPa**: Kilopascal
+        - **MPa**: Megapascal
+        - **GPa**: Gigapascal
+        - **bar**: Bar
+        - **mbar**: Millibar
+        - **hPa**: Hectopascal
+        - **psi**: Pounds per square inch
+        - **ksi**: Kilopounds per square inch
+        - **psf**: Pounds per square foot
+        - **mmHg**: Millimeters of mercury
+        - **inHg**: Inches of mercury
+        - **mmH2O**: Millimeters of water
+        - **inH2O**: Inches of water
+        - **atm**: Standard atmosphere
+        - **at**: Technical atmosphere
+        - **torr**: Torr (1/760 atm)
+        - **Ba**: Barye (dyn/cm2)
+
     Returns:
         Decorator:
             The decorated function.
