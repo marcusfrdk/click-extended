@@ -54,6 +54,7 @@
 - **`@convert_distance`**: Child decorator to convert between distance units.
 - **`@convert_speed`**: Child decorator to convert between speed units.
 - **`@convert_volume`**: Child decorator to convert between volume units.
+- **`@convert_area`**: Child decorator to convert between area units.
 - **`@load_csv`**: Child decorator to load a CSV file from a `pathlib.Path` object.
 - **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.
