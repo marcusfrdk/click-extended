@@ -3,6 +3,8 @@
 from click_extended.decorators.transform.add_prefix import add_prefix
 from click_extended.decorators.transform.add_suffix import add_suffix
 from click_extended.decorators.transform.apply import apply
+from click_extended.decorators.transform.basename import basename
+from click_extended.decorators.transform.dirname import dirname
 from click_extended.decorators.transform.expand_vars import expand_vars
 from click_extended.decorators.transform.remove_prefix import remove_prefix
 from click_extended.decorators.transform.remove_suffix import remove_suffix
@@ -36,6 +38,8 @@ __all__ = [
     "add_prefix",
     "add_suffix",
     "apply",
+    "basename",
+    "dirname",
     "expand_vars",
     "lstrip",
     "remove_prefix",
