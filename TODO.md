@@ -26,15 +26,8 @@
 
 ### Numerical
 
-- `@divisible_by(n)`
 - `@normalize(min, max)`
-- `@clamp(min, max)`
-- `@minimum(n)`
-- `@maximum(n)`
-- `@round(decimals)`
-- `@absolute()`
-- `@positive()`
-- `@negative()`
+- `@divisible_by(n)`
 - `@convert_time(from_unit, to_unit)`
 - `@convert_temperature(from_unit, to_unit)`
 - `@convert_weight(from_unit, to_unit)`

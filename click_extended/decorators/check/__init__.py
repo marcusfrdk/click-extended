@@ -12,7 +12,10 @@ from click_extended.decorators.check.is_ipv4 import is_ipv4
 from click_extended.decorators.check.is_ipv6 import is_ipv6
 from click_extended.decorators.check.is_json import is_json
 from click_extended.decorators.check.is_mac_address import is_mac_address
+from click_extended.decorators.check.is_negative import is_negative
+from click_extended.decorators.check.is_non_zero import is_non_zero
 from click_extended.decorators.check.is_port import is_port
+from click_extended.decorators.check.is_positive import is_positive
 from click_extended.decorators.check.is_url import is_url
 from click_extended.decorators.check.is_uuid import is_uuid
 from click_extended.decorators.check.length import length
@@ -35,7 +38,10 @@ __all__ = [
     "is_ipv6",
     "is_json",
     "is_mac_address",
+    "is_negative",
+    "is_non_zero",
     "is_port",
+    "is_positive",
     "regex",
     "is_url",
     "is_uuid",

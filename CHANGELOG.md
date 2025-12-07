@@ -19,6 +19,11 @@
 - **`@multiply`**: Child node to multiple numbers or strings.
 - **`@power`**: Child node to raise a number to some power.
 - **`@sqrt`**: Child node to calculate the square root, supports complex numbers.
+- **`@absolute`**: Child node to return the absolute value.
+- **`@round`**: Child node to round a number.
+- **`@clamp`**: Child node to clamp a value between a minimum and maximum.
+- **`@minimum`**: Child node to ensure a value is at least a minimum.
+- **`@maximum`**: Child node to ensure a value is at most a maximum.
 - **`@truthy`**: Child node to check if a value is truthy.
 - **`@falsy`**: Child node to check if a value is falsy.
 - **`@between`**: Child node to check if a value is within bounds.
@@ -89,6 +94,9 @@
 - **`@is_mac_address`**: Child node to check if a value is a valid MAC address.
 - **`@is_hostname`**: Child node to check if a value is a valid hostname.
 - **`@is_hex_color`**: Child node to check if a value is a valid hex color code.
+- **`@is_positive`**: Child node to check if a value is positive.
+- **`@is_negative`**: Child node to check if a value is negative.
+- **`@is_non_zero`**: Child node to check if a value is not zero.
 
 ### Updated
 
