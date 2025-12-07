@@ -13,4 +13,3 @@
 
 - `@basename()`
 - `@dirname()`
-- `@now(tz)` (Parent)
