@@ -20,7 +20,6 @@
 - `@to_percent()`
 - `@normalize(min, max)`
 - `@divisible_by(n)`
-- `@convert_pressure(from_unit, to_unit)`
 - `@convert_energy(from_unit, to_unit)`
 - `@convert_power(from_unit, to_unit)`
 - `@convert_angle(from_unit, to_unit)`
