@@ -57,6 +57,7 @@
 - **`@convert_area`**: Child decorator to convert between area units.
 - **`@convert_pressure`**: Child decorator to convert between pressure units.
 - **`@convert_energy`**: Child decorator to convert between energy units.
+- **`@convert_power`**: Child decorator to convert between power units.
 - **`@load_csv`**: Child decorator to load a CSV file from a `pathlib.Path` object.
 - **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.
