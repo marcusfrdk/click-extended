@@ -8,8 +8,8 @@ from typing import Any
 
 from click_extended.core.nodes.parent_node import ParentNode
 from click_extended.core.other.context import Context
-from click_extended.interactive.selection import selection as fn
 from click_extended.types import Decorator
+from click_extended.utils.selection import selection as fn
 
 
 class Selection(ParentNode):

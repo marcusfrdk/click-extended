@@ -23,7 +23,6 @@ Parameters of the `ArgumentNode` as set in the `as_decorator()` method where the
 | required   | bool                  | `True`                               | Whether the argument is required.                                                                            |
 | default    | str, int, float, bool |                                      | The default value to use, this sets `required=False` even if `required=True`.                                |
 | tags       | str, list[str]        |                                      | A string or list of strings of tags to tag the argument node with.                                           |
-| \*args     | Any                   |                                      | Optional positional arguments passed to the `load()` method.                                                 |
 | \*\*kwargs | Any                   |                                      | Optional keyword arguments passed to the `load()` method.                                                    |
 
 ### Container Tuples

@@ -7,7 +7,7 @@ import pytest
 
 from click_extended import selection
 from click_extended.core.decorators.selection import Selection
-from click_extended.interactive import selection as interactive_selection
+from click_extended.utils.selection import selection as interactive_selection
 
 
 class TestInteractiveFunctionNormalization:

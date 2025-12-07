@@ -21,7 +21,6 @@ Parameters of the `ParentNode` are set in the `as_decorator()` method as this is
 | required   | bool           | `True`                               | Whether the parent node is required, the returned value of the `load()` method cannot be `None`.           |
 | default    | Any            |                                      | The default value to use, this sets `required=False` even if `required=True`.                              |
 | tags       | str, list[str] |                                      | A string or list of strings of tags to tag the parent node with.                                           |
-| \*args     | Any            |                                      | Optional positional arguments passed to the `load()` method.                                               |
 | \*\*kwargs | Any            |                                      | Optional keyword arguments passed to the `load()` method.                                                  |
 
 ## Methods

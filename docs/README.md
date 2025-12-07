@@ -9,6 +9,9 @@
 - [Argument Node](./core/ARGUMENT_NODE.md): An extension of the parent node that injects a value from a positional argument in the command line.
 - [Option Node](./core/OPTION_NODE.md): An extension of the parent node that injects a value from a keyword argument in the command line.
 - [Child Node](./core/CHILD_NODE.md): A node that processes data through validation and transformation of the data from a data source.
+- [Child Validation Node](./core/CHILD_VALIDATION_NODE.md): A hybrid node that combines child node transformation with validation node capabilities.
+- [Validation Node](./core/VALIDATION_NODE.md): A node that performs validation on the tree structure or data.
+- [Tag Node](./core/TAG_NODE.md): A node used for grouping and organizing other nodes.
 - [Context](./core/CONTEXT.md): The context used across an application for data sharing, orchestration and synchronization of nodes.
 - [Tree](./core/TREE.md): The structure used for storing the nodes of the current context.
 

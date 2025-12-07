@@ -2,9 +2,4 @@
 
 # Todo
 
-## v1.0.0
-
-### Documentation
-
-- Add documentation for `@option` decorator (concatenated flags, new multiple flags, etc.)
-- Add documentation for `@argument` decorator.
+TBD

@@ -94,11 +94,11 @@ Here is a table of all supported handler methods that can be implemented:
 | ----------------- | ------------------- | ------------------------------------------------------------------------------ |
 | `handle_none`     | `None`              | Used for handling missing values.                                              |
 | `handle_all`      | `Any`               | Used for handling all values                                                   |
-| `handle_string`   | `str`               | Used for handling string values.                                               |
+| `handle_str`      | `str`               | Used for handling string values.                                               |
 | `handle_int`      | `int`               | Used for handling integer values.                                              |
 | `handle_float`    | `float`             | Used for handling float values.                                                |
 | `handle_bool`     | `bool`              | Used for handling boolean values.                                              |
-| `handle_number`   | `int \| float`      | Used for handling numeric values (int or float).                               |
+| `handle_numeric`  | `int \| float`      | Used for handling numeric values (int or float).                               |
 | `handle_tuple`    | `tuple`             | Used for handling non-container tuples (fallback for manually created tuples). |
 | `handle_list`     | `list[Any]`         | Used for handling lists.                                                       |
 | `handle_dict`     | `dict[Any, Any]`    | Used for handling dictionaries.                                                |

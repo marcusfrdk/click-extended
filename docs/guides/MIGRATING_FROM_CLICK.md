@@ -29,13 +29,13 @@ Types are used to determine what `click` converts the value to (for the `@argume
 | `click.INT`         | `int`                                                                     |
 | `click.FLOAT`       | `float`                                                                   |
 | `click.bool`        | `bool`                                                                    |
-| `click.UUID`        | Use the `@as_uuid` child decorator.                                       |
+| `click.UUID`        | Use the `@to_uuid` child decorator.                                       |
 | `click.UNPROCESSED` |                                                                           |
-| `click.File`        | Use the `@as_path` child decorator.                                       |
+| `click.File`        | Use the `@to_path` child decorator.                                       |
 | `click.Choice`      | Use the `@choice` child decorator.                                        |
-| `click.IntRange`    | Use the `@in_range` child decorator.                                      |
-| `click.FloatRange`  | Use the `@in_range` child decorator.                                      |
-| `click.DateTime`    | Use the `@as_datetime` child decorator.                                   |
+| `click.IntRange`    | Use the `@between` child decorator.                                       |
+| `click.FloatRange`  | Use the `@between` child decorator.                                       |
+| `click.DateTime`    | Use the `@to_datetime` child decorator.                                   |
 | `click.Tuple`       | Use the `nargs` parameter for `@argument` or `@option` parent decorators. |
 | `click.ParamType`   |                                                                           |
 

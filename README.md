@@ -54,14 +54,18 @@ def my_function(value: str, count: int):
 
 if __name__ == "__main__":
     my_function()
+```
 
-# $ python cli.py "Hello world"
-# Hello world
+```bash
+$ python cli.py "Hello world"
+Hello world
+```
 
-# $ python cli.py "Hello world" --count 3
-# Hello world
-# Hello world
-# Hello world
+```bash
+$ python cli.py "Hello world" --count 3
+Hello world
+Hello world
+Hello world
 ```
 
 ### Basic Command Line Interface
@@ -84,16 +88,20 @@ def my_function(value: str, count: int):
 
 if __name__ == "__main__":
     my_group()
+```
 
-# $ python cli.py my_function "Hello world"
-# Running initialization code...
-# Hello world
+```bash
+$ python cli.py my_function "Hello world"
+Running initialization code...
+Hello world
+```
 
-# $ python cli.py my_function "Hello world" --count 3
-# Running initialization code...
-# Hello world
-# Hello world
-# Hello world
+```bash
+$ python cli.py my_function "Hello world" --count 3
+Running initialization code...
+Hello world
+Hello world
+Hello world
 ```
 
 ### Using Environment Variables
@@ -119,18 +127,26 @@ def my_function_2(api_key: str):
 
 if __name__ == "__main__":
     my_group()
+```
 
-# $ python cli.py my_function_1
-# The API key is: None
+```bash
+$ python cli.py my_function_1
+The API key is: None
+```
 
-# $ API_KEY=api-key python cli.py my_function_1
-# The API key is: api-key
+```bash
+$ API_KEY=api-key python cli.py my_function_1
+The API key is: api-key
+```
 
-# $ python cli.py my_function_2
-# ProcessError (my_function_2): Required environment variable 'API_KEY' is not set.
+```bash
+$ python cli.py my_function_2
+ProcessError (my_function_2): Required environment variable 'API_KEY' is not set.
+```
 
-# $ API_KEY=api-key python cli.py my_function_2
-# The API key is: api-key
+```bash
+$ API_KEY=api-key python cli.py my_function_2
+The API key is: api-key
 ```
 
 ### Load CSV Data
@@ -142,7 +158,7 @@ from click_extended.decorators import to_path, load_csv
 
 @command()
 @argument("file", param="data")
-@to_path(extensions=["csv"])
+@to_path(extensions=["csv"], exists=True)
 @load_csv()
 def my_command(data: dict[str, Any], *args: Any, **kwargs: Any) -> None:
     df = pd.DataFrame(data)
@@ -151,7 +167,32 @@ def my_command(data: dict[str, Any], *args: Any, **kwargs: Any) -> None:
 
 _Note: `pandas` is not installed in this library and must be installed manually due to size._
 
-### Custom Children
+### Pre-Built Children
+
+This library includes a vast number of pre-built children, everything from checking values to transforming values.
+
+```python
+from click_extended import command, argument, option
+from click_extended.decorators import to_snake_case, strip, is_email, minimum, dependencies
+
+@command()
+@dependencies("username", "email", "password")
+@argument("username")
+@to_snake_case()
+@strip()
+@option("email")
+@is_email()
+@option("password")
+@minimum(8)
+def create_account(username: str, email: str, password: str) -> None:
+    print("Username:", username)
+    print("Email:", email)
+    print("Password:", password)
+```
+
+### Custom Nodes
+
+If the library does not include a decorator you need, you can easily create your own. Read more about creating your own [children](./docs/core/CHILD_NODE.md), [validators](./docs/core/VALIDATION_NODE.md), [child validators](./docs/core/CHILD_VALIDATION_NODE.md) or [parents](./docs/core/PARENT_NODE.md).
 
 ```python
 from typing import Any
@@ -192,12 +233,16 @@ def my_function(value: str):
 
 if __name__ == "__main__":
     my_group()
+```
 
-# $ python cli.py my_function valid
-# The value 'VALID' should be uppercase.
+```bash
+$ python cli.py my_function valid
+The value 'VALID' should be uppercase.
+```
 
-# $ python cli.py my_function invalid
-# ValueError (my_function): "The value 'invalid' is not valid"
+```bash
+$ python cli.py my_function invalid
+ValueError (my_function): "The value 'invalid' is not valid"
 ```
 
 ## Documentation

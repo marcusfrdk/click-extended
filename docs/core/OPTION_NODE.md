@@ -16,9 +16,8 @@ Parameters of the `OptionNode` as set in the `as_decorator()` method where the c
 | Name       | Type                  | Default                              | Description                                                                                                |
 | ---------- | --------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
 | name       | str                   |                                      | The name of the option node, used as the parameter name unless `param` is set (converted to `snake_case`). |
+| \*flags    | str                   |                                      | Optional flags for the option (e.g., `-p`, `--port`).                                                      |
 | param      | str                   | The `name` parameter in `snake_case` | The parameter name to inject the value as in the function.                                                 |
-| short      | str                   |                                      | Short option name (e.g., `-p`).                                                                            |
-| long       | str                   | The `name` parameter in `kebab-case` | Long option name (e.g., `--port`).                                                                         |
 | is_flag    | bool                  | `False`                              | Whether this option is a boolean flag.                                                                     |
 | type       | str, int, float, bool | `str`                                | The type of the option value.                                                                              |
 | nargs      | int                   | `1`                                  | The number of values to accept. When `nargs > 1`, creates a container tuple.                               |
@@ -27,7 +26,6 @@ Parameters of the `OptionNode` as set in the `as_decorator()` method where the c
 | required   | bool                  | `False`                              | Whether the option is required.                                                                            |
 | default    | str, int, float, bool |                                      | The default value to use.                                                                                  |
 | tags       | str, list[str]        |                                      | A string or list of strings of tags to tag the option node with.                                           |
-| \*args     | Any                   |                                      | Optional positional arguments passed to the `load()` method.                                               |
 | \*\*kwargs | Any                   |                                      | Optional keyword arguments passed to the `load()` method.                                                  |
 
 ### Container Tuples
