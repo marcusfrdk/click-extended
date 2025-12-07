@@ -17,9 +17,9 @@
 
 ### Numerical
 
+- `@to_percent()`
 - `@normalize(min, max)`
 - `@divisible_by(n)`
-- `@convert_time(from_unit, to_unit)`
 - `@convert_temperature(from_unit, to_unit)`
 - `@convert_weight(from_unit, to_unit)`
 - `@convert_bytes(from_unit, to_unit)`
