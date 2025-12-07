@@ -1,5 +1,6 @@
 """Initialization file for the `click_extended.decorators.convert` module."""
 
+from click_extended.decorators.convert.convert_angle import convert_angle
 from click_extended.decorators.convert.convert_area import convert_area
 from click_extended.decorators.convert.convert_bits import convert_bits
 from click_extended.decorators.convert.convert_distance import convert_distance
@@ -15,6 +16,7 @@ from click_extended.decorators.convert.convert_volume import convert_volume
 from click_extended.decorators.convert.convert_weight import convert_weight
 
 __all__ = [
+    "convert_angle",
     "convert_area",
     "convert_bits",
     "convert_distance",

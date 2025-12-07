@@ -20,4 +20,3 @@
 - `@to_percent()`
 - `@normalize(min, max)`
 - `@divisible_by(n)`
-- `@convert_angle(from_unit, to_unit)`
