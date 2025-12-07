@@ -48,6 +48,7 @@
 - **`@to_time`**: Child decorator to convert a string from various formats to a `time` object.
 - **`@to_datetime`**: Child decorator to convert a string from various formats to a `datetime` object.
 - **`@convert_time`**: Child decorator to convert between time units.
+- **`@convert_temperature`**: Child decorator to convert between temperature units.
 - **`@load_csv`**: Child decorator to load a CSV file from a `pathlib.Path` object.
 - **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.

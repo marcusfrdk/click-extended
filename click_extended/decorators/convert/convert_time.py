@@ -1,23 +1,27 @@
 """Convert between time units."""
 
 import re
+from decimal import Decimal, getcontext
 from typing import Any, Literal
 
 from click_extended.core.nodes.child_node import ChildNode
 from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 
+# Set precision high enough for time conversions
+getcontext().prec = 28
+
 UNITS = {
-    "ns": 1e-9,
-    "us": 1e-6,
-    "ms": 1e-3,
-    "s": 1,
-    "m": 60,
-    "h": 3600,
-    "d": 86400,
-    "w": 604800,
-    "M": 2592000,
-    "y": 31536000,
+    "ns": Decimal("1e-9"),
+    "us": Decimal("1e-6"),
+    "ms": Decimal("1e-3"),
+    "s": Decimal("1"),
+    "m": Decimal("60"),
+    "h": Decimal("3600"),
+    "d": Decimal("86400"),
+    "w": Decimal("604800"),
+    "M": Decimal("2592000"),
+    "y": Decimal("31536000"),
 }
 
 
@@ -30,8 +34,10 @@ class ConvertTime(ChildNode):
         if to_unit not in UNITS:
             raise ValueError(f"Unknown unit '{to_unit}'")
 
-        seconds = value * UNITS[from_unit]
-        return seconds / UNITS[to_unit]
+        val = Decimal(str(value))
+        seconds = val * UNITS[from_unit]
+        result = seconds / UNITS[to_unit]
+        return float(result)
 
     def handle_str(
         self, value: str, context: Context, *args: Any, **kwargs: Any
@@ -49,13 +55,14 @@ class ConvertTime(ChildNode):
                     f"Could not parse time string '{value}'."
                 ) from e
 
-        total_seconds = 0.0
+        total_seconds = Decimal("0.0")
         for val_str, unit in parts:
             if unit not in UNITS:
                 raise ValueError(f"Unknown unit '{unit}' in string.")
-            total_seconds += float(val_str) * UNITS[unit]
+            total_seconds += Decimal(val_str) * UNITS[unit]
 
-        return total_seconds / UNITS[to_unit]
+        result = total_seconds / UNITS[to_unit]
+        return float(result)
 
     def handle_numeric(
         self, value: int | float, context: Context, *args: Any, **kwargs: Any
@@ -71,6 +78,18 @@ def convert_time(
 ) -> Decorator:
     """
     Convert between time units.
+
+    Units:
+        - **ns**: Nanoseconds
+        - **us**: Microseconds
+        - **ms**: Milliseconds
+        - **s**: Seconds
+        - **m**: Minutes
+        - **h**: Hours
+        - **d**: Days
+        - **w**: Weeks
+        - **M**: Months
+        - **y**: Years
 
     Type: `ChildNode`
 
