@@ -79,6 +79,10 @@ def convert_time(
     """
     Convert between time units.
 
+    Type: `ChildNode`
+
+    Supports: `str`, `int`, `float`
+
     Units:
         - **ns**: Nanoseconds
         - **us**: Microseconds
@@ -90,10 +94,6 @@ def convert_time(
         - **w**: Weeks
         - **M**: Months
         - **y**: Years
-
-    Type: `ChildNode`
-
-    Supports: `str`, `int`, `float`
 
     Args:
         from_unit (str):

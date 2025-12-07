@@ -64,6 +64,10 @@ def convert_temperature(
     """
     Convert between temperature units.
 
+    Type: `ChildNode`
+
+    Supports: `int`, `float`
+
     Units:
         - **C**: Celcius
         - **F**: Fahrenheit
@@ -71,10 +75,6 @@ def convert_temperature(
         - **R**: Rankine
         - **Re**: Reaumur
         - **De**: Delisle
-
-    Type: `ChildNode`
-
-    Supports: `int`, `float`
 
     Args:
         from_unit (str):

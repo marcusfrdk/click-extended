@@ -50,6 +50,7 @@
 - **`@convert_time`**: Child decorator to convert between time units.
 - **`@convert_temperature`**: Child decorator to convert between temperature units.
 - **`@convert_weight`**: Child decorator to convert between weight units.
+- **`@convert_byte_size`**: Child decorator to convert between byte units.
 - **`@load_csv`**: Child decorator to load a CSV file from a `pathlib.Path` object.
 - **`@load_toml`**: Child decorator to load a TOML file from a `pathlib.Path` object.
 - **`@load_yaml`**: Child decorator to load a YAML file from a `pathlib.Path` object.
