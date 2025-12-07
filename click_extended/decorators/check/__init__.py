@@ -3,6 +3,7 @@
 from click_extended.decorators.check.conflicts import conflicts
 from click_extended.decorators.check.contains import contains
 from click_extended.decorators.check.dependencies import dependencies
+from click_extended.decorators.check.divisible_by import divisible_by
 from click_extended.decorators.check.ends_with import ends_with
 from click_extended.decorators.check.exclusive import exclusive
 from click_extended.decorators.check.falsy import falsy
@@ -30,6 +31,7 @@ __all__ = [
     "conflicts",
     "contains",
     "dependencies",
+    "divisible_by",
     "ends_with",
     "exclusive",
     "falsy",

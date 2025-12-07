@@ -10,10 +10,12 @@ from click_extended.decorators.math.maximum import maximum
 from click_extended.decorators.math.minimum import minimum
 from click_extended.decorators.math.modulo import modulo
 from click_extended.decorators.math.multiply import multiply
+from click_extended.decorators.math.normalize import normalize
 from click_extended.decorators.math.power import power
 from click_extended.decorators.math.rounded import rounded
 from click_extended.decorators.math.sqrt import sqrt
 from click_extended.decorators.math.subtract import subtract
+from click_extended.decorators.math.to_percent import to_percent
 
 __all__ = [
     "absolute",
@@ -26,8 +28,10 @@ __all__ = [
     "minimum",
     "modulo",
     "multiply",
+    "normalize",
     "power",
     "rounded",
     "sqrt",
     "subtract",
+    "to_percent",
 ]

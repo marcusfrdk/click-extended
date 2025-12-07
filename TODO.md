@@ -14,9 +14,3 @@
 - `@basename()`
 - `@dirname()`
 - `@now(tz)` (Parent)
-
-### Numerical
-
-- `@to_percent()`
-- `@normalize(min, max)`
-- `@divisible_by(n)`
