@@ -9,15 +9,6 @@
 - Add documentation for `@option` decorator (concatenated flags, new multiple flags, etc.)
 - Add documentation for `@argument` decorator.
 
-### String
-
-- `@expand_vars()`
-- `@contains(*text)`
-- `@truncate()`
-- `@split(sep, maxsplit)`
-- `@replace(old, new, count=-1)`
-- `@slugify()`
-
 ### Path
 
 - `@basename()`

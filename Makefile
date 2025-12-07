@@ -27,6 +27,7 @@ help:
 	@echo "    make reset               Reset the project to the original state"
 	@echo "    make clean               Clean the project and remove caches and other artifacts"
 	@echo "    make install             Install the package dependencies"
+	@echo "    make install-all         Install the package dependencies for all versions"
 	@echo ""
 	@echo "  Testing:"
 	@echo "    make test                Run tests with verbose output (active venv)"
@@ -88,6 +89,11 @@ install:
 	else \
 		$(PIP) install -e ".[dev,build]"; \
 	fi
+
+install-all:
+	for version in $(PYTHON_VERSIONS); do \
+		"$(VENV_BASE).$$version/bin/pip" install -e ".[dev,build]"; \
+	done
 
 # Testing
 test:

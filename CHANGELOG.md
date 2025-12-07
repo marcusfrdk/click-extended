@@ -97,6 +97,12 @@
 - **`@is_positive`**: Child node to check if a value is positive.
 - **`@is_negative`**: Child node to check if a value is negative.
 - **`@is_non_zero`**: Child node to check if a value is not zero.
+- **`@expand_vars`**: Child decorator to expand environment variables in a string.
+- **`@contains`**: Child decorator to check if a string contains specific substrings.
+- **`@truncate`**: Child decorator to truncate a string to a specific length.
+- **`@split`**: Child decorator to split a string by a separator.
+- **`@replace`**: Child decorator to replace occurrences of a substring.
+- **`@slugify`**: Child decorator to slugify a string.
 
 ### Updated
 
@@ -112,6 +118,7 @@
 - **Error output**: Improved user-friendliness of exceptions raised outside context
 - **Child Processing Phase**: Children are now collected at first and processed later to allow children to access the full context.
 - **Argument order**: Fixed the order arguments are applied.
+- **`ChildNode` Initialization**: Fixed `__init__` usage in `Maximum`, `Minimum`, and `Clamp` decorators to correctly use `kwargs`.
 - **multiple=True**: Fixed bug when multiple=True and the type would not be set correctly.
 
 ## v0.4.0
