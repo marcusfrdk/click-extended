@@ -7,6 +7,7 @@ from click_extended.decorators.convert.convert_temperature import (
     convert_temperature,
 )
 from click_extended.decorators.convert.convert_time import convert_time
+from click_extended.decorators.convert.convert_volume import convert_volume
 from click_extended.decorators.convert.convert_weight import convert_weight
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "convert_time",
     "convert_speed",
     "convert_temperature",
+    "convert_volume",
     "convert_weight",
 ]
