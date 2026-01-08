@@ -4,7 +4,7 @@
 
 # Variables
 PYTHON := python3
-PYTHON_VERSIONS := 310 311 312 313
+PYTHON_VERSIONS := 310 311 312 313 314
 VENV_DIR := $(shell if [ -n "$$VIRTUAL_ENV" ]; then echo "$$VIRTUAL_ENV"; else echo ".venv"; fi)
 VENV_BASE := $(basename $(VENV_DIR))
 SRC_DIR := click_extended

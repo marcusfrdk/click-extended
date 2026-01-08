@@ -1,6 +1,6 @@
 [project]
 name = "click_extended"
-version = "1.0.0"
+version = "1.0.1"
 description = "An extension to Click with additional features like automatic async support, aliasing and a modular decorator system."
 authors = [
     { name = "Marcus Fredriksson", email = "marcus@marcusfredriksson.com" },
@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Shells",
     "Topic :: Utilities",
@@ -62,8 +63,9 @@ dev = [
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["click_extended"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["click_extended*"]
 
 [tool.pyright]
 reportUnnecessaryIsInstance = "none"
