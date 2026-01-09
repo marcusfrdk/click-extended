@@ -2,6 +2,16 @@
 
 # Changelog
 
+## v1.0.1
+
+### Added
+
+- **Python 3.14**: Added official support for python 3.14, including tests and documentation
+
+### Fixed
+
+- **Build issue**: Fixed build issue where packages would not be included in the bundle.
+
 ## v1.0.0
 
 ### Added
