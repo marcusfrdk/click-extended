@@ -2,6 +2,7 @@
 
 from click_extended.core.decorators.argument import argument
 from click_extended.core.decorators.command import command
+from click_extended.core.decorators.context import context
 from click_extended.core.decorators.env import env
 from click_extended.core.decorators.group import group
 from click_extended.core.decorators.option import option
@@ -12,6 +13,7 @@ from click_extended.core.decorators.tag import tag
 __all__ = [
     "argument",
     "command",
+    "context",
     "env",
     "group",
     "option",

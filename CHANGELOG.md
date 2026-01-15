@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.0.2
+
+### Added
+
+- **Context parent node**: A parent node to inject the context into the function.
+
 ## v1.0.1
 
 ### Added
