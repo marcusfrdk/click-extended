@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.0.3
+
+### Fixed
+
+- **Tree**: Fixed issue where context was not shared between commands and groups.
+
 ## v1.0.2
 
 ### Added

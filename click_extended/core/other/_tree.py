@@ -220,6 +220,15 @@ class Tree:
             "yes",
         )
 
+        parent_data: dict[str, Any] | None = None
+        if context.parent is not None:
+            parent_meta = context.parent.meta.get("click_extended", {})
+            parent_data = parent_meta.get("data")
+
+        data: dict[str, Any] = (
+            parent_data if isinstance(parent_data, dict) else {}
+        )
+
         context.meta["click_extended"] = {
             "current_scope": "root",
             "root_node": root_node,
@@ -228,7 +237,7 @@ class Tree:
             "parents": parents_dict,
             "tags": root_node.tree.tags,
             "children": children_dict,
-            "data": {},
+            "data": data,
             "debug": debug,
         }
 
