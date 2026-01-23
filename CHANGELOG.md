@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.0.5
+
+### Fixed
+
+- **Type check issue**: Fixed type check issue in the `get_context` function.
+
 ## v1.0.4
 
 ### Added

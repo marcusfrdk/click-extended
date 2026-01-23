@@ -92,14 +92,14 @@ def get_context() -> Context:
         parent = parent_node
 
     return Context(
-        root=cast(RootNode, root_node),
-        current=cast(Node | None, current),
-        parent=cast(ParentNode | Tag | None, parent),
+        root=cast("RootNode", root_node),
+        current=cast("Node | None", current),
+        parent=cast("ParentNode | Tag | None", parent),
         click_context=click_context,
-        nodes=cast(dict[str, Node], all_nodes),
-        parents=cast(dict[str, ParentNode], parents),
-        tags=cast(dict[str, Tag], tags),
-        children=cast(dict[str, ChildNode], children),
+        nodes=cast("dict[str, Node]", all_nodes),
+        parents=cast("dict[str, ParentNode]", parents),
+        tags=cast("dict[str, Tag]", tags),
+        children=cast("dict[str, ChildNode]", children),
         data=meta.get("data", {}),
         debug=bool(meta.get("debug", False)),
     )
