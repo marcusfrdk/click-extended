@@ -9,12 +9,14 @@ from click_extended.core.decorators.option import option
 from click_extended.core.decorators.prompt import prompt
 from click_extended.core.decorators.selection import selection
 from click_extended.core.decorators.tag import tag
+from click_extended.core.other.get_context import get_context
 
 __all__ = [
     "argument",
     "command",
     "context",
     "env",
+    "get_context",
     "group",
     "option",
     "prompt",

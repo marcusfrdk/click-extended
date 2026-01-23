@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.0.4
+
+### Added
+
+- **get_context**: Function to get the active context.
+
 ## v1.0.3
 
 ### Fixed
