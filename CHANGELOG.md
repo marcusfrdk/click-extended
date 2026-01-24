@@ -2,6 +2,17 @@
 
 # Changelog
 
+## v1.0.6
+
+### Fixed
+
+- **Child validation node**: Fixed asynchronous execution issue.
+- **Validation node**: Fixed asynchronous execution issue.
+
+### Added
+
+- **Tests**: Added tests for validation node
+
 ## v1.0.5
 
 ### Fixed

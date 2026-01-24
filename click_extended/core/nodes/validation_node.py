@@ -1,5 +1,6 @@
 """ValidationNode class for global validation logic."""
 
+import asyncio
 from abc import ABC
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
@@ -110,6 +111,18 @@ class ValidationNode(Node, ABC):
             name = Casing.to_snake_case(cls.__name__)
             instance = cls(name=name, process_args=args, process_kwargs=kwargs)
             Tree.queue_validation(instance)
+
+            if asyncio.iscoroutinefunction(func):
+
+                @wraps(func)
+                async def async_wrapper(
+                    *call_args: P.args,
+                    **call_kwargs: P.kwargs,
+                ) -> T:
+                    """Async wrapper that preserves the original function."""
+                    return await func(*call_args, **call_kwargs)  # type: ignore
+
+                return async_wrapper  # type: ignore
 
             @wraps(func)
             def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:

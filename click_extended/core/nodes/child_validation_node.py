@@ -3,6 +3,7 @@ Child validation node module for nodes that can
 act as both child and validation nodes.
 """
 
+import asyncio
 from abc import ABC
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
@@ -88,8 +89,20 @@ class ChildValidationNode(ChildNode, ValidationNode, ABC):
             instance = cls(name=name, process_args=args, process_kwargs=kwargs)
             Tree.queue_child_validation(instance)
 
+            if asyncio.iscoroutinefunction(func):
+
+                @wraps(func)
+                async def async_wrapper(
+                    *call_args: P.args, **call_kwargs: P.kwargs
+                ) -> T:
+                    """Async wrapper that preserves the original function."""
+                    return await func(*call_args, **call_kwargs)  # type: ignore
+
+                return async_wrapper  # type: ignore
+
             @wraps(func)
             def wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
+                """Wrapper that preserves the original function."""
                 return func(*call_args, **call_kwargs)
 
             return wrapper
