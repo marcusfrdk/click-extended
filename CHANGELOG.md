@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.0.7
+
+## Added
+
+- **Regex**: Added support for proper regex patterns and flags for `regex` decorator.
+
 ## v1.0.6
 
 ### Fixed
