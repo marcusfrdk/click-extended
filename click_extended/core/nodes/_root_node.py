@@ -664,7 +664,33 @@ class RootNode(Node):
                                     context,
                                 )
 
-                    for validation_node in root.tree.validations:
+                    catch_nodes = [
+                        v
+                        for v in root.tree.validations
+                        if v.__class__.__name__ == "Catch"
+                    ]
+                    other_nodes = [
+                        v
+                        for v in root.tree.validations
+                        if v.__class__.__name__ != "Catch"
+                    ]
+                    root.tree.validations = catch_nodes + other_nodes
+
+                    for i, validation_node in enumerate(root.tree.validations):
+                        if validation_node.__class__.__name__ == "Catch":
+                            if hasattr(
+                                validation_node, "remaining_validations"
+                            ):
+                                validation_node.remaining_validations = (
+                                    root.tree.validations[i + 1 :]
+                                )
+                            validation_node.on_finalize(
+                                custom_context,
+                                *validation_node.process_args,
+                                **validation_node.process_kwargs,
+                            )
+                            break
+
                         validation_node.on_finalize(
                             custom_context,
                             *validation_node.process_args,

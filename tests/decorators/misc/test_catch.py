@@ -337,3 +337,29 @@ class TestCatchPracticalExamples:
         assert result.exit_code == 0
         assert "Cleanup performed" in result.output
         assert len(cleanup_performed) == 1
+
+
+class TestCatchValidationErrors:
+    """Tests for catching exceptions from validation decorators."""
+
+    def test_catch_exclusive_validator_error(
+        self, cli_runner: CliRunner
+    ) -> None:
+        """Test that @catch can catch exceptions from @exclusive validator."""
+        from click_extended.decorators import exclusive
+
+        caught_errors: list[str] = []
+
+        @command()
+        @argument("query", required=False)
+        @option("--stock")
+        @exclusive("query", "stock")
+        @catch(ValueError, handler=lambda e: caught_errors.append(str(e)))
+        def search(query: str | None, stock: str | None) -> None:
+            click.echo(f"query={query}, stock={stock}")
+
+        # Test that mutually exclusive options trigger the catch
+        result = cli_runner.invoke(search, ["test_query", "--stock", "AAPL"])
+        assert result.exit_code == 0
+        assert len(caught_errors) == 1
+        assert "mutually exclusive" in caught_errors[0].lower()

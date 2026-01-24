@@ -2,6 +2,10 @@
 Validation node to catch and handle exceptions from command/group functions.
 """
 
+# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-order
+# pylint: disable=ungrouped-imports
+
 import asyncio
 import inspect
 from functools import wraps
@@ -23,11 +27,16 @@ _catch_handlers: WeakKeyDictionary[
 
 class Catch(ValidationNode):
     """
-    Catch and handle exceptions from command/group functions.
+    Catch and handle exceptions from command/group functions and
+    validators.
 
-    Wraps the decorated function in a try-except block. When an exception
-    is caught, an optional handler is invoked. Without a handler, exceptions
-    are silently suppressed.
+    Wraps both the validation phase and function execution in a
+    try-except block. When an exception is caught, an optional handler
+    is invoked. Without a handler, exceptions are silently suppressed.
+
+    Catches exceptions from:
+    - Validation decorators (e.g., @exclusive, @requires)
+    - The command/group function itself
 
     Handler signatures supported:
     - `handler()` - No arguments, just execute code
@@ -36,15 +45,16 @@ class Catch(ValidationNode):
 
     Examples:
         ```py
-        # Simple error logging
+        # Catch validation errors from @exclusive
         @command()
-        @catch(ValueError, handler=lambda: print("Invalid value!"))
-        def cmd():
-            raise ValueError("Bad input")
+        @exclusive("--stock", "--query")
+        @catch(ValueError, handler=lambda e: print(f"Error: {e}"))
+        def search(stock, query):
+            pass
         ```
 
         ```py
-        # Handle exception with details
+        # Catch errors from command function
         @command()
         @catch(ValueError, handler=lambda e: print(f"Error: {e}"))
         def cmd():
@@ -73,19 +83,52 @@ class Catch(ValidationNode):
         """Initialize Catch validation node with function to wrap."""
         super().__init__(name, process_args, process_kwargs, **kwargs)
         self.wrapped_func: Callable[..., Any] | None = None
+        self.remaining_validations: list[ValidationNode] = []
 
     def on_finalize(self, context: Context, *args: Any, **kwargs: Any) -> None:
         """
-        Store exception handler configuration for later use.
+        Execute remaining validations wrapped in exception handling.
 
-        The actual exception catching happens when the function is invoked,
-        which is done by wrapping the function in the decorator.
+        This catches exceptions from all validators that run after @catch,
+        allowing it to catch validation errors like those from @exclusive.
 
         Args:
             context: The execution context
             *args: Contains exception types tuple at index 0
             **kwargs: Contains handler, reraise parameters
         """
+        exception_types: tuple[type[BaseException], ...] = args[0]
+        handler: Callable[..., Any] | None = kwargs.get("handler")
+        reraise: bool = kwargs.get("reraise", False)
+
+        for validation_node in self.remaining_validations:
+            try:
+                if asyncio.iscoroutinefunction(validation_node.on_finalize):
+                    asyncio.run(
+                        validation_node.on_finalize(
+                            context,
+                            *validation_node.process_args,
+                            **validation_node.process_kwargs,
+                        )
+                    )
+                else:
+                    validation_node.on_finalize(
+                        context,
+                        *validation_node.process_args,
+                        **validation_node.process_kwargs,
+                    )
+            except BaseException as exc:
+                if isinstance(exc, exception_types):
+                    if handler is not None:
+                        if asyncio.iscoroutinefunction(handler):
+                            asyncio.run(_call_handler_async(handler, exc))
+                        else:
+                            _call_handler_sync(handler, exc)
+
+                    if not reraise:
+                        return
+
+                raise
 
 
 def catch(

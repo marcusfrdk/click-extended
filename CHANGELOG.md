@@ -2,11 +2,17 @@
 
 # Changelog
 
+## v1.0.9
+
+### Fixed
+
+- **`@catch`**: The catch decorator catches all exceptions inside the `click_extended` context.
+
 ## v1.0.8
 
 ### Added
 
-- **`@catch`**: Validation decorator to catch and handle exceptions from command/group functions with optional handler functions and reraise support.
+- **`@catch`**: Validation decorator to catch and handle exceptions from both validation decorators (e.g., `@exclusive`) and command/group functions. Supports optional handler functions with 0, 1, or 2 parameters, async handlers, and reraise support. Handlers execute in top-down order for intuitive stacking.
 
 ## v1.0.7
 
