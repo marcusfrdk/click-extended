@@ -1,6 +1,6 @@
 [project]
 name = "click_extended"
-version = "1.0.7"
+version = "1.0.8"
 description = "An extension to Click with additional features like automatic async support, aliasing and a modular decorator system."
 authors = [
     { name = "Marcus Fredriksson", email = "marcus@marcusfredriksson.com" },
@@ -85,7 +85,13 @@ ignore = [
     ".mypy_cache",
     "*.egg-info",
 ]
-ignore-paths = ["^tests/.*$", "^docs/.*$", "^\\..*$"]
+ignore-paths = [
+    "^tests/.*$",
+    "^docs/.*$",
+    "^\\..*$",
+    "^click_extended/core/nodes/_root_node\\.py$",
+    "^click_extended/utils/dispatch\\.py$",
+]
 persistent = true
 
 [tool.pylint.messages_control]

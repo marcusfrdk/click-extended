@@ -2,11 +2,17 @@
 
 # Changelog
 
+## v1.0.8
+
+### Added
+
+- **`@catch`**: Validation decorator to catch and handle exceptions from command/group functions with optional handler functions and reraise support.
+
 ## v1.0.7
 
 ## Added
 
-- **Regex**: Added support for proper regex patterns and flags for `regex` decorator.
+- **`@regex`**: Added support for proper regex patterns and flags for `regex` decorator.
 
 ## v1.0.6
 
