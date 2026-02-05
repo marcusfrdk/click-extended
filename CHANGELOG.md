@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.0.10
+
+### Added
+
+- **`@option`**: Long flag can now be used as name for option decorator.
+
 ## v1.0.9
 
 ### Fixed

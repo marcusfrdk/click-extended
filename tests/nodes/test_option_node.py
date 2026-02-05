@@ -327,6 +327,15 @@ class TestOptionNaming:
         assert opt.param == "verbose"
         assert opt.long_flags == ["--verbose"]
 
+    def test_short_flag_as_name_with_long_flag(self) -> None:
+        """Test providing short flag as name with long flag."""
+
+        opt = Option("-v", "--version")
+
+        assert opt.param == "version"
+        assert opt.short_flags == ["-v"]
+        assert opt.long_flags == ["--version"]
+
     def test_long_flag_override(self) -> None:
         """Test explicit long flag override."""
 

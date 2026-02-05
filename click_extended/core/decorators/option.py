@@ -4,6 +4,7 @@
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 # pylint: disable=redefined-builtin
 
 import asyncio
@@ -82,6 +83,21 @@ class Option(OptionNode):
             **kwargs (Any):
                 Additional Click option parameters.
         """
+        if is_short_flag(name):
+            long_flag = next(
+                (flag for flag in flags if is_long_flag(flag)), None
+            )
+            if long_flag is None:
+                raise ValueError(
+                    f"Short flag '{name}' provided without a long flag. "
+                    "Provide a long flag to derive the option name, e.g. "
+                    f"@option('{name}', '--flag'), or pass an explicit "
+                    f"snake_case name like @option('flag', '{name}')."
+                )
+            if name not in flags:
+                flags = (name,) + flags
+            name = long_flag
+
         if name.startswith("--"):
             if is_long_flag(name):
                 derived_name = name[2:]
