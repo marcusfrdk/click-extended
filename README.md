@@ -27,6 +27,7 @@ An extension of the [Click](https://github.com/pallets/click) library with addit
 - **Improved Errors**: Improved error output like tips, debugging, and more.
 - **Short Flag Concatenation**: Automatically support concatenating short hand flags where `-r -f` is the same as `-rf`.
 - **Global state**: Access global state through the context's `data` property.
+- **Hook API**: Hook into various points and run custom functions in the lifecycle.
 
 ## Installation
 
