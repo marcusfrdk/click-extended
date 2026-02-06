@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.5
+
+### Added
+
+- **`@observe`**: Decorator to observe the value and context from a chain of children.
+
 ## v1.1.4
 
 ### Fixed

@@ -9,6 +9,7 @@ from click_extended.decorators.misc.default import default
 from click_extended.decorators.misc.deprecated import deprecated
 from click_extended.decorators.misc.experimental import experimental
 from click_extended.decorators.misc.now import now
+from click_extended.decorators.misc.observe import observe
 
 __all__ = [
     "catch",
@@ -16,6 +17,7 @@ __all__ = [
     "confirm_if",
     "default",
     "deprecated",
+    "observe",
     "experimental",
     "now",
 ]
