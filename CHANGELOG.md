@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.1
+
+### Added
+
+- **py.typed**: Added `py.typed` file.
+
 ## v1.1.0
 
 ### Added
