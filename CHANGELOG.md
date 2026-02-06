@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.3
+
+### Fixed
+
+- **Async hooks**: A single async loop is reused instead of constantly opened and closed for hooks.
+
 ## v1.1.2
 
 ### Fixed

@@ -27,6 +27,7 @@ class HookRegistry:
     def __init__(self) -> None:
         """Initialize a new hook registry."""
         self._hooks: list[HookNode] = []
+        self._async_loop: asyncio.AbstractEventLoop | None = None
 
     def register(
         self,
@@ -133,6 +134,9 @@ class HookRegistry:
 
             self._invoke_handler(hook.handler, event, phase)
 
+        if phase == HookPhase.EXIT:
+            self._close_async_loop()
+
     @staticmethod
     def _matches_exception(exception: BaseException, hook: "HookNode") -> bool:
         include = hook.include
@@ -149,13 +153,13 @@ class HookRegistry:
 
         return True
 
-    @staticmethod
     def _invoke_handler(
-        handler: "HookHandler", event: "HookEvent", phase: "HookPhase"
+        self, handler: "HookHandler", event: "HookEvent", phase: "HookPhase"
     ) -> None:
         try:
             if asyncio.iscoroutinefunction(handler):
-                asyncio.run(handler(event))
+                loop = self._get_async_loop()
+                loop.run_until_complete(handler(event))
             else:
                 handler(event)
         except RuntimeError as exc:
@@ -180,6 +184,38 @@ class HookRegistry:
                 )
             else:
                 raise
+
+    def _get_async_loop(self) -> asyncio.AbstractEventLoop:
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
+
+        if running_loop is not None:
+            from click_extended.errors import ProcessError
+
+            raise ProcessError(
+                "Cannot use async hook handlers in an existing event loop.",
+                tip=(
+                    "Use synchronous hooks or run the CLI outside async "
+                    "contexts."
+                ),
+            )
+
+        if self._async_loop is None or self._async_loop.is_closed():
+            self._async_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._async_loop)
+
+        return self._async_loop
+
+    def _close_async_loop(self) -> None:
+        if self._async_loop is None:
+            return
+
+        if not self._async_loop.is_closed():
+            self._async_loop.close()
+
+        self._async_loop = None
 
 
 _REGISTRY = HookRegistry()
