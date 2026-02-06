@@ -257,7 +257,11 @@ class RootNode(Node):
                 @wraps(func)
                 def sync_func(*sync_args: Any, **sync_kwargs: Any) -> Any:
                     """Synchronous wrapper for async function."""
-                    return asyncio.run(original_func(*sync_args, **sync_kwargs))
+                    from click_extended.hooks.hook_registry import get_registry
+
+                    return get_registry().run_coroutine(
+                        original_func(*sync_args, **sync_kwargs)
+                    )
 
                 func = sync_func
 

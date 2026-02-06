@@ -6,7 +6,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
+from collections.abc import Coroutine
+from typing import TYPE_CHECKING, Any
 
 import click
 
@@ -158,8 +159,7 @@ class HookRegistry:
     ) -> None:
         try:
             if asyncio.iscoroutinefunction(handler):
-                loop = self._get_async_loop()
-                loop.run_until_complete(handler(event))
+                self.run_coroutine(handler(event))
             else:
                 handler(event)
         except RuntimeError as exc:
@@ -184,6 +184,16 @@ class HookRegistry:
                 )
             else:
                 raise
+
+    def run_coroutine(self, coro: Coroutine[Any, Any, Any]) -> Any:
+        """
+        Run a coroutine on the shared hook event loop.
+
+        :param coro: Coroutine to execute on the shared loop.
+        :returns Any: The coroutine result.
+        """
+        loop = self._get_async_loop()
+        return loop.run_until_complete(coro)
 
     def _get_async_loop(self) -> asyncio.AbstractEventLoop:
         try:

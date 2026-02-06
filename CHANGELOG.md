@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.4
+
+### Fixed
+
+- **Async lifecycle**: Async commands now run on the same loop as async hooks, preventing loop-closed errors during `on_exit` cleanup.
+
 ## v1.1.3
 
 ### Fixed
