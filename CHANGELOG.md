@@ -2,6 +2,13 @@
 
 # Changelog
 
+## v1.1.0
+
+### Added
+
+- **Hook decorators**: Added `@on_boot`, `@on_init`, `@on_error`, and `@on_exit` locally scoped hooks.
+- **Hook functions**: Added `on_boot`, `on_init`, `on_error`, and `on_exit` globally scoped hooks.
+
 ## v1.0.10
 
 ### Added

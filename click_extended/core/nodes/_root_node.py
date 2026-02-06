@@ -244,11 +244,13 @@ class RootNode(Node):
             """The actual decorator that wraps the function."""
 
             from click_extended.core.nodes.validation_node import ValidationNode
+            from click_extended.hooks import bind_scoped_hooks
 
             node_name = name if name is not None else func.__name__
             root = cls(name=node_name, **kwargs)
             root.tree.register_root(root)
             original_func = func
+            bind_scoped_hooks(original_func, root)
 
             if asyncio.iscoroutinefunction(func):
 
@@ -271,10 +273,15 @@ class RootNode(Node):
                 3. **Validation**: Build and validate tree structure.
                 4. **Runtime**: Process parameters and execute function.
                 """
+                from click_extended.hooks import HookPhase, run_hook_phase
+
+                context = click.get_current_context()
+                custom_context: Context | None = None
+                hook_error: BaseException | None = None
+
+                run_hook_phase(HookPhase.BOOT, context, root, context=None)
                 try:
                     # Phase 1: Collection
-                    context = click.get_current_context()
-
                     # Phase 2: Context
                     Tree.initialize_context(context, root)
 
@@ -363,7 +370,7 @@ class RootNode(Node):
                     custom_context = Context(
                         root=root,
                         parent=None,
-                        current=None,
+                        current=root,
                         click_context=context,
                         nodes={},
                         parents=parents,
@@ -371,6 +378,13 @@ class RootNode(Node):
                         children={},
                         data=meta.get("data", {}),
                         debug=meta.get("debug", False),
+                    )
+
+                    run_hook_phase(
+                        HookPhase.INIT,
+                        context,
+                        root,
+                        context=custom_context,
                     )
 
                     for validation_node in root.tree.validations:
@@ -706,12 +720,35 @@ class RootNode(Node):
 
                     return func(*call_args, **merged_kwargs)
                 except ContextAwareError as e:
+                    hook_error = e
+                    run_hook_phase(
+                        HookPhase.ERROR,
+                        context,
+                        root,
+                        context=custom_context,
+                        exception=e,
+                    )
                     e.show()
                     sys.exit(1)
-                except click.Abort:
+                except click.Abort as e:
+                    hook_error = e
+                    run_hook_phase(
+                        HookPhase.ERROR,
+                        context,
+                        root,
+                        context=custom_context,
+                        exception=e,
+                    )
                     raise
                 except Exception as e:
-                    context = click.get_current_context()
+                    hook_error = e
+                    run_hook_phase(
+                        HookPhase.ERROR,
+                        context,
+                        root,
+                        context=custom_context,
+                        exception=e,
+                    )
                     meta = context.meta.get("click_extended", {})
                     debug = meta.get("debug", False)
 
@@ -888,6 +925,14 @@ class RootNode(Node):
                         )
 
                     sys.exit(1)
+                finally:
+                    run_hook_phase(
+                        HookPhase.EXIT,
+                        context,
+                        root,
+                        context=custom_context,
+                        exception=hook_error,
+                    )
 
             pending = list(reversed(Tree.get_pending_nodes()))
             if root.tree.root is not None:
