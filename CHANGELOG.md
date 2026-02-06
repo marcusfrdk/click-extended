@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.2
+
+### Fixed
+
+- **`on_exit`**: Fixed an issue where `on_exit` would be called before the command when scoped.
+
 ## v1.1.1
 
 ### Added

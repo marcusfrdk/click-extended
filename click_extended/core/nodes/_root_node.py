@@ -279,6 +279,20 @@ class RootNode(Node):
                 custom_context: Context | None = None
                 hook_error: BaseException | None = None
 
+                if not context.meta.get("click_extended_exit_hook_registered"):
+
+                    def on_close() -> None:
+                        run_hook_phase(
+                            HookPhase.EXIT,
+                            context,
+                            root,
+                            context=custom_context,
+                            exception=hook_error,
+                        )
+
+                    context.call_on_close(on_close)
+                    context.meta["click_extended_exit_hook_registered"] = True
+
                 run_hook_phase(HookPhase.BOOT, context, root, context=None)
                 try:
                     # Phase 1: Collection
@@ -925,14 +939,6 @@ class RootNode(Node):
                         )
 
                     sys.exit(1)
-                finally:
-                    run_hook_phase(
-                        HookPhase.EXIT,
-                        context,
-                        root,
-                        context=custom_context,
-                        exception=hook_error,
-                    )
 
             pending = list(reversed(Tree.get_pending_nodes()))
             if root.tree.root is not None:
