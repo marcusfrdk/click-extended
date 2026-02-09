@@ -12,7 +12,7 @@ SCREAMING_SNAKE_CASE_PATTERN = re.compile(r"^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$")
 KEBAB_CASE_PATTERN = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
 
 LONG_FLAG_PATTERN = re.compile(r"^--[a-z][a-z0-9-]*$")
-SHORT_FLAG_PATTERN = re.compile(r"^-[a-zA-Z]$")
+SHORT_FLAG_PATTERN = re.compile(r"^-[a-zA-Z][a-zA-Z0-9]*$")
 
 
 def is_valid_name(name: str) -> bool:

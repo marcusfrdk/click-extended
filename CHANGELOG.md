@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.7
+
+### Fixed
+
+- **Flag/Name Ordering**: Flags and the name of options can be ordered in any way.
+
 ## v1.1.6
 
 ### Fixed

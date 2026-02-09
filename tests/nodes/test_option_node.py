@@ -362,21 +362,22 @@ class TestOptionNaming:
 
     def test_short_flag_invalid_format(self) -> None:
         """Test invalid short flag format raises error."""
-
-        with pytest.raises(ValueError, match="Invalid flag"):
-            Option("port", "p")  # missing dash
+        with pytest.raises(
+            ValueError, match="Multiple non-flag arguments provided"
+        ):
+            Option("port", "p")
 
     def test_short_flag_invalid_multiple_chars(self) -> None:
-        """Test short flag with multiple characters raises error."""
-
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option("port", "-port")
+        """Test short flag with multiple characters is now valid."""
+        opt = Option("port", "-port")
+        assert opt.short_flags == ["-port"]
+        assert opt.param == "port"
 
     def test_long_flag_invalid_format(self) -> None:
-        """Test invalid long flag format raises error."""
-
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option("port", "-port")  # single dash but multiple chars
+        """Test that single dash with multiple chars is a valid short flag."""
+        opt = Option("port", "-port")
+        assert opt.short_flags == ["-port"]
+        assert opt.param == "port"
 
     def test_long_flag_invalid_uppercase(self) -> None:
         """Test long flag with uppercase raises error."""
@@ -406,11 +407,10 @@ class TestOptionNaming:
 
     def test_long_flag_with_name_and_explicit_override(self) -> None:
         """Test long flag as name with explicit long override."""
-
         opt = Option("--verbose", "--debug")
 
         assert opt.param == "verbose"
-        assert opt.long_flags == ["--debug"]
+        assert opt.long_flags == ["--verbose", "--debug"]
 
     def test_both_flags_specified(self) -> None:
         """Test specifying both short and long flags."""
@@ -1055,28 +1055,30 @@ class TestOptionNodeEdgeCases:
         assert opt.type == bool
 
     def test_invalid_long_flag_no_dashes(self) -> None:
-        """Test that long flag without dashes raises error."""
-
-        with pytest.raises(ValueError, match="Invalid flag"):
+        """Test that providing two names raises error."""
+        with pytest.raises(
+            ValueError, match="Multiple non-flag arguments provided"
+        ):
             Option("port", "port")
 
     def test_invalid_long_flag_single_dash(self) -> None:
-        """Test that long flag with single dash raises error."""
-
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option("port", "-port")
+        """Test that single dash multi-char is valid short flag."""
+        opt = Option("port", "-port")
+        assert opt.short_flags == ["-port"]
+        assert opt.param == "port"
 
     def test_invalid_short_flag_no_dash(self) -> None:
-        """Test that short flag without dash raises error."""
-
-        with pytest.raises(ValueError, match="Invalid flag"):
+        """Test that providing two names raises error."""
+        with pytest.raises(
+            ValueError, match="Multiple non-flag arguments provided"
+        ):
             Option("port", "p")
 
     def test_invalid_short_flag_multiple_chars(self) -> None:
-        """Test that short flag with multiple chars raises error."""
-
-        with pytest.raises(ValueError, match="Invalid short flag"):
-            Option("port", "-port")
+        """Test that multi-character short flags are now valid."""
+        opt = Option("port", "-port")
+        assert opt.short_flags == ["-port"]
+        assert opt.param == "port"
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises error."""

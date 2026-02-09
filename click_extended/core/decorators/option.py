@@ -82,60 +82,52 @@ class Option(OptionNode):
             **kwargs (Any):
                 Additional Click option parameters.
         """
-        if is_short_flag(name):
-            long_flag = next(
-                (flag for flag in flags if is_long_flag(flag)), None
-            )
-            if long_flag is None:
-                raise ValueError(
-                    f"Short flag '{name}' provided without a long flag. "
-                    "Provide a long flag to derive the option name, e.g. "
-                    f"@option('{name}', '--flag'), or pass an explicit "
-                    f"snake_case name like @option('flag', '{name}')."
-                )
-            if name not in flags:
-                flags = (name,) + flags
-            name = long_flag
+        all_args = [name] + list(flags)
+        short_flags_found: list[str] = []
+        long_flags_found: list[str] = []
+        explicit_name = None
 
-        if name.startswith("--"):
-            if is_long_flag(name):
-                derived_name = name[2:].replace("-", "_")
-                if not flags or not any(f.startswith("--") for f in flags):
-                    flags = (name,) + flags
-            else:
-                raise ValueError(
-                    f"Invalid option name '{name}'. "
-                    f"Must be snake_case (e.g., my_option, config_file)"
-                )
-        else:
-            validate_name(name, "option name")
-            derived_name = name
-
-        short_flags_list: list[str] = []
-        long_flags_list: list[str] = []
-
-        for flag in flags:
-            if not flag.startswith("-"):
-                raise ValueError(
-                    f"Invalid flag '{flag}'. Flags must start with '-' or '--'."
-                )
-
-            if flag.startswith("--"):
-                if not is_long_flag(flag):
+        for arg in all_args:
+            if is_long_flag(arg):
+                long_flags_found.append(arg)
+            elif is_short_flag(arg):
+                short_flags_found.append(arg)
+            elif not arg.startswith("-"):
+                if explicit_name is not None:
                     raise ValueError(
-                        f"Invalid long flag '{flag}'. "
+                        "Multiple non-flag arguments provided: "
+                        f"'{explicit_name}' and '{arg}'. "
+                        "Only one explicit name is allowed."
+                    )
+                explicit_name = arg
+            else:
+                if arg.startswith("--"):
+                    raise ValueError(
+                        f"Invalid long flag '{arg}'. "
                         "Must be format: --word "
                         "(lowercase, hyphens allowed, e.g., --port, "
                         "--config-file)"
                     )
-                long_flags_list.append(flag)
-            else:
-                if not is_short_flag(flag):
-                    raise ValueError(
-                        f"Invalid short flag '{flag}'. Must be format: -X "
-                        f"(single letter, e.g., -p, -v, -h)"
-                    )
-                short_flags_list.append(flag)
+                raise ValueError(
+                    f"Invalid short flag '{arg}'. Must be format: -X "
+                    f"(letters/numbers, e.g., -p, -v, -lws)"
+                )
+
+        if explicit_name is not None:
+            validate_name(explicit_name, "option name")
+            derived_name = explicit_name
+        elif long_flags_found:
+            derived_name = long_flags_found[0][2:].replace("-", "_")
+        else:
+            raise ValueError(
+                "No explicit name or long flag provided. "
+                "Provide either a snake_case name or a long flag (e.g., "
+                "--flag) to derive the parameter name."
+            )
+
+        flags = tuple(short_flags_found + long_flags_found)
+        short_flags_list = short_flags_found
+        long_flags_list = long_flags_found
 
         param_name = param if param is not None else derived_name
 

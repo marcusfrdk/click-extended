@@ -86,11 +86,13 @@ class TestIsShortFlag:
         assert is_short_flag("-m") is True
         assert is_short_flag("-A") is True
         assert is_short_flag("-Z") is True
+        assert is_short_flag("-lws") is True
+        assert is_short_flag("-option") is True
+        assert is_short_flag("-abc123") is True
 
     def test_invalid_short_flags(self) -> None:
         """Test invalid short flags."""
         assert is_short_flag("--o") is False
-        assert is_short_flag("-option") is False
         assert is_short_flag("-1") is False
         assert is_short_flag("--") is False
         assert is_short_flag("-") is False
