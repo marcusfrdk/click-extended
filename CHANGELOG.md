@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.6
+
+### Fixed
+
+- **Long flag**: Fixed issue where long flag could not include hyphen.
+
 ## v1.1.5
 
 ### Added

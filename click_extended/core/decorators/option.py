@@ -18,7 +18,6 @@ from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import (
     is_long_flag,
     is_short_flag,
-    is_valid_name,
     validate_name,
 )
 
@@ -100,14 +99,7 @@ class Option(OptionNode):
 
         if name.startswith("--"):
             if is_long_flag(name):
-                derived_name = name[2:]
-                if not is_valid_name(derived_name):
-                    raise ValueError(
-                        f"Invalid option name '{name}'. When using a long "
-                        "flag as name, it must be snake_case after removing "
-                        f"'--'. Use '{name.replace('-', '_')}' or provide an "
-                        "explicit snake_case name parameter."
-                    )
+                derived_name = name[2:].replace("-", "_")
                 if not flags or not any(f.startswith("--") for f in flags):
                     flags = (name,) + flags
             else:

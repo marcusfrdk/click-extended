@@ -1,6 +1,6 @@
 [project]
 name = "click_extended"
-version = "1.1.5"
+version = "1.1.6"
 description = "An extension to Click with additional features like automatic async support, aliasing and a modular decorator system."
 authors = [
     { name = "Marcus Fredriksson", email = "marcus@marcusfredriksson.com" },
