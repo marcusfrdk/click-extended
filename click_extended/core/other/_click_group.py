@@ -189,9 +189,7 @@ class ClickGroup(click.Group):
             from click_extended.core.decorators.command import Command
 
             if help is None and func.__doc__:
-                first_line = func.__doc__.strip().split("\n")[0].strip()
-                if first_line:
-                    kwargs["help"] = first_line
+                kwargs["help"] = func.__doc__
 
             cmd = Command.as_decorator(name, **kwargs)(func)
             self.add_command(cmd)
@@ -235,9 +233,7 @@ class ClickGroup(click.Group):
             from click_extended.core.decorators.group import Group
 
             if help is None and func.__doc__:
-                first_line = func.__doc__.strip().split("\n")[0].strip()
-                if first_line:
-                    kwargs["help"] = first_line
+                kwargs["help"] = func.__doc__
 
             grp = Group.as_decorator(name, **kwargs)(func)
             self.add_command(grp)

@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.8
+
+### Fixed
+
+- **Docstrings**: Fixed issue where full docstring would not be included for commands and groups.
+
 ## v1.1.7
 
 ### Fixed

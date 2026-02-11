@@ -85,9 +85,7 @@ def command(
 
     def decorator(func: Callable[..., Any]) -> ClickCommand:
         if help is None and func.__doc__:
-            first_line = func.__doc__.strip().split("\n")[0].strip()
-            if first_line:
-                kwargs["help"] = first_line
+            kwargs["help"] = func.__doc__
         return Command.as_decorator(name, **kwargs)(func)
 
     return decorator
