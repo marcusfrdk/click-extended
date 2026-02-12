@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.10
+
+### Added
+
+- **`invoke_without_command`**: Added typing for the `invoke_without_command` parameter.
+
 ## v1.1.9
 
 ### Added

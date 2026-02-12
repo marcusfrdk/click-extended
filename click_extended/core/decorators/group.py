@@ -76,6 +76,7 @@ def group(
     aliases: str | list[str] | None = None,
     help: str | None = None,
     invoke_on_subcommand: bool = True,
+    invoke_without_command: bool | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickGroup]:
     """
@@ -97,6 +98,11 @@ def group(
             subcommand is executed. Defaults to `True` (current behavior).
             When `False`, the group callback is only invoked when the group
             itself is called directly, not when running nested subcommands.
+        invoke_without_command (bool, optional):
+            Whether the group callback can be invoked without a subcommand.
+            Defaults to `None` (Click's default behavior of requiring a
+            subcommand). When `True`, the group can be called directly
+            without specifying a subcommand.
         **kwargs (Any):
             Additional arguments to pass to `click.Group`.
 
@@ -109,6 +115,8 @@ def group(
     if help is not None:
         kwargs["help"] = help
     kwargs["invoke_on_subcommand"] = invoke_on_subcommand
+    if invoke_without_command is not None:
+        kwargs["invoke_without_command"] = invoke_without_command
 
     def decorator(func: Callable[..., Any]) -> ClickGroup:
         if help is None and func.__doc__:
