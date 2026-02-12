@@ -5,9 +5,11 @@
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=too-many-lines
+# pylint: disable=no-member
 # pylint: disable=broad-exception-caught
 # pylint: disable=protected-access
 # pylint: disable=invalid-name
+# pylint: disable=line-too-long
 
 import asyncio
 import sys
@@ -713,7 +715,7 @@ class RootNode(Node):
                             if hasattr(
                                 validation_node, "remaining_validations"
                             ):
-                                validation_node.remaining_validations = (
+                                validation_node.remaining_validations = (  # type: ignore
                                     root.tree.validations[i + 1 :]
                                 )
                             validation_node.on_finalize(
@@ -736,14 +738,12 @@ class RootNode(Node):
 
                     Tree.update_scope(context, "root")
 
-                    from click_extended.core.decorators.group import Group
-
-                    if isinstance(root, Group):
-                        if (
-                            not root.invoke_on_subcommand
-                            and context.invoked_subcommand is not None
-                        ):
-                            return None
+                    if (
+                        hasattr(root, "invoke_on_subcommand")
+                        and not root.invoke_on_subcommand  # type: ignore
+                        and context.invoked_subcommand is not None
+                    ):
+                        return None
 
                     return func(*call_args, **merged_kwargs)
                 except ContextAwareError as e:
