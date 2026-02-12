@@ -736,6 +736,15 @@ class RootNode(Node):
 
                     Tree.update_scope(context, "root")
 
+                    from click_extended.core.decorators.group import Group
+
+                    if isinstance(root, Group):
+                        if (
+                            not root.invoke_on_subcommand
+                            and context.invoked_subcommand is not None
+                        ):
+                            return None
+
                     return func(*call_args, **merged_kwargs)
                 except ContextAwareError as e:
                     hook_error = e
@@ -1080,6 +1089,8 @@ class RootNode(Node):
                     "-h",
                     "--help",
                 ]
+
+        kwargs.pop("invoke_on_subcommand", None)
 
         click_cls = cls._get_click_cls()
         params = getattr(func, "__click_params__", [])

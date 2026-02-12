@@ -1947,6 +1947,236 @@ class TestCommandAliases:
         assert formatted == "test"
 
 
+class TestInvokeOnSubcommand:
+    """Test invoke_on_subcommand parameter on groups."""
+
+    def test_group_invoke_on_subcommand_false_skips_callback(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that group with invoke_on_subcommand=False doesn't execute
+        callback when running a subcommand.
+        """
+
+        execution_order: list[str] = []
+
+        @group(invoke_on_subcommand=False)
+        def cli() -> None:
+            """Main CLI."""
+            execution_order.append("group")
+
+        @cli.command()
+        def test() -> None:  # type: ignore
+            """Test command."""
+            execution_order.append("command")
+            click.echo("Test")
+
+        result = cli_runner.invoke(cli, ["test"])
+        assert result.exit_code == 0
+        assert execution_order == ["command"]  # Group not invoked
+        assert "Test" in result.output
+
+    def test_group_invoke_on_subcommand_false_direct_call(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that group with invoke_on_subcommand=False DOES execute
+        callback when called directly.
+        """
+
+        execution_order: list[str] = []
+
+        @group(invoke_on_subcommand=False, invoke_without_command=True)
+        def cli() -> None:
+            """Main CLI."""
+            execution_order.append("group")
+            click.echo("Group called")
+
+        @cli.command()
+        def test() -> None:  # type: ignore
+            """Test command."""
+            execution_order.append("command")
+
+        result = cli_runner.invoke(cli, [])
+        assert result.exit_code == 0
+        assert execution_order == ["group"]  # Group invoked
+        assert "Group called" in result.output
+
+    def test_group_invoke_on_subcommand_true_default(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that group with invoke_on_subcommand=True (default)
+        preserves current behavior.
+        """
+
+        execution_order: list[str] = []
+
+        @group(invoke_on_subcommand=True)
+        def cli() -> None:
+            """Main CLI."""
+            execution_order.append("group")
+
+        @cli.command()
+        def test() -> None:  # type: ignore
+            """Test command."""
+            execution_order.append("command")
+
+        result = cli_runner.invoke(cli, ["test"])
+        assert result.exit_code == 0
+        assert execution_order == ["group", "command"]  # Both invoked
+
+    def test_group_invoke_on_subcommand_default_behavior(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that group without explicit invoke_on_subcommand
+        defaults to True (current behavior).
+        """
+
+        execution_order: list[str] = []
+
+        @group()  # No invoke_on_subcommand specified
+        def cli() -> None:
+            """Main CLI."""
+            execution_order.append("group")
+
+        @cli.command()
+        def test() -> None:  # type: ignore
+            """Test command."""
+            execution_order.append("command")
+
+        result = cli_runner.invoke(cli, ["test"])
+        assert result.exit_code == 0
+        assert execution_order == ["group", "command"]  # Both invoked
+
+    def test_nested_groups_independent_invoke_control(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that nested groups independently control their
+        invoke_on_subcommand behavior.
+        """
+
+        execution_order: list[str] = []
+
+        @group(invoke_on_subcommand=False)
+        def cli() -> None:
+            """Main CLI."""
+            execution_order.append("cli")
+
+        @cli.group(invoke_on_subcommand=True)
+        def admin() -> None:
+            """Admin commands."""
+            execution_order.append("admin")
+
+        @admin.command()
+        def users() -> None:  # type: ignore
+            """User management."""
+            execution_order.append("users")
+
+        result = cli_runner.invoke(cli, ["admin", "users"])
+        assert result.exit_code == 0
+        # cli skipped (has subcommand), admin invoked (has invoke_on_subcommand=True)
+        assert execution_order == ["admin", "users"]
+
+    def test_group_options_processed_when_callback_skipped(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that group options are still parsed even when
+        the group callback is skipped.
+        """
+
+        from click_extended.core.decorators.option import option
+
+        received_value: list[str] = []
+
+        @group(invoke_on_subcommand=False)
+        @option("--verbose", is_flag=True)
+        def cli(verbose: bool) -> None:
+            """Main CLI."""
+            received_value.append(f"group-{verbose}")
+
+        @cli.command()
+        @option("--name", default="test")
+        def test_cmd(name: str) -> None:  # type: ignore
+            """Test command."""
+            received_value.append(f"command-{name}")
+            click.echo(f"Name: {name}")
+
+        result = cli_runner.invoke(
+            cli, ["--verbose", "test_cmd", "--name", "demo"]
+        )
+        assert result.exit_code == 0
+        # Group callback not invoked, but command runs successfully
+        assert received_value == ["command-demo"]
+        assert "Name: demo" in result.output
+
+    def test_three_level_nesting_mixed_invoke_settings(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test three-level nesting with mixed invoke_on_subcommand settings.
+        """
+
+        execution_order: list[str] = []
+
+        @group(invoke_on_subcommand=False)
+        def cli() -> None:
+            """Main CLI."""
+            execution_order.append("cli")
+
+        @cli.group(invoke_on_subcommand=False)
+        def admin() -> None:
+            """Admin commands."""
+            execution_order.append("admin")
+
+        @admin.group(invoke_on_subcommand=True)
+        def users() -> None:
+            """User management."""
+            execution_order.append("users")
+
+        @users.command()
+        def list() -> None:  # type: ignore  # noqa: A001
+            """List users."""
+            execution_order.append("list")
+
+        result = cli_runner.invoke(cli, ["admin", "users", "list"])
+        assert result.exit_code == 0
+        # cli: skipped (has subcommand admin)
+        # admin: skipped (has subcommand users)
+        # users: invoked (has invoke_on_subcommand=True)
+        # list: invoked
+        assert execution_order == ["users", "list"]
+
+    def test_group_with_invoke_false_and_help_flag(
+        self, cli_runner: Any
+    ) -> None:
+        """
+        Test that help still works correctly with invoke_on_subcommand=False.
+        """
+
+        @group(invoke_on_subcommand=False)
+        def cli() -> None:
+            """Main CLI help text."""
+            pass
+
+        @cli.command()
+        def test() -> None:  # type: ignore
+            """Test command help text."""
+            pass
+
+        result = cli_runner.invoke(cli, ["--help"])
+        assert result.exit_code == 0
+        assert "Main CLI help text" in result.output
+        assert "test" in result.output
+
+        result = cli_runner.invoke(cli, ["test", "--help"])
+        assert result.exit_code == 0
+        assert "Test command help text" in result.output
+
+
 class TestClickDecoratorMethods:
     """Test _get_click_decorator methods."""
 

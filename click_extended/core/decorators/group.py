@@ -16,6 +16,23 @@ from click_extended.core.other._click_group import ClickGroup
 class Group(RootNode):
     """Group implementation for the `click_extended` library."""
 
+    def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize a new `Group` instance.
+
+        Args:
+            name (str):
+                The name of the group.
+            *args (Any):
+                Additional positional arguments.
+            **kwargs (Any):
+                Additional keyword arguments.
+                May include 'invoke_on_subcommand' to control whether
+                the group callback is invoked when a subcommand runs.
+        """
+        self.invoke_on_subcommand = kwargs.pop("invoke_on_subcommand", True)
+        super().__init__(name, *args, **kwargs)
+
     @classmethod
     def _get_click_decorator(cls) -> Callable[..., Any]:
         """Return the click.group decorator (no longer used)."""
@@ -58,6 +75,7 @@ def group(
     *,
     aliases: str | list[str] | None = None,
     help: str | None = None,
+    invoke_on_subcommand: bool = True,
     **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickGroup]:
     """
@@ -74,6 +92,11 @@ def group(
         help (str, optional):
             The help message for the group. If not provided,
             uses the first line of the function's docstring.
+        invoke_on_subcommand (bool, optional):
+            Whether to invoke the group's callback function when a
+            subcommand is executed. Defaults to `True` (current behavior).
+            When `False`, the group callback is only invoked when the group
+            itself is called directly, not when running nested subcommands.
         **kwargs (Any):
             Additional arguments to pass to `click.Group`.
 
@@ -85,6 +108,7 @@ def group(
         kwargs["aliases"] = aliases
     if help is not None:
         kwargs["help"] = help
+    kwargs["invoke_on_subcommand"] = invoke_on_subcommand
 
     def decorator(func: Callable[..., Any]) -> ClickGroup:
         if help is None and func.__doc__:

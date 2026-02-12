@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.9
+
+### Added
+
+- **`invoke_on_subcommand`**: Added new parameter to the group decorator which allows the group to not be executed when running a subcommand.
+
 ## v1.1.8
 
 ### Fixed
