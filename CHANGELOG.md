@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.11
+
+### Updated
+
+- **Hooks**: Hook handlers no longer require event to be accepted.
+
 ## v1.1.10
 
 ### Added

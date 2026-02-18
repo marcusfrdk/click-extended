@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 from collections.abc import Coroutine
 from typing import TYPE_CHECKING, Any
 
@@ -158,10 +159,18 @@ class HookRegistry:
         self, handler: "HookHandler", event: "HookEvent", phase: "HookPhase"
     ) -> None:
         try:
+            should_pass_event = self._handler_accepts_event(handler)
+
             if asyncio.iscoroutinefunction(handler):
-                self.run_coroutine(handler(event))
+                if should_pass_event:
+                    self.run_coroutine(handler(event))  # type: ignore
+                else:
+                    self.run_coroutine(handler())  # type: ignore
             else:
-                handler(event)
+                if should_pass_event:
+                    handler(event)  # type: ignore
+                else:
+                    handler()  # type: ignore
         except RuntimeError as exc:
             if "already running" in str(exc).lower():
                 from click_extended.errors import ProcessError
@@ -184,6 +193,38 @@ class HookRegistry:
                 )
             else:
                 raise
+
+    @staticmethod
+    def _handler_accepts_event(handler: "HookHandler") -> bool:
+        """
+        Check if a handler accepts the event parameter.
+
+        :param handler: The handler function to inspect.
+        :returns: True if the handler can accept the event parameter
+            as positional.
+        """
+        try:
+            sig = inspect.signature(handler)
+            params = sig.parameters
+
+            if not params:
+                return False
+
+            for param in params.values():
+                if param.kind == inspect.Parameter.VAR_POSITIONAL:
+                    return True
+
+            for param in params.values():
+                if param.kind in (
+                    inspect.Parameter.POSITIONAL_ONLY,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    inspect.Parameter.KEYWORD_ONLY,
+                ):
+                    return True
+
+            return False
+        except (ValueError, TypeError):
+            return True
 
     def run_coroutine(self, coro: Coroutine[Any, Any, Any]) -> Any:
         """

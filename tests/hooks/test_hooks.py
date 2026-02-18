@@ -144,3 +144,73 @@ def test_on_exit_registers_direct_handler(hook_registry: HookRegistry) -> None:
     run_hook_phase(HookPhase.EXIT, click_context, root, context=None)
 
     assert called == [True]
+
+
+def test_hook_without_event_parameter(hook_registry: HookRegistry) -> None:
+    """Ensure hooks can be called without requiring event parameter."""
+    called: list[bool] = []
+
+    @on_boot()
+    def handler() -> None:  # type: ignore
+        called.append(True)
+
+    click_context = make_click_context()
+    root = Mock(spec=RootNode)
+
+    run_hook_phase(HookPhase.BOOT, click_context, root, context=None)
+
+    assert called == [True]
+
+
+def test_hook_with_args(hook_registry: HookRegistry) -> None:
+    """Ensure hooks with *args receive the event."""
+    events: list[HookEvent] = []
+
+    @on_boot()
+    def handler(*args: object) -> None:  # type: ignore
+        if args:
+            events.append(args[0])  # type: ignore
+
+    click_context = make_click_context()
+    root = Mock(spec=RootNode)
+
+    run_hook_phase(HookPhase.BOOT, click_context, root, context=None)
+
+    assert len(events) == 1
+    assert events[0].phase == HookPhase.BOOT
+
+
+def test_hook_with_kwargs(hook_registry: HookRegistry) -> None:
+    """Ensure hooks with only **kwargs don't receive the event."""
+    called: list[bool] = []
+
+    @on_boot()
+    def handler(**kwargs: object) -> None:
+        # **kwargs alone cannot accept positional arguments
+        # so this handler should be called with no arguments
+        called.append(True)
+
+    click_context = make_click_context()
+    root = Mock(spec=RootNode)
+
+    run_hook_phase(HookPhase.BOOT, click_context, root, context=None)
+
+    assert called == [True]
+
+
+def test_hook_with_event_parameter_still_works(
+    hook_registry: HookRegistry,
+) -> None:
+    """Ensure hooks with explicit event parameter still receive it."""
+    events: list[HookPhase] = []
+
+    @on_boot()
+    def handler(event: HookEvent) -> None:
+        events.append(event.phase)
+
+    click_context = make_click_context()
+    root = Mock(spec=RootNode)
+
+    run_hook_phase(HookPhase.BOOT, click_context, root, context=None)
+
+    assert events == [HookPhase.BOOT]

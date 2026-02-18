@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 from click_extended.hooks.hook_event import HookEvent
 
-HookHandler = Callable[[HookEvent], Any]
+HookHandler = Union[
+    Callable[[HookEvent], Any],
+    Callable[[], Any],
+]
