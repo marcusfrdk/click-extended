@@ -2,6 +2,13 @@
 
 # Changelog
 
+## v1.2.0
+
+- **Default values**: Default values for `@option` and `@argument` can now be of any type.
+- **`@to_directory`**: Decorator to convert a string to a `pathlib.Path` that points to a directory.
+- **`@to_file`**: Decorator to convert a string to a `pathlib.Path` that points to a file.
+- **`@to_symlink`**: Decorator to convert a string to a `pathlib.Path` that points to a symbolic link.
+
 ## v1.1.12
 
 ### Fix

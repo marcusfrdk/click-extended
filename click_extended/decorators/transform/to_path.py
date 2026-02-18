@@ -142,6 +142,130 @@ class ToPath(ChildNode):
 
         return path
 
+    def handle_path(
+        self, value: Path, context: Context, *args: Any, **kwargs: Any
+    ) -> Path:
+        """Handle Path objects by applying validation logic."""
+        parent = context.get_current_parent_as_parent()
+        name = parent.name
+        exists = kwargs["exists"]
+        parents = kwargs["parents"]
+        extensions = kwargs["extensions"]
+        include_pattern = kwargs["include_pattern"]
+        exclude_pattern = kwargs["exclude_pattern"]
+        allow_file = kwargs["allow_file"]
+        allow_directory = kwargs["allow_directory"]
+        allow_empty_directory = kwargs["allow_empty_directory"]
+        allow_empty_file = kwargs["allow_empty_file"]
+        allow_symlink = kwargs["allow_symlink"]
+        follow_symlink = kwargs["follow_symlink"]
+        resolve = kwargs["resolve"]
+        is_readable = kwargs["is_readable"]
+        is_writable = kwargs["is_writable"]
+        is_executable = kwargs["is_executable"]
+
+        path = value.expanduser()
+
+        # Symlinks
+        if not allow_symlink and path.is_symlink():
+            raise OSError(
+                f"Path '{path}' is a symlink, but symlinks are not allowed "
+                f"for '{name}'"
+            )
+
+        if resolve:
+            path = path.resolve() if follow_symlink else path.absolute()
+        elif follow_symlink and path.is_symlink():
+            path = path.resolve()
+        else:
+            path = path.absolute()
+
+        # Existence
+        if exists and not path.exists():
+            raise FileNotFoundError(f"Path '{path}' does not exist.")
+
+        # Parents
+        if parents and not path.parent.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+        if path.exists():
+            is_file = path.is_file()
+            is_dir = path.is_dir()
+
+            # File disallowed
+            if is_file and not allow_file:
+                raise IsADirectoryError(
+                    f"Path '{path}' is a file, but files are not allowed "
+                    f"for '{name}'"
+                )
+
+            # Directory disallowed
+            if is_dir and not allow_directory:
+                raise NotADirectoryError(
+                    f"Path '{path}' is a directory, but directories are not "
+                    f"allowed for '{name}'"
+                )
+
+            # Check empty directory
+            if is_dir and not allow_empty_directory:
+                if not any(path.iterdir()):
+                    raise ValueError(
+                        f"Directory '{path}' is empty, but empty directories "
+                        f"are not allowed for '{name}'"
+                    )
+
+            # Check empty file
+            if is_file and not allow_empty_file:
+                if path.stat().st_size == 0:
+                    raise ValueError(
+                        f"File '{path}' is empty, but empty files are not "
+                        f"allowed for '{name}'"
+                    )
+
+            # Check permissions
+            if is_readable and not os.access(path, os.R_OK):
+                raise PermissionError(
+                    f"Path '{path}' is not readable for '{name}'"
+                )
+
+            if is_writable and not os.access(path, os.W_OK):
+                raise PermissionError(
+                    f"Path '{path}' is not writable for '{name}'"
+                )
+
+            if is_executable and not os.access(path, os.X_OK):
+                raise PermissionError(
+                    f"Path '{path}' is not executable for '{name}'"
+                )
+
+        # Check extensions
+        if extensions and (not path.exists() or path.is_file()):
+            extensions = [
+                ext if ext.startswith(".") else f".{ext}" for ext in extensions
+            ]
+
+            if not any(path.name.endswith(ext) for ext in extensions):
+                raise ValueError(
+                    f"Path '{path}' does not have an allowed extension. "
+                    f"Allowed extensions: {', '.join(extensions)} "
+                    f"for '{name}'"
+                )
+
+        # Patterns
+        if include_pattern:
+            if not fnmatch.fnmatch(path.name, include_pattern):
+                raise ValueError(
+                    f"Path '{path}' does not match include pattern "
+                    f"'{include_pattern}' for '{name}'"
+                )
+        elif exclude_pattern and fnmatch.fnmatch(path.name, exclude_pattern):
+            raise ValueError(
+                f"Path '{path}' matches exclude pattern "
+                f"'{exclude_pattern}' for '{name}'"
+            )
+
+        return path
+
 
 def to_path(
     *,

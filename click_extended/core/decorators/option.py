@@ -147,11 +147,17 @@ class Option(OptionNode):
             if is_flag:
                 type = bool
             elif default is not None and not (multiple and default == ()):
-                type = cast(Type[Any], builtins_type(default))  # type: ignore
+                inferred_type = cast(  # type: ignore
+                    Type[Any],
+                    builtins_type(default),
+                )
+                if inferred_type in SUPPORTED_TYPES:
+                    type = inferred_type
+                else:
+                    type = str
             else:
                 type = str
-
-        if type not in SUPPORTED_TYPES:
+        elif type not in SUPPORTED_TYPES:
             types = humanize_type(
                 type.__name__ if hasattr(type, "__name__") else type
             )
