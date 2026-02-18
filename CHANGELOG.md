@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.2.2
+
+### Fixed
+
+- **`type` parameter**: Type parameter now supports any type.
+
 ## v1.2.1
 
 ### Fixed
