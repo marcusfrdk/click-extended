@@ -1,6 +1,9 @@
 """Hook registry implementation."""
 
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-nested-blocks
 # pylint: disable=broad-exception-caught
 
 from __future__ import annotations
@@ -203,28 +206,46 @@ class HookRegistry:
         :returns: True if the handler can accept the event parameter
             as positional.
         """
+        from click_extended.hooks.hook_event import HookEvent
+
         try:
             sig = inspect.signature(handler)
-            params = sig.parameters
+            params = list(sig.parameters.values())
 
             if not params:
                 return False
 
-            for param in params.values():
-                if param.kind == inspect.Parameter.VAR_POSITIONAL:
-                    return True
+            first_param = params[0]
+            if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
+                return True
 
-            for param in params.values():
-                if param.kind in (
-                    inspect.Parameter.POSITIONAL_ONLY,
-                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                    inspect.Parameter.KEYWORD_ONLY,
-                ):
+            if first_param.kind not in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            ):
+                return False
+
+            param_name = first_param.name.lower()
+            if param_name in ("event", "evt", "e", "hook_event"):
+                return True
+
+            if first_param.annotation != inspect.Parameter.empty:
+                annotation = first_param.annotation
+                if annotation is HookEvent:
                     return True
+                if isinstance(annotation, str) and "HookEvent" in annotation:
+                    return True
+                if hasattr(annotation, "__origin__"):
+                    if hasattr(annotation, "__args__"):
+                        for arg in annotation.__args__:  # type: ignore
+                            if arg is HookEvent:
+                                return True
+                            if isinstance(arg, str) and "HookEvent" in arg:
+                                return True
 
             return False
         except (ValueError, TypeError):
-            return True
+            return False
 
     def run_coroutine(self, coro: Coroutine[Any, Any, Any]) -> Any:
         """

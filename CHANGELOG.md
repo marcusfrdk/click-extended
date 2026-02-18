@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.1.12
+
+### Fix
+
+- **Hooks**: Fixed issue where hook handler would incorrectly pass the `HookEvent` despite function signature.
+
 ## v1.1.11
 
 ### Updated
