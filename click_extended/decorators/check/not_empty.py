@@ -14,9 +14,7 @@ class NotEmpty(ChildNode):
         self, value: str, context: Context, *args: Any, **kwargs: Any
     ) -> Any:
         if not value or value.isspace():
-            raise ValueError(
-                "Value cannot be empty or contain only whitespace."
-            )
+            raise ValueError("Value cannot be empty or contain only whitespace.")
 
         return value
 
@@ -29,13 +27,9 @@ def not_empty() -> Decorator:
 
     Supports: `str`
 
-    Raises:
-        ValueError:
-            If the value is empty or contains only whitespace.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :raises ValueError: If the value is empty or contains only whitespace.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python

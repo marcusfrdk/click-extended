@@ -40,16 +40,13 @@ def add_suffix(
 
     Supports: `str`
 
-    Args:
-        suffix (str):
-            The suffix to add.
-        skip (bool, optional):
-            Skip adding the suffix if it already exists. Defaults to `True`.
-        case_sensitive (bool)
-            Check for exact case matching when `skip=True`. Defaults to `False`.
-    Returns:
-        Decorator:
-            The decorated function.
+    :param suffix: The suffix to add.
+    :param skip: Skip adding the suffix if it already exists.
+        Defaults to ``True``.
+    :param case_sensitive: Check for exact case matching when ``skip=True``.
+        Defaults to ``False``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return AddSuffix.as_decorator(
         suffix=suffix,

@@ -29,13 +29,9 @@ def remove_suffix(suffix: str) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        suffix (str):
-            The suffix to remove from the end of the string.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param suffix: The suffix to remove from the end of the string.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python

@@ -93,9 +93,7 @@ def make_parent(
     return TestParent()
 
 
-def invoke_cli(
-    runner: CliRunner, cmd: Any, args: list[str] | None = None
-) -> Any:
+def invoke_cli(runner: CliRunner, cmd: Any, args: list[str] | None = None) -> Any:
     """
     Invoke a CLI command and return the result.
 

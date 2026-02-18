@@ -36,9 +36,7 @@ class TestLoadYamlBasic:
         assert "Name: test" in result.output
         assert "Value: 42" in result.output
 
-    def test_load_yaml_list(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_list(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with YAML list."""
         yaml_file = tmp_path / "list.yaml"
         yaml_file.write_text("- item1\n- item2\n- item3\n")
@@ -85,9 +83,7 @@ user:
         assert "User: John" in result.output
         assert "Theme: dark" in result.output
 
-    def test_load_yaml_empty_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_empty_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with empty YAML file."""
         yaml_file = tmp_path / "empty.yaml"
         yaml_file.write_text("")
@@ -132,9 +128,7 @@ description: |
 class TestLoadYamlLoaders:
     """Test load_yaml loader parameter."""
 
-    def test_load_yaml_safe_loader(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_safe_loader(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with safe loader (default)."""
         yaml_file = tmp_path / "safe.yaml"
         yaml_file.write_text("numbers: [1, 2, 3]\ntext: hello\n")
@@ -153,9 +147,7 @@ class TestLoadYamlLoaders:
         assert "Numbers: [1, 2, 3]" in result.output
         assert "Text: hello" in result.output
 
-    def test_load_yaml_full_loader(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_full_loader(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with full loader."""
         yaml_file = tmp_path / "full.yaml"
         yaml_file.write_text("data: {a: 1, b: 2}\n")
@@ -354,9 +346,7 @@ class TestLoadYamlTypes:
         assert "Enabled: True" in result.output
         assert "Disabled: False" in result.output
 
-    def test_load_yaml_null_value(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_null_value(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with null value."""
         yaml_file = tmp_path / "null.yaml"
         yaml_file.write_text("value: null\n")
@@ -373,9 +363,7 @@ class TestLoadYamlTypes:
         assert result.exit_code == 0
         assert "Is None: True" in result.output
 
-    def test_load_yaml_mixed_types(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_mixed_types(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with mixed data types."""
         yaml_file = tmp_path / "mixed.yaml"
         yaml_content = """
@@ -409,9 +397,7 @@ dict: {key: value}
 class TestLoadYamlPractical:
     """Test practical use cases for load_yaml."""
 
-    def test_load_yaml_config_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_config_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml for application config."""
         config_file = tmp_path / "config.yaml"
         config_content = """
@@ -430,12 +416,8 @@ database:
         @load_yaml()
         def cmd(config: Any) -> None:
             assert config is not None
-            click.echo(
-                f"App: {config['app']['name']} v{config['app']['version']}"
-            )
-            click.echo(
-                f"DB: {config['database']['host']}:{config['database']['port']}"
-            )
+            click.echo(f"App: {config['app']['name']} v{config['app']['version']}")
+            click.echo(f"DB: {config['database']['host']}:{config['database']['port']}")
 
         result = cli_runner.invoke(cmd, ["--config", str(config_file)])
         assert result.exit_code == 0
@@ -552,9 +534,7 @@ development:
 class TestLoadYamlFlatTuple:
     """Test load_yaml with flat tuples."""
 
-    def test_load_yaml_flat_tuple(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_yaml_flat_tuple(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_yaml with flat tuple of YAML files."""
         file1 = tmp_path / "config1.yaml"
         file2 = tmp_path / "config2.yaml"
@@ -660,9 +640,7 @@ class TestLoadYamlNestedTuple:
         db_dev.write_text("type: postgres\nhost: localhost\nport: 5432\n")
         cache_dev.write_text("type: redis\nhost: localhost\nport: 6379\n")
         db_prod.write_text("type: postgres\nhost: db.example.com\nport: 5432\n")
-        cache_prod.write_text(
-            "type: redis\nhost: cache.example.com\nport: 6379\n"
-        )
+        cache_prod.write_text("type: redis\nhost: cache.example.com\nport: 6379\n")
 
         @command()
         @option("configs", multiple=True, nargs=2)

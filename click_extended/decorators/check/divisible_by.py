@@ -38,11 +38,8 @@ def divisible_by(n: int | float) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        n (int | float): The number to check divisibility against.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The number to check divisibility against.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return DivisibleBy.as_decorator(n=n)

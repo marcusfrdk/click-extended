@@ -23,10 +23,10 @@ class Slugify(ChildNode):
 
 
 def slugify(**kwargs: Any) -> Decorator:
-    """
+    r"""
     Convert the string to a slug.
 
-    This decorator uses the `python-slugify` library under the hood.
+    This decorator uses the ``python-slugify`` library under the hood.
 
     Read more about the library here: https://pypi.org/project/python-slugify/
 
@@ -34,12 +34,8 @@ def slugify(**kwargs: Any) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        **kwargs (Any):
-            Additional keyword arguments passed to `slugify.slugify`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*\*kwargs: Additional keyword arguments passed to ``slugify.slugify``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Slugify.as_decorator(**kwargs)

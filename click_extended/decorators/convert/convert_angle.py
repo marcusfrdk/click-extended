@@ -87,8 +87,7 @@ def convert_angle(
         - **rev**: Revolution
         - **mil**: NATO angular mil
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertAngle.as_decorator(from_unit=from_unit, to_unit=to_unit)

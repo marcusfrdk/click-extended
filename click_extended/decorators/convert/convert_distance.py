@@ -147,8 +147,7 @@ def convert_distance(
         - **nmi**: Nautical mile
         - **ang**: Angstrom
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertDistance.as_decorator(from_unit=from_unit, to_unit=to_unit)

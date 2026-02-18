@@ -54,19 +54,12 @@ def normalize(
 
     Supports: `int`, `float`
 
-    Args:
-        min_val (float):
-            The minimum value of the input range.
-        max_val (float):
-            The maximum value of the input range.
-        new_min (float, optional):
-            The minimum value of the output range.
-        new_max (float, optional):
-            The maximum value of the output range.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param min_val: The minimum value of the input range.
+    :param max_val: The maximum value of the input range.
+    :param new_min: The minimum value of the output range.
+    :param new_max: The maximum value of the output range.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Normalize.as_decorator(
         min_val=min_val,

@@ -455,9 +455,7 @@ class TestInvalidHandlerError:
 
     def test_init_with_tip(self) -> None:
         """Test InvalidHandlerError with tip."""
-        error = InvalidHandlerError(
-            "Handler returned None", tip="Return a value"
-        )
+        error = InvalidHandlerError("Handler returned None", tip="Return a value")
         assert error.tip == "Return a value"
 
 

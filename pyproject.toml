@@ -106,7 +106,7 @@ disable = [
 ]
 
 [tool.pylint.format]
-max-line-length = 80
+max-line-length = 88
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -139,12 +139,12 @@ exclude_lines = [
 ]
 
 [tool.black]
-line-length = 80
+line-length = 88
 target-version = ["py310", "py311", "py312", "py313"]
 
 [tool.isort]
 profile = "black"
-line_length = 80
+line_length = 88
 
 [tool.mypy]
 python_version = "3.10"

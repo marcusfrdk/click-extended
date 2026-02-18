@@ -24,28 +24,21 @@ def context(
     tags: str | list[str] | None = None,
     **kwargs: Any,
 ) -> Decorator:
-    """
-    A `ParentNode` to inject the context into the function.
+    r"""
+    A ``ParentNode`` to inject the context into the function.
 
-    Type: `ParentNode`
+    Type: ``ParentNode``
 
-    Args:
-        name (str, optional):
-            Internal node name (must be snake_case). Defaults
-            to "ctx".
-        param (str, optional):
-            The parameter name to inject into the function.
-            If not provided, uses `name` (or derived name).
-        help (str, optional):
-            Help text for this parameter.
-        tags (str | list[str], optional):
-            Tag(s) to associate with this parameter for grouping.
-        **kwargs (Any):
-            Additional keyword arguments.
+    :param name: Internal node name (must be snake_case). Defaults
+        to "ctx".
+    :param param: The parameter name to inject into the function.
+        If not provided, uses ``name`` (or derived name).
+    :param help: Help text for this parameter.
+    :param tags: Tag(s) to associate with this parameter for grouping.
+    :param \*\*kwargs: Additional keyword arguments.
 
-    Returns:
-        Callable:
-            A decorator function that registers the context parent node.
+    :returns: A decorator function that registers the context parent node.
+    :rtype: Callable
     """
     return Context.as_decorator(
         name=name,

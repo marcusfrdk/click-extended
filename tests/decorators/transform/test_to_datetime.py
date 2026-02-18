@@ -15,9 +15,7 @@ from click_extended.decorators.transform.to_datetime import to_datetime
 class TestToDatetimeBasic:
     """Test basic to_datetime functionality."""
 
-    def test_to_datetime_single_format_strptime(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_single_format_strptime(self, cli_runner: CliRunner) -> None:
         """Test to_datetime with single Python strptime format."""
 
         @command()
@@ -35,9 +33,7 @@ class TestToDatetimeBasic:
         assert "Month: 12" in result.output
         assert "Day: 4" in result.output
 
-    def test_to_datetime_single_format_simplified(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_single_format_simplified(self, cli_runner: CliRunner) -> None:
         """Test to_datetime with single simplified format."""
 
         @command()
@@ -68,18 +64,14 @@ class TestToDatetimeBasic:
             click.echo(f"Minute: {datetime_val.minute}")
             click.echo(f"Second: {datetime_val.second}")
 
-        result = cli_runner.invoke(
-            cmd, ["--datetime-val", "2024-12-04 14:30:45"]
-        )
+        result = cli_runner.invoke(cmd, ["--datetime-val", "2024-12-04 14:30:45"])
         assert result.exit_code == 0
         assert "Date: 2024-12-04" in result.output
         assert "Hour: 14" in result.output
         assert "Minute: 30" in result.output
         assert "Second: 45" in result.output
 
-    def test_to_datetime_with_time_simplified(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_with_time_simplified(self, cli_runner: CliRunner) -> None:
         """Test to_datetime with simplified format including time."""
 
         @command()
@@ -90,9 +82,7 @@ class TestToDatetimeBasic:
             click.echo(f"Hour: {datetime_val.hour}")
             click.echo(f"Minute: {datetime_val.minute}")
 
-        result = cli_runner.invoke(
-            cmd, ["--datetime-val", "2024-12-04 14:30:45"]
-        )
+        result = cli_runner.invoke(cmd, ["--datetime-val", "2024-12-04 14:30:45"])
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
         assert "Minute: 30" in result.output
@@ -149,9 +139,7 @@ class TestToDatetimeMultipleFormats:
         assert result.exit_code == 0
         assert "Date: 2024-12-04" in result.output
 
-    def test_to_datetime_mixed_format_styles(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_mixed_format_styles(self, cli_runner: CliRunner) -> None:
         """Test to_datetime with mix of strptime and simplified formats."""
 
         @command()
@@ -190,9 +178,7 @@ class TestToDatetimeTimezone:
         assert result.exit_code == 0
         assert "UTC" in result.output
 
-    def test_to_datetime_with_custom_timezone(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_with_custom_timezone(self, cli_runner: CliRunner) -> None:
         """Test to_datetime with custom timezone."""
 
         @command()
@@ -238,9 +224,7 @@ class TestToDatetimeTuples:
                 assert isinstance(date, datetime)
                 click.echo(f"Date {i}: {date.date()}")
 
-        result = cli_runner.invoke(
-            cmd, ["2024-01-01", "2024-06-15", "2024-12-31"]
-        )
+        result = cli_runner.invoke(cmd, ["2024-01-01", "2024-06-15", "2024-12-31"])
         assert result.exit_code == 0
         assert "Count: 3" in result.output
         assert "Date 1: 2024-01-01" in result.output
@@ -297,9 +281,7 @@ class TestToDatetimeErrors:
         assert result.exit_code != 0
         assert "Invalid datetime" in result.output
 
-    def test_to_datetime_no_matching_format(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_no_matching_format(self, cli_runner: CliRunner) -> None:
         """Test to_datetime when no format matches."""
 
         @command()
@@ -312,9 +294,7 @@ class TestToDatetimeErrors:
         assert result.exit_code != 0
         assert "Invalid datetime" in result.output
 
-    def test_to_datetime_invalid_date_values(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_datetime_invalid_date_values(self, cli_runner: CliRunner) -> None:
         """Test to_datetime with invalid date values."""
 
         @command()
@@ -411,9 +391,7 @@ class TestToDatetimeFormatVariations:
             assert isinstance(datetime_val, datetime)
             click.echo(f"Hour: {datetime_val.hour}")
 
-        result = cli_runner.invoke(
-            cmd, ["--datetime-val", "2024-12-04 02:30 PM"]
-        )
+        result = cli_runner.invoke(cmd, ["--datetime-val", "2024-12-04 02:30 PM"])
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
 
@@ -463,9 +441,7 @@ class TestToDatetimePractical:
                 earliest = min(event_dates)  # type: ignore
                 click.echo(f"First event: {earliest.date()}")  # type: ignore
 
-        result = cli_runner.invoke(
-            cmd, ["2024-12-10", "2024-12-15", "2024-12-20"]
-        )
+        result = cli_runner.invoke(cmd, ["2024-12-10", "2024-12-15", "2024-12-20"])
         assert result.exit_code == 0
         assert "Total events: 3" in result.output
         assert "First event: 2024-12-10" in result.output

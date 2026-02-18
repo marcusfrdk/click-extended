@@ -26,9 +26,7 @@ class TestToTimestampBasic:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp()
             )
             assert dt == expected
 
@@ -76,9 +74,7 @@ class TestToTimestampBasic:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp()
             )
             assert dt == expected
 
@@ -97,9 +93,7 @@ class TestToTimestampBasic:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp()
             )
             assert dt == expected
 
@@ -120,9 +114,7 @@ class TestToTimestampUnits:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp()
             )
             assert dt == expected
 
@@ -139,10 +131,7 @@ class TestToTimestampUnits:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
-                * 1000
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp() * 1000
             )
             assert dt == expected
 
@@ -159,9 +148,7 @@ class TestToTimestampUnits:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp()
                 * 1_000_000
             )
             assert dt == expected
@@ -179,9 +166,7 @@ class TestToTimestampUnits:
         def cmd(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc).timestamp()
                 * 1_000_000_000
             )
             assert dt == expected
@@ -204,24 +189,18 @@ class TestToTimestampPractical:
             """Simulate logging with millisecond precision."""
             assert isinstance(event_time, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 45, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 45, tzinfo=timezone.utc).timestamp()
                 * 1000
             )
             assert event_time == expected
             assert event_time > 1705000000000  # After 2024-01-11
             click.echo(f"Event time: {event_time}")
 
-        result = cli_runner.invoke(
-            log_event, ["--event-time", "2024-01-15 10:30:45"]
-        )
+        result = cli_runner.invoke(log_event, ["--event-time", "2024-01-15 10:30:45"])
         assert result.exit_code == 0
         assert "Event time:" in result.output
 
-    def test_to_timestamp_database_scenario(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_timestamp_database_scenario(self, cli_runner: CliRunner) -> None:
         """Test timestamp for database records with microsecond precision."""
 
         @command()
@@ -232,9 +211,7 @@ class TestToTimestampPractical:
             """Simulate storing with microsecond precision."""
             assert isinstance(created_at, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 45, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 45, tzinfo=timezone.utc).timestamp()
                 * 1_000_000
             )
             assert created_at == expected
@@ -271,24 +248,18 @@ class TestToTimestampPractical:
         def high_precision(dt: int | None) -> None:
             assert isinstance(dt, int)
             expected = int(
-                datetime(
-                    2024, 1, 15, 10, 30, 45, tzinfo=timezone.utc
-                ).timestamp()
+                datetime(2024, 1, 15, 10, 30, 45, tzinfo=timezone.utc).timestamp()
                 * 1_000_000_000
             )
             assert dt == expected
             assert dt > 1705000000000000000  # Nanosecond scale
             click.echo(f"Nanoseconds: {dt}")
 
-        result = cli_runner.invoke(
-            high_precision, ["--dt", "2024-01-15 10:30:45"]
-        )
+        result = cli_runner.invoke(high_precision, ["--dt", "2024-01-15 10:30:45"])
         assert result.exit_code == 0
         assert "Nanoseconds:" in result.output
 
-    def test_to_timestamp_chained_with_to_date(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_timestamp_chained_with_to_date(self, cli_runner: CliRunner) -> None:
         """Test chaining to_date with to_timestamp."""
 
         @command()
@@ -307,9 +278,7 @@ class TestToTimestampPractical:
         assert result.exit_code == 0
         assert "Start date timestamp:" in result.output
 
-    def test_to_timestamp_chained_with_to_time(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_timestamp_chained_with_to_time(self, cli_runner: CliRunner) -> None:
         """Test chaining to_time with to_timestamp."""
 
         @command()

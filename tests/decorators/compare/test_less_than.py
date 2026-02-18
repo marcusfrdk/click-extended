@@ -56,9 +56,7 @@ class TestLessThanNumeric:
         assert result.exit_code != 0
         assert "Value must be less than 100, got 100" in result.output
 
-    def test_less_than_int_equal_valid_inclusive(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_less_than_int_equal_valid_inclusive(self, cli_runner: CliRunner) -> None:
         """Test less_than accepts equal value when inclusive=True."""
 
         @command()
@@ -221,9 +219,7 @@ class TestLessThanDateTime:
 class TestLessThanInclusive:
     """Test inclusive parameter behavior."""
 
-    def test_less_than_inclusive_false_default(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_less_than_inclusive_false_default(self, cli_runner: CliRunner) -> None:
         """Test that inclusive defaults to False."""
 
         @command()
@@ -252,9 +248,7 @@ class TestLessThanInclusive:
         assert result.exit_code != 0
         assert "Value must be at most 10, got 11" in result.output
 
-    def test_less_than_inclusive_true_message(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_less_than_inclusive_true_message(self, cli_runner: CliRunner) -> None:
         """Test inclusive=True uses correct error message."""
 
         @command()
@@ -317,9 +311,7 @@ class TestLessThanEdgeCases:
 class TestLessThanPractical:
     """Test practical use cases."""
 
-    def test_less_than_percentage_validation(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_less_than_percentage_validation(self, cli_runner: CliRunner) -> None:
         """Test percentage validation (must be <= 100)."""
 
         @command()

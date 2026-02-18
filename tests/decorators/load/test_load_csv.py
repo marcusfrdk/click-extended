@@ -15,9 +15,7 @@ from click_extended.decorators.transform.to_path import to_path
 class TestLoadCsvBasic:
     """Test basic load_csv functionality."""
 
-    def test_load_csv_as_dict(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_as_dict(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with as_dict=True (default)."""
         csv_file = tmp_path / "data.csv"
         csv_file.write_text("name,age,city\nAlice,30,NYC\nBob,25,LA\n")
@@ -38,9 +36,7 @@ class TestLoadCsvBasic:
         assert "First name: Alice" in result.output
         assert "First age: 30" in result.output
 
-    def test_load_csv_as_list(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_as_list(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with as_dict=False."""
         csv_file = tmp_path / "data.csv"
         csv_file.write_text("name,age,city\nAlice,30,NYC\nBob,25,LA\n")
@@ -59,9 +55,7 @@ class TestLoadCsvBasic:
         assert "Count: 2" in result.output
         assert "['Alice', '30', 'NYC']" in result.output
 
-    def test_load_csv_no_header(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_no_header(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv without header."""
         csv_file = tmp_path / "data.csv"
         csv_file.write_text("Alice,30,NYC\nBob,25,LA\n")
@@ -80,9 +74,7 @@ class TestLoadCsvBasic:
         assert "Count: 2" in result.output
         assert "First: Alice" in result.output
 
-    def test_load_csv_empty_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_empty_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with empty CSV file."""
         csv_file = tmp_path / "empty.csv"
         csv_file.write_text("")
@@ -99,9 +91,7 @@ class TestLoadCsvBasic:
         assert result.exit_code == 0
         assert "Count: 0" in result.output
 
-    def test_load_csv_single_row(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_single_row(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with single data row."""
         csv_file = tmp_path / "single.csv"
         csv_file.write_text("name,age\nAlice,30\n")
@@ -253,9 +243,7 @@ class TestLoadCsvEncoding:
     ) -> None:
         """Test load_csv with UTF-8 encoding (default)."""
         csv_file = tmp_path / "utf8.csv"
-        csv_file.write_text(
-            "name,message\nAlice,Hello 世界 🌍\n", encoding="utf-8"
-        )
+        csv_file.write_text("name,message\nAlice,Hello 世界 🌍\n", encoding="utf-8")
 
         @command()
         @option("file", default=None)
@@ -311,9 +299,7 @@ class TestLoadCsvDialects:
         assert result.exit_code == 0
         assert "Name: Alice" in result.output
 
-    def test_load_csv_unix_dialect(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_unix_dialect(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with unix dialect."""
         csv_file = tmp_path / "unix.csv"
         csv_file.write_text("name,age\nAlice,30\n")
@@ -420,9 +406,7 @@ class TestLoadCsvSpecialCases:
     ) -> None:
         """Test load_csv with Unicode content."""
         csv_file = tmp_path / "unicode.csv"
-        csv_file.write_text(
-            "name,city\nAlice,北京\nBob,東京\n", encoding="utf-8"
-        )
+        csv_file.write_text("name,city\nAlice,北京\nBob,東京\n", encoding="utf-8")
 
         @command()
         @option("file", default=None)
@@ -447,9 +431,7 @@ class TestLoadCsvPractical:
     ) -> None:
         """Test load_csv for data processing."""
         csv_file = tmp_path / "users.csv"
-        csv_file.write_text(
-            "name,age,score\nAlice,30,85\nBob,25,90\nCharlie,35,78\n"
-        )
+        csv_file.write_text("name,age,score\nAlice,30,85\nBob,25,90\nCharlie,35,78\n")
 
         @command()
         @option("file", default=None)
@@ -520,9 +502,7 @@ class TestLoadCsvPractical:
 class TestLoadCsvFlatTuple:
     """Test load_csv with flat tuples."""
 
-    def test_load_csv_flat_tuple(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_flat_tuple(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with flat tuple of CSV files."""
         file1 = tmp_path / "data1.csv"
         file2 = tmp_path / "data2.csv"
@@ -544,9 +524,7 @@ class TestLoadCsvFlatTuple:
             )
             click.echo(f"Total: {total}")
 
-        result = cli_runner.invoke(
-            cmd, ["--files", str(file1), str(file2), str(file3)]
-        )
+        result = cli_runner.invoke(cmd, ["--files", str(file1), str(file2), str(file3)])
         assert result.exit_code == 0
         assert "Total: 210" in result.output
 
@@ -566,8 +544,7 @@ class TestLoadCsvFlatTuple:
         def cmd(files: Any) -> None:
             assert files is not None
             total = sum(
-                sum(int(cell) for row in csv_data for cell in row)
-                for csv_data in files
+                sum(int(cell) for row in csv_data for cell in row) for csv_data in files
             )
             click.echo(f"Total: {total}")
 
@@ -579,9 +556,7 @@ class TestLoadCsvFlatTuple:
 class TestLoadCsvNestedTuple:
     """Test load_csv with nested tuples."""
 
-    def test_load_csv_nested_tuple(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_csv_nested_tuple(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_csv with nested tuple of CSV files."""
         file1 = tmp_path / "quarter1_jan.csv"
         file2 = tmp_path / "quarter1_feb.csv"

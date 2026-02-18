@@ -23,9 +23,7 @@ class TestHumanizeList:
 
     def test_three_items(self) -> None:
         """Test formatting three items."""
-        assert (
-            humanize_iterable(["str", "int", "float"]) == "str, int and float"
-        )
+        assert humanize_iterable(["str", "int", "float"]) == "str, int and float"
         assert humanize_iterable([1, 2, 3]) == "1, 2 and 3"
 
     def test_four_items(self) -> None:
@@ -207,10 +205,7 @@ class TestHumanizeList:
 
     def test_wrap_tuple_two_items(self) -> None:
         """Test wrapping two items with tuple."""
-        assert (
-            humanize_iterable(["str", "int"], wrap=("<", ">"))
-            == "<str> and <int>"
-        )
+        assert humanize_iterable(["str", "int"], wrap=("<", ">")) == "<str> and <int>"
         assert humanize_iterable(["x", "y"], wrap=("[", "]")) == "[x] and [y]"
 
     def test_wrap_tuple_three_items(self) -> None:
@@ -366,17 +361,12 @@ class TestHumanizeType:
 
     def test_union_of_generics(self) -> None:
         """Test union of generic types."""
-        assert (
-            humanize_type(list[str] | tuple[str]) == "list[str] and tuple[str]"
-        )
+        assert humanize_type(list[str] | tuple[str]) == "list[str] and tuple[str]"
         assert humanize_type(str | list[str]) == "str and list[str]"
 
     def test_complex_nested_union(self) -> None:
         """Test complex nested union in list."""
-        assert (
-            humanize_type(str | list[str | float])
-            == "str and list[str | float]"
-        )
+        assert humanize_type(str | list[str | float]) == "str and list[str | float]"
         assert humanize_type(int | list[str | int]) == "int and list[str | int]"
 
     def test_deeply_nested_list(self) -> None:

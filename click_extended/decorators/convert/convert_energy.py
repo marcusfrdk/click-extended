@@ -148,8 +148,7 @@ def convert_energy(
         - **ktTNT**: Kiloton of TNT equivalent
         - **MtTNT**: Megaton of TNT equivalent
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertEnergy.as_decorator(from_unit=from_unit, to_unit=to_unit)

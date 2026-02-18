@@ -40,8 +40,7 @@ def load_toml() -> Decorator:
 
     Supports: `pathlib.Path`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return LoadToml.as_decorator()

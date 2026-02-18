@@ -20,9 +20,7 @@ def test_port() -> None:
 
     result = runner.invoke(cli, ["70000"])
     assert result.exit_code != 0
-    assert (
-        "Value '70000' is not a valid port number (1-65535)." in result.output
-    )
+    assert "Value '70000' is not a valid port number (1-65535)." in result.output
 
     result = runner.invoke(cli, ["--", "-1"])
     assert result.exit_code != 0

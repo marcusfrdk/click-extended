@@ -26,7 +26,7 @@ class Context:
     """
     Context with a unified all contextual information across the context.
 
-    Attributes:
+    :Attributes:
       root (RootNode):
         The root command node of the entire CLI tree.
       current (Node | None):
@@ -48,8 +48,8 @@ class Context:
         Shared data store accessible across all nodes. Use this to pass
         custom data between nodes.
       debug (bool):
-        Debug mode flag. When `True`, handler exceptions show full tracebacks.
-        Set via `@debug()` decorator.
+        Debug mode flag. When ``True``, handler exceptions show full tracebacks.
+        Set via ``@debug()`` decorator.
     """
 
     root: "RootNode"
@@ -65,11 +65,11 @@ class Context:
 
     def is_root(self) -> bool:
         """
-        Check if the current node is a `RootNode` instance.
+        Check if the current node is a ``RootNode`` instance.
 
-        Returns:
-            bool:
-                `True` if current node is a `RootNode`, `False` otherwise.
+        :returns:
+            ``True`` if current node is a ``RootNode``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.nodes._root_node import RootNode
 
@@ -77,11 +77,11 @@ class Context:
 
     def is_parent(self) -> bool:
         """
-        Check if the current node is a `ParentNode` instance.
+        Check if the current node is a ``ParentNode`` instance.
 
-        Returns:
-            bool:
-                `True` if current node is a `ParentNode`, `False` otherwise.
+        :returns:
+            ``True`` if current node is a ``ParentNode``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.nodes.parent_node import ParentNode
 
@@ -89,11 +89,11 @@ class Context:
 
     def is_tag(self) -> bool:
         """
-        Check if the parent node is a `Tag` instance.
+        Check if the parent node is a ``Tag`` instance.
 
-        Returns:
-            bool:
-                `True` if parent is a `Tag`, `False` otherwise.
+        :returns:
+            ``True`` if parent is a ``Tag``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.decorators.tag import Tag
 
@@ -101,11 +101,11 @@ class Context:
 
     def is_child(self) -> bool:
         """
-        Check if the current node is a `ChildNode` instance.
+        Check if the current node is a ``ChildNode`` instance.
 
-        Returns:
-            bool:
-                `True` if current node is a `ChildNode`, `False` otherwise.
+        :returns:
+            ``True`` if current node is a ``ChildNode``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.nodes.child_node import ChildNode
 
@@ -113,11 +113,11 @@ class Context:
 
     def is_argument(self) -> bool:
         """
-        Check if the current node is an `Argument` instance.
+        Check if the current node is an ``Argument`` instance.
 
-        Returns:
-            bool:
-                `True` if current node is an `Argument`, `False` otherwise.
+        :returns:
+            ``True`` if current node is an ``Argument``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.decorators.argument import Argument
 
@@ -125,11 +125,11 @@ class Context:
 
     def is_option(self) -> bool:
         """
-        Check if the current node is an `Option` instance.
+        Check if the current node is an ``Option`` instance.
 
-        Returns:
-            bool:
-                `True` if current node is an `Option`, `False` otherwise.
+        :returns:
+            ``True`` if current node is an ``Option``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.decorators.option import Option
 
@@ -137,11 +137,11 @@ class Context:
 
     def is_env(self) -> bool:
         """
-        Check if the current node is an `Env` instance.
+        Check if the current node is an ``Env`` instance.
 
-        Returns:
-            bool:
-                `True` if current node is an `Env`, `False` otherwise.
+        :returns:
+            ``True`` if current node is an ``Env``, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.decorators.env import Env
 
@@ -151,9 +151,9 @@ class Context:
         """
         Check if the current instance is tagged.
 
-        Returns:
-            bool:
-                `True` if current node has tags, `False` otherwise.
+        :returns:
+            ``True`` if current node has tags, ``False`` otherwise.
+        :rtype: bool
         """
         from click_extended.core.nodes.parent_node import ParentNode
 
@@ -165,9 +165,9 @@ class Context:
         """
         Get the root node.
 
-        Returns:
-            RootNode:
-                The root node of the tree.
+        :returns:
+            The root node of the tree.
+        :rtype: RootNode
         """
         return self.root
 
@@ -175,14 +175,13 @@ class Context:
         """
         Get a list of all children defined under the same parent.
 
-        Args:
-            name (str | None, optional):
-                The parent name to get children from. If `None`,
-                uses the current parent.
+        :param name:
+            The parent name to get children from. If ``None``,
+            uses the current parent.
 
-        Returns:
-            list[ChildNode]:
-                List of child nodes under the specified parent.
+        :returns:
+            List of child nodes under the specified parent.
+        :rtype: list[ChildNode]
         """
         from click_extended.core.decorators.tag import Tag
         from click_extended.core.nodes.child_node import ChildNode
@@ -201,9 +200,7 @@ class Context:
             return []
 
         return [
-            child
-            for child in parent.children.values()
-            if isinstance(child, ChildNode)
+            child for child in parent.children.values() if isinstance(child, ChildNode)
         ]
 
     def get_siblings(self) -> list["ChildNode"]:
@@ -211,9 +208,9 @@ class Context:
         Get a list of all siblings in the current parent, excluding the
         current child.
 
-        Returns:
-            list[ChildNode]:
-                List of sibling child nodes.
+        :returns:
+            List of sibling child nodes.
+        :rtype: list[ChildNode]
         """
         from click_extended.core.nodes.child_node import ChildNode
 
@@ -227,13 +224,12 @@ class Context:
         """
         Get a parent node by name.
 
-        Args:
-            name (str):
-                The parent node name to retrieve.
+        :param name:
+            The parent node name to retrieve.
 
-        Returns:
-            ParentNode | None:
-                The parent node if found, `None` otherwise.
+        :returns:
+            The parent node if found, ``None`` otherwise.
+        :rtype: ParentNode | None
         """
         return self.parents.get(name)
 
@@ -241,13 +237,12 @@ class Context:
         """
         Get any node by name.
 
-        Args:
-            name (str):
-                The node name to retrieve.
+        :param name:
+            The node name to retrieve.
 
-        Returns:
-            Node | None:
-                The node if found, `None` otherwise.
+        :returns:
+            The node if found, ``None`` otherwise.
+        :rtype: Node | None
         """
         return self.nodes.get(name)
 
@@ -255,13 +250,12 @@ class Context:
         """
         Get a tag by name.
 
-        Args:
-            name (str):
-                The tag name to retrieve.
+        :param name:
+            The tag name to retrieve.
 
-        Returns:
-            Tag | None:
-                The tag if found, `None` otherwise.
+        :returns:
+            The tag if found, ``None`` otherwise.
+        :rtype: Tag | None
         """
         return self.tags.get(name)
 
@@ -277,15 +271,14 @@ class Context:
         """
         Get tagged parent nodes, either all tags or a specific tag.
 
-        Args:
-            name (str | None, optional):
-                The tag name to get parents for. If `None`, returns all tags.
+        :param name:
+            The tag name to get parents for. If ``None``, returns all tags.
 
-        Returns:
-            dict[str, list[ParentNode]] | list[ParentNode]:
-                If `name` is `None`, returns a dictionary mapping tag names to
-                lists of parent nodes. If `name` is provided, returns a list
-                of parent nodes with that tag.
+        :returns:
+            If ``name`` is ``None``, returns a dictionary mapping tag names to
+            lists of parent nodes. If ``name`` is provided, returns a list
+            of parent nodes with that tag.
+        :rtype: dict[str, list[ParentNode]] | list[ParentNode]
         """
         result: dict[str, list["ParentNode"]] = {}
 
@@ -304,21 +297,19 @@ class Context:
         """
         Get the processed value of all source nodes.
 
-        Returns:
-            dict[str, Any]:
-                Dictionary mapping parent names to their processed values.
+        :returns:
+            Dictionary mapping parent names to their processed values.
+        :rtype: dict[str, Any]
         """
-        return {
-            name: parent.get_value() for name, parent in self.parents.items()
-        }
+        return {name: parent.get_value() for name, parent in self.parents.items()}
 
     def get_provided_arguments(self) -> list["Argument"]:
         """
         Get all provided positional arguments.
 
-        Returns:
-            list[Argument]:
-                List of provided argument nodes.
+        :returns:
+            List of provided argument nodes.
+        :rtype: list[Argument]
         """
         from click_extended.core.decorators.argument import Argument
 
@@ -332,9 +323,9 @@ class Context:
         """
         Get all provided keyword arguments.
 
-        Returns:
-            list[Option]:
-                List of provided option nodes.
+        :returns:
+            List of provided option nodes.
+        :rtype: list[Option]
         """
         from click_extended.core.decorators.option import Option
 
@@ -348,9 +339,9 @@ class Context:
         """
         Get all provided environment variables.
 
-        Returns:
-            list[Env]:
-                List of provided env nodes.
+        :returns:
+            List of provided env nodes.
+        :rtype: list[Env]
         """
         from click_extended.core.decorators.env import Env
 
@@ -364,14 +355,13 @@ class Context:
         """
         Get the provided raw value of a parent node (before processing).
 
-        Args:
-            name (str):
-                The parent node name.
+        :param name:
+            The parent node name.
 
-        Returns:
-            Any:
-                The raw value if parent exists and was provided, `None`
-                otherwise.
+        :returns:
+            The raw value if parent exists and was provided, ``None``
+            otherwise.
+        :rtype: Any
         """
         parent = self.get_parent(name)
         if parent is not None and parent.was_provided:
@@ -382,9 +372,9 @@ class Context:
         """
         Get the provided raw values in the context (before processing).
 
-        Returns:
-            dict[str, Any]:
-                The provided raw values in the context.
+        :returns:
+            The provided raw values in the context.
+        :rtype: dict[str, Any]
         """
         provided: dict[str, Any] = {}
         for name, parent in self.parents.items():
@@ -396,9 +386,9 @@ class Context:
         """
         Get all missing positional arguments.
 
-        Returns:
-            list[Argument]:
-                List of all argument nodes.
+        :returns:
+            List of all argument nodes.
+        :rtype: list[Argument]
         """
         from click_extended.core.decorators.argument import Argument
 
@@ -412,9 +402,9 @@ class Context:
         """
         Get all missing keyword arguments.
 
-        Returns:
-            list[Option]:
-                List of all option nodes.
+        :returns:
+            List of all option nodes.
+        :rtype: list[Option]
         """
         from click_extended.core.decorators.option import Option
 
@@ -428,9 +418,9 @@ class Context:
         """
         Get all missing environment variables.
 
-        Returns:
-            list[Env]:
-                List of all env nodes.
+        :returns:
+            List of all env nodes.
+        :rtype: list[Env]
         """
         from click_extended.core.decorators.env import Env
 
@@ -444,9 +434,9 @@ class Context:
         """
         Get a list of the tags of the current node.
 
-        Returns:
-            list[str]:
-                List of tag names for the current node.
+        :returns:
+            List of tag names for the current node.
+        :rtype: list[str]
         """
         from click_extended.core.nodes.parent_node import ParentNode
 
@@ -456,15 +446,14 @@ class Context:
 
     def get_current_parent_as_parent(self) -> "ParentNode":
         """
-        Get the current parent node as a `ParentNode`.
+        Get the current parent node as a ``ParentNode``.
 
-        Returns:
-            ParentNode:
-                The current parent node.
+        :returns:
+            The current parent node.
+        :rtype: ParentNode
 
-        Raises:
-            RuntimeError:
-                If called outside child node context or the parent is a `Tag`.
+        :raises RuntimeError:
+            If called outside child node context or the parent is a ``Tag``.
         """
         from click_extended.core.decorators.tag import Tag
 
@@ -476,16 +465,15 @@ class Context:
 
     def get_current_parent_as_tag(self) -> "Tag":
         """
-        Get the current parent node as a `Tag`.
+        Get the current parent node as a ``Tag``.
 
-        Returns:
-            Tag:
-                The current parent node.
+        :returns:
+            The current parent node.
+        :rtype: Tag
 
-        Raises:
-            RuntimeError:
-                If called outside child node context or
-                the parent is a `ParentNode`.
+        :raises RuntimeError:
+            If called outside child node context or
+            the parent is a ``ParentNode``.
         """
         from click_extended.core.nodes.parent_node import ParentNode
 

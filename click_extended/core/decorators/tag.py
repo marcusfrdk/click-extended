@@ -17,11 +17,10 @@ class Tag(Node):
 
     def __init__(self, name: str):
         """
-        Initialize a new `Tag` instance.
+        Initialize a new ``Tag`` instance.
 
-        Args:
-            name (str):
-                The name of the tag for grouping ParentNodes.
+        :param name:
+            The name of the tag for grouping ParentNodes.
         """
         super().__init__(name=name, children={})
         self.parent_nodes: list["ParentNode"] = []
@@ -31,9 +30,9 @@ class Tag(Node):
         Get the names of all ParentNodes in this tag
         that were provided by the user.
 
-        Returns:
-            list[str]:
-                List of parameter names that were provided.
+        :returns:
+            List of parameter names that were provided.
+        :rtype: list[str]
         """
         return [node.name for node in self.parent_nodes if node.was_provided]
 
@@ -43,11 +42,11 @@ class Tag(Node):
 
         Returns a dictionary mapping parameter names to their values from all
         parent nodes that reference this tag. Each key is the parent
-        node's name, and the value is `None` if not provided.
+        node's name, and the value is ``None`` if not provided.
 
-        Returns:
-            dict[str, Any]:
-                Dictionary mapping parameter names to values.
+        :returns:
+            Dictionary mapping parameter names to values.
+        :rtype: dict[str, Any]
         """
         return {
             parent_node.name: parent_node.get_value()
@@ -55,19 +54,16 @@ class Tag(Node):
         }
 
     @classmethod
-    def as_decorator(
-        cls, name: str
-    ) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def as_decorator(cls, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
         """
         Return a decorator representation of the tag.
 
-        Args:
-            name (str):
-                The name of the tag.
+        :param name:
+            The name of the tag.
 
-        Returns:
-            Callable:
-                A decorator function that registers the tag.
+        :returns:
+            A decorator function that registers the tag.
+        :rtype: Callable
         """
 
         def decorator(func: Callable[P, T]) -> Callable[P, T]:
@@ -81,18 +77,17 @@ class Tag(Node):
 
 def tag(name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    A special `Tag` decorator to create a tag for grouping parent nodes.
+    A special ``Tag`` decorator to create a tag for grouping parent nodes.
 
     Tags allow you to apply child nodes to multiple parent nodes at once
     and perform cross-node validation.
 
-    Args:
-        name (str):
-            The name of the tag.
+    :param name:
+        The name of the tag.
 
-    Returns:
-        Callable:
-            A decorator function that registers the tag.
+    :returns:
+        A decorator function that registers the tag.
+    :rtype: Callable
 
     Examples:
 

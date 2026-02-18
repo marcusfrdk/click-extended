@@ -554,9 +554,7 @@ class TestTagIntegrationWithChildren:
         tag_values_received = {}
 
         class TestChild(ChildNode):
-            def handle_tag(
-                self, value: Any, context: Any, **kwargs: Any
-            ) -> None:
+            def handle_tag(self, value: Any, context: Any, **kwargs: Any) -> None:
                 tag_values_received.update(value)  # type: ignore
 
         @command()
@@ -574,9 +572,7 @@ class TestTagIntegrationWithChildren:
         """Test ChildNode can validate via handle_tag()."""
 
         class ValidatingChild(ChildNode):
-            def handle_tag(
-                self, value: Any, context: Any, **kwargs: Any
-            ) -> None:
+            def handle_tag(self, value: Any, context: Any, **kwargs: Any) -> None:
                 provided_count = sum(1 for v in value.values() if v is not None)
                 if provided_count == 0:
                     raise click.UsageError("At least one option required")
@@ -602,9 +598,7 @@ class TestTagIntegrationWithChildren:
         captured_values: dict[str, Any] = {}
 
         class CapturingChild(ChildNode):
-            def handle_tag(
-                self, value: Any, context: Any, **kwargs: Any
-            ) -> None:
+            def handle_tag(self, value: Any, context: Any, **kwargs: Any) -> None:
                 captured_values.update(value)
 
         @command()
@@ -627,15 +621,11 @@ class TestTagIntegrationWithChildren:
         child2_called: list[str] = []
 
         class Child1(ChildNode):
-            def handle_tag(
-                self, value: Any, context: Any, **kwargs: Any
-            ) -> None:
+            def handle_tag(self, value: Any, context: Any, **kwargs: Any) -> None:
                 child1_called.append("called")
 
         class Child2(ChildNode):
-            def handle_tag(
-                self, value: Any, context: Any, **kwargs: Any
-            ) -> None:
+            def handle_tag(self, value: Any, context: Any, **kwargs: Any) -> None:
                 child2_called.append("called")
 
         @command()

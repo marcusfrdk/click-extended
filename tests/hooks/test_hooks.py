@@ -9,11 +9,7 @@ import pytest
 
 from click_extended.core.nodes._root_node import RootNode
 from click_extended.hooks.hook_event import HookEvent
-from click_extended.hooks.hook_phase import (
-    HookPhase,
-    bind_scoped_hooks,
-    run_hook_phase,
-)
+from click_extended.hooks.hook_phase import HookPhase, bind_scoped_hooks, run_hook_phase
 from click_extended.hooks.hook_registry import HookRegistry, get_registry
 from click_extended.hooks.on_boot import on_boot
 from click_extended.hooks.on_error import on_error

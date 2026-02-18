@@ -28,12 +28,8 @@ def subtract(n: int | float) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        n (int | float):
-            The value to subtract.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The value to subtract.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Subtract.as_decorator(n=n)

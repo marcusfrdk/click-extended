@@ -100,17 +100,11 @@ def between(
 
     Supports: `int`, `float`, `date`, `time`, `datetime`
 
-    Args:
-        lower (int | float | date | time | datetime):
-            The lower bound to check.
-        upper (int | float | date | time | datetime):
-            The upper bound to check.
-        inclusive (bool, optional):
-            Whether to include the bounds or not. Defaults to `True`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param lower: The lower bound to check.
+    :param upper: The upper bound to check.
+    :param inclusive: Whether to include the bounds or not. Defaults to ``True``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Between.as_decorator(
         lower=lower,

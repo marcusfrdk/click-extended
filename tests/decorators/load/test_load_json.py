@@ -38,9 +38,7 @@ class TestLoadJsonBasic:
         assert "Name: test" in result.output
         assert "Value: 42" in result.output
 
-    def test_load_json_array(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_json_array(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_json with JSON array."""
         json_file = tmp_path / "array.json"
         json_file.write_text("[1, 2, 3, 4, 5]")
@@ -105,9 +103,7 @@ class TestLoadJsonBasic:
         assert result.exit_code == 0
         assert "Empty: True" in result.output
 
-    def test_load_json_empty_array(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_json_empty_array(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_json with empty JSON array."""
         json_file = tmp_path / "empty.json"
         json_file.write_text("[]")
@@ -375,9 +371,7 @@ class TestLoadJsonTypes:
         assert result.exit_code == 0
         assert "Value: True" in result.output
 
-    def test_load_json_null_value(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_json_null_value(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_json with null as root value returns None."""
         json_file = tmp_path / "null.json"
         json_file.write_text("null")
@@ -398,9 +392,7 @@ class TestLoadJsonTypes:
 class TestLoadJsonPractical:
     """Test practical use cases for load_json."""
 
-    def test_load_json_config_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_json_config_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_json for application config."""
         config_file = tmp_path / "config.json"
         config = {
@@ -415,12 +407,8 @@ class TestLoadJsonPractical:
         @load_json()
         def cmd(config: Any) -> None:
             assert config is not None
-            click.echo(
-                f"App: {config['app']['name']} v{config['app']['version']}"
-            )
-            click.echo(
-                f"DB: {config['database']['host']}:{config['database']['port']}"
-            )
+            click.echo(f"App: {config['app']['name']} v{config['app']['version']}")
+            click.echo(f"DB: {config['database']['host']}:{config['database']['port']}")
 
         result = cli_runner.invoke(cmd, ["--config", str(config_file)])
         assert result.exit_code == 0
@@ -481,9 +469,7 @@ class TestLoadJsonPractical:
 class TestLoadJsonFlatTuple:
     """Test load_json with flat tuples."""
 
-    def test_load_json_flat_tuple(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_json_flat_tuple(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_json with flat tuple of JSON files."""
         file1 = tmp_path / "data1.json"
         file2 = tmp_path / "data2.json"
@@ -503,9 +489,7 @@ class TestLoadJsonFlatTuple:
             total = sum(f["value"] for f in files)
             click.echo(f"Total: {total}")
 
-        result = cli_runner.invoke(
-            cmd, ["--files", str(file1), str(file2), str(file3)]
-        )
+        result = cli_runner.invoke(cmd, ["--files", str(file1), str(file2), str(file3)])
         assert result.exit_code == 0
         assert "Total: 60" in result.output
 
@@ -599,9 +583,7 @@ class TestLoadJsonNestedTuple:
                 merged: dict[str, Any] = {}
                 for cfg in group:
                     merged.update(cfg)
-                click.echo(
-                    f"Env: {merged['env']}, Port: {merged.get('port', 'N/A')}"
-                )
+                click.echo(f"Env: {merged['env']}, Port: {merged.get('port', 'N/A')}")
 
         result = cli_runner.invoke(
             cmd,

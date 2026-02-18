@@ -28,85 +28,59 @@ def to_file(
     is_executable: bool = False,
 ) -> Decorator:
     """
-    Convert, validate, and process a string to a `pathlib.Path` file.
-
-    This decorator is pre-configured to only accept files:
-    - `allow_file=True`
-    - `allow_directory=False`
-    - `allow_symlink=False`
+    Convert, validate, and process a string to a ``pathlib.Path`` file.
 
     Type: `ChildNode`
 
     Supports: `str`, `Path`
 
-    Args:
-        exists (bool, optional):
-            Whether the file needs to exist.
-            Defaults to `True`.
+    :param exists: Whether the file needs to exist. Defaults to ``True``.
+    :param parents: Create parent directories if they don't exist. Defaults to
+        ``False``.
+    :param resolve: Convert the path to an absolute path. When ``True``,
+        resolves ``.`` and ``..`` components. When False, only makes the path
+        absolute without resolution. Defaults to ``True``.
+    :param extensions: A list of extensions to require the file to end with.
+        By default, all extensions are allowed.
 
-        parents (bool, optional):
-            Create parent directories if they don't exist.
-            Defaults to `False`.
+        ```python
+        extensions=[".py", ".pyx"]  # Only Python files
+        extensions=[".txt"]         # Only text files
+        ```
 
-        resolve (bool, optional):
-            Convert the path to an absolute path. When `True`, resolves
-            `.` and `..` components. When False, only makes the path
-            absolute without resolution.
-            Defaults to `True`.
+    :param allow_empty_file: Whether to allow the file to be empty (0 bytes).
+        Defaults to ``True``.
+    :param include_pattern: A whitelist pattern. Uses shell-style glob patterns.
+        Defaults to ``None`` (All file names allowed).
 
-        extensions (list[str], optional):
-            A list of extensions to require the file to end with.
-            By default, all extensions are allowed.
+        When both ``include_pattern`` and ``exclude_pattern`` are provided,
+        ``include_pattern`` takes precedence (files matching include
+        are always accepted).
 
-            ```python
-            extensions=[".py", ".pyx"]  # Only Python files
-            extensions=[".txt"]         # Only text files
-            ```
+        ```python
+        include_pattern="*.py"      # Only Python files
+        include_pattern="config_*"  # Files starting with "config_"
+        ```
 
-        allow_empty_file (bool, optional):
-            Whether to allow the file to be empty (0 bytes).
-            Defaults to `True`.
+    :param exclude_pattern: A blacklist pattern. Uses shell-style glob patterns.
+        Defaults to ``None`` (No file names excluded).
 
-        include_pattern (str, optional):
-            A whitelist pattern. Uses shell-style glob patterns.
-            Defaults to `None` (All file names allowed).
+        If provided without ``include_pattern``, file names matching this
+        pattern will be rejected, and all other file names will be
+        allowed.
 
-            When both `include_pattern` and `exclude_pattern` are provided,
-            `include_pattern` takes precedence (files matching include
-            are always accepted).
+        When both ``include_pattern`` and ``exclude_pattern`` are provided,
+        ``include_pattern`` takes precedence (files matching include
+        are always accepted).
 
-            ```python
-            include_pattern="*.py"      # Only Python files
-            include_pattern="config_*"  # Files starting with "config_"
-            ```
-
-        exclude_pattern (str, optional):
-            A blacklist pattern. Uses shell-style glob patterns.
-            Defaults to `None` (No file names excluded).
-
-            If provided without `include_pattern`, file names matching this
-            pattern will be rejected, and all other file names will be
-            allowed.
-
-            When both `include_pattern` and `exclude_pattern` are provided,
-            `include_pattern` takes precedence (files matching include
-            are always accepted).
-
-        is_readable (bool, optional):
-            Whether the file has `read` permissions.
-            Defaults to `False`.
-
-        is_writable (bool, optional):
-            Whether the file has `write` permissions.
-            Default to `False`.
-
-        is_executable (bool, optional):
-            A unix-only feature that checks if the file has
-            `execute` permissions. Defaults to `False`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param is_readable: Whether the file has ``read`` permissions. Defaults to
+        ``False``.
+    :param is_writable: Whether the file has ``write`` permissions. Default to
+        ``False``.
+    :param is_executable: A unix-only feature that checks if the file has
+        ``execute`` permissions. Defaults to ``False``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ToFile.as_decorator(
         exists=exists,

@@ -28,9 +28,7 @@ class TestAtLeastBasic:
         assert result.exit_code == 0
         assert "Success" in result.output
 
-    def test_at_least_with_more_than_required(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_at_least_with_more_than_required(self, cli_runner: CliRunner) -> None:
         """Test that providing more than required succeeds."""
 
         @command()
@@ -42,9 +40,7 @@ class TestAtLeastBasic:
         def cmd(opt1: str | None, opt2: str | None, opt3: str | None) -> None:
             click.echo("Success")
 
-        result = cli_runner.invoke(
-            cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"]
-        )
+        result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"])
         assert result.exit_code == 0
         assert "Success" in result.output
 
@@ -67,9 +63,7 @@ class TestAtLeastBasic:
         assert "At least 2" in result.output
         assert "only 1" in result.output
 
-    def test_at_least_with_none_provided_fails(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_at_least_with_none_provided_fails(self, cli_runner: CliRunner) -> None:
         """Test that providing no parameters fails."""
 
         @command()
@@ -90,9 +84,7 @@ class TestAtLeastBasic:
 class TestAtLeastOne:
     """Test at_least(1) - at least one required."""
 
-    def test_at_least_one_with_one_provided(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_at_least_one_with_one_provided(self, cli_runner: CliRunner) -> None:
         """Test at_least(1) succeeds with one parameter."""
 
         @command()
@@ -101,9 +93,7 @@ class TestAtLeastOne:
         @option("--phone", default=None, tags="auth")
         @tag("auth")
         @at_least(1)
-        def cmd(
-            username: str | None, email: str | None, phone: str | None
-        ) -> None:
+        def cmd(username: str | None, email: str | None, phone: str | None) -> None:
             click.echo("Success")
 
         result = cli_runner.invoke(cmd, ["--username", "john"])
@@ -118,9 +108,7 @@ class TestAtLeastOne:
         @option("--phone", default=None, tags="auth")
         @tag("auth")
         @at_least(1)
-        def cmd(
-            username: str | None, email: str | None, phone: str | None
-        ) -> None:
+        def cmd(username: str | None, email: str | None, phone: str | None) -> None:
             click.echo("Success")
 
         result = cli_runner.invoke(cmd, [])
@@ -170,9 +158,7 @@ class TestAtLeastMultiple:
         ) -> None:
             click.echo("Success")
 
-        result = cli_runner.invoke(
-            cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"]
-        )
+        result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"])
         assert result.exit_code == 0
 
         result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt2", "b"])
@@ -237,9 +223,7 @@ class TestAtLeastErrorMessages:
         assert result.exit_code == 1
         assert "0 were given" in result.output
 
-    def test_error_message_shows_param_names(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_shows_param_names(self, cli_runner: CliRunner) -> None:
         """Test error message shows parameter names."""
 
         @command()
@@ -268,9 +252,7 @@ class TestAtLeastPractical:
         @option("--address", default=None, tags="contact")
         @tag("contact")
         @at_least(1)
-        def register(
-            email: str | None, phone: str | None, address: str | None
-        ) -> None:
+        def register(email: str | None, phone: str | None, address: str | None) -> None:
             click.echo("Registration successful")
 
         result = cli_runner.invoke(register, ["--email", "test@example.com"])
@@ -288,9 +270,7 @@ class TestAtLeastPractical:
         @option("--bank", default=None, tags="payment")
         @tag("payment")
         @at_least(1)
-        def checkout(
-            card: str | None, paypal: str | None, bank: str | None
-        ) -> None:
+        def checkout(card: str | None, paypal: str | None, bank: str | None) -> None:
             click.echo("Payment processed")
 
         result = cli_runner.invoke(checkout, ["--card", "1234"])

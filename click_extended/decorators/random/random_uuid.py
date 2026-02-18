@@ -16,9 +16,7 @@ class RandomUUID(ParentNode):
     def _validate_namespace(namespace: UUID | str | None, version: int) -> UUID:
         """Validate and convert namespace to UUID object."""
         if namespace is None:
-            raise ValueError(
-                f"namespace is required for UUID version {version}"
-            )
+            raise ValueError(f"namespace is required for UUID version {version}")
         if isinstance(namespace, str):
             try:
                 return UUID(namespace)
@@ -78,37 +76,28 @@ def random_uuid(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        version (Literal[1, 3, 4, 5], optional):
-            The version of the UUID. Defaults to 4.
-            - Version 1: Time-based UUID (includes MAC address and timestamp)
-            - Version 3: MD5 hash of namespace + name (deterministic)
-            - Version 4: Random UUID (recommended for most use cases)
-            - Version 5: SHA-1 hash of namespace + name (deterministic)
-        namespace (UUID | str | None, optional):
-            The namespace UUID for versions 3 and 5. Required for those
-            versions. Must be a valid UUID object, a valid UUID string in the
-            format 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', or use predefined
-            constants from the uuid module (NAMESPACE_DNS, NAMESPACE_URL,
-            NAMESPACE_OID, NAMESPACE_X500). The namespace acts as a domain
-            identifier to generate deterministic UUIDs.
-        uuid_name (str | None, optional):
-            The name string for versions 3 and 5. Required for those versions.
-            This is combined with the namespace to generate a deterministic
-            UUID. The same namespace and name will always produce the same UUID.
-        seed (int | None, optional):
-            Optional seed for reproducible UUIDs (only affects version 4).
+    :param name: The name of the parent node.
+    :param version: The version of the UUID. Defaults to 4.
 
-    Returns:
-        Decorator:
-            The decorator function.
+        - Version 1: Time-based UUID (includes MAC address and timestamp)
+        - Version 3: MD5 hash of namespace + name (deterministic)
+        - Version 4: Random UUID (recommended for most use cases)
+        - Version 5: SHA-1 hash of namespace + name (deterministic)
 
-    Raises:
-        ValueError:
-            If an unsupported UUID version is specified or if namespace/name
-            are missing for versions 3 or 5.
+    :param namespace: The namespace UUID for versions 3 and 5. Required for those
+        versions. Must be a valid UUID object, a valid UUID string in the
+        format 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', or use predefined
+        constants from the uuid module (NAMESPACE_DNS, NAMESPACE_URL,
+        NAMESPACE_OID, NAMESPACE_X500). The namespace acts as a domain
+        identifier to generate deterministic UUIDs.
+    :param uuid_name: The name string for versions 3 and 5. Required for those versions.
+        This is combined with the namespace to generate a deterministic
+        UUID. The same namespace and name will always produce the same UUID.
+    :param seed: Optional seed for reproducible UUIDs (only affects version 4).
+    :returns: The decorator function.
+    :rtype: Decorator
+    :raises ValueError: If an unsupported UUID version is specified or if namespace/name
+        are missing for versions 3 or 5.
     """
     return RandomUUID.as_decorator(
         name=name,

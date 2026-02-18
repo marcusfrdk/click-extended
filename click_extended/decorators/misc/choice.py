@@ -29,9 +29,7 @@ class Choice(ChildNode):
                 raise ValueError(f"Value must be {choices_str}, got '{value}'.")
         else:
             value_lower = value.lower()
-            values_lower = [
-                v.lower() if isinstance(v, str) else v for v in values
-            ]
+            values_lower = [v.lower() if isinstance(v, str) else v for v in values]
             if value_lower not in values_lower:
                 choices_str = humanize_iterable(
                     [str(v) for v in values],
@@ -79,35 +77,23 @@ class Choice(ChildNode):
         return value
 
 
-def choice(
-    *values: str | int | float, case_sensitive: bool = True
-) -> Decorator:
-    """
+def choice(*values: str | int | float, case_sensitive: bool = True) -> Decorator:
+    r"""
     Validate that a value is one of the allowed choices.
 
     Type: `ChildNode`
 
     Supports: `str`, `int`, `float`
 
-    Args:
-        *values (str | int | float):
-            The allowed values to choose from. Must be strings, integers,
-            or floats.
-        case_sensitive (bool, optional):
-            Whether the comparison should be case-sensitive for strings.
-            Defaults to `True`.
-
-    Returns:
-        Decorator:
-            The decorator function.
-
-    Raises:
-        ValueError:
-            If no values are provided.
-        TypeError:
-            If any value is not a string, integer, or float.
-        ValueError:
-            If the value is not one of the allowed choices.
+    :param \*values: The allowed values to choose from. Must be strings, integers,
+        or floats.
+    :param case_sensitive: Whether the comparison should be case-sensitive for strings.
+        Defaults to ``True``.
+    :raises ValueError: If no values are provided.
+    :raises TypeError: If any value is not a string, integer, or float.
+    :raises ValueError: If the value is not one of the allowed choices.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python

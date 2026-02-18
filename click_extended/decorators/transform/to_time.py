@@ -36,9 +36,7 @@ class ToTime(ChildNode):
             except ValueError:
                 continue
 
-        fmt_text = (
-            "either of the formats" if len(formats) != 1 else "in the format"
-        )
+        fmt_text = "either of the formats" if len(formats) != 1 else "in the format"
         raise ValueError(
             f"Invalid time '{value}', must be in "
             f"{fmt_text} {humanize_iterable(formats, sep='or')}"
@@ -48,24 +46,20 @@ class ToTime(ChildNode):
 def to_time(
     *formats: str,
 ) -> Decorator:
-    """
+    r"""
     Convert a string to a time by trying multiple formats.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        *formats (str):
-            One or more time format strings to try. Supports both Python
-            strptime format (e.g., "%H:%M:%S", "%I:%M %p") and simplified format
-            (e.g., "HH:mm:SS", "HH:mm"). The decorator will attempt each
-            format in order until one succeeds. Defaults to `"%H:%M:%S"`,
-            `"%H:%M"`, `"%I:%M:%S %p"`, and `"%I:%M %p"`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*formats: One or more time format strings to try. Supports both Python
+        strptime format (e.g., "%H:%M:%S", "%I:%M %p") and simplified format
+        (e.g., "HH:mm:SS", "HH:mm"). The decorator will attempt each
+        format in order until one succeeds. Defaults to ``"%H:%M:%S"``,
+        ``"%H:%M"``, ``"%I:%M:%S %p"``, and ``"%I:%M %p"``.
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Example:
         @to_time("HH:mm:SS", "HH:mm")

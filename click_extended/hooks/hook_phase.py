@@ -43,10 +43,7 @@ def bind_scoped_hooks(func: Callable[..., object], root: "RootNode") -> None:
     :param root: Root node to scope hooks to.
     """
     from click_extended.hooks.hook_registry import get_registry
-    from click_extended.hooks.hook_spec import (
-        clear_pending_specs,
-        get_pending_specs,
-    )
+    from click_extended.hooks.hook_spec import clear_pending_specs, get_pending_specs
 
     registry = get_registry()
     specs = get_pending_specs(func)

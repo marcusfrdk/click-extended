@@ -211,8 +211,7 @@ def convert_volume(
         - **tsk**: Tesked (5 ml)
         - **msk**: Matsked (15 ml)
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertVolume.as_decorator(from_unit=from_unit, to_unit=to_unit)

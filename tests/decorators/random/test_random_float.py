@@ -10,9 +10,7 @@ from click_extended.decorators.random.random_float import random_float
 class TestRandomFloatBasic:
     """Test basic random_float functionality."""
 
-    def test_generates_within_default_range(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_generates_within_default_range(self, cli_runner: CliRunner) -> None:
         """Test that default range is 0.0-1.0."""
 
         @command()
@@ -58,9 +56,7 @@ class TestRandomFloatBasic:
         """Test custom decimal places."""
 
         @command()
-        @random_float(
-            "ratio", min_value=0.0, max_value=1.0, decimals=5, seed=2003
-        )
+        @random_float("ratio", min_value=0.0, max_value=1.0, decimals=5, seed=2003)
         def cmd(ratio: float) -> None:
             click.echo(f"Ratio: {ratio}")
 
@@ -79,9 +75,7 @@ class TestRandomFloatBasic:
         for i in range(10):
 
             @command()
-            @random_float(
-                "value", min_value=0.0, max_value=100.0, seed=2004 + i
-            )
+            @random_float("value", min_value=0.0, max_value=100.0, seed=2004 + i)
             def cmd(value: float) -> None:
                 click.echo(f"Value: {value}")
 
@@ -155,9 +149,7 @@ class TestRandomFloatDecimals:
         """Test with 0 decimal places (whole numbers)."""
 
         @command()
-        @random_float(
-            "value", min_value=10.0, max_value=20.0, decimals=0, seed=2018
-        )
+        @random_float("value", min_value=10.0, max_value=20.0, decimals=0, seed=2018)
         def cmd(value: float) -> None:
             click.echo(f"Value: {value}")
 
@@ -170,9 +162,7 @@ class TestRandomFloatDecimals:
         """Test with 1 decimal place."""
 
         @command()
-        @random_float(
-            "score", min_value=0.0, max_value=10.0, decimals=1, seed=2019
-        )
+        @random_float("score", min_value=0.0, max_value=10.0, decimals=1, seed=2019)
         def cmd(score: float) -> None:
             click.echo(f"Score: {score}")
 
@@ -188,9 +178,7 @@ class TestRandomFloatDecimals:
         """Test with many decimal places."""
 
         @command()
-        @random_float(
-            "precise", min_value=0.0, max_value=1.0, decimals=10, seed=2020
-        )
+        @random_float("precise", min_value=0.0, max_value=1.0, decimals=10, seed=2020)
         def cmd(precise: float) -> None:
             click.echo(f"Precise: {precise}")
 
@@ -222,9 +210,7 @@ class TestRandomFloatErrors:
 class TestRandomFloatDistribution:
     """Test distribution properties."""
 
-    def test_includes_approximate_boundaries(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_includes_approximate_boundaries(self, cli_runner: CliRunner) -> None:
         """Test that values near boundaries can be generated."""
 
         values: list[float] = []
@@ -276,12 +262,8 @@ class TestRandomFloatIntegration:
         """Test multiple random_float decorators."""
 
         @command()
-        @random_float(
-            "price", min_value=10.0, max_value=100.0, decimals=2, seed=2172
-        )
-        @random_float(
-            "discount", min_value=0.0, max_value=1.0, decimals=2, seed=2173
-        )
+        @random_float("price", min_value=10.0, max_value=100.0, decimals=2, seed=2172)
+        @random_float("discount", min_value=0.0, max_value=1.0, decimals=2, seed=2173)
         def cmd(price: float, discount: float) -> None:
             click.echo(f"Price: {price}, Discount: {discount}")
 
@@ -299,12 +281,8 @@ class TestRandomFloatIntegration:
         """Test same range with different decimal precision."""
 
         @command()
-        @random_float(
-            "rough", min_value=0.0, max_value=10.0, decimals=1, seed=2174
-        )
-        @random_float(
-            "precise", min_value=0.0, max_value=10.0, decimals=5, seed=2175
-        )
+        @random_float("rough", min_value=0.0, max_value=10.0, decimals=1, seed=2174)
+        @random_float("precise", min_value=0.0, max_value=10.0, decimals=5, seed=2175)
         def cmd(rough: float, precise: float) -> None:
             click.echo(f"Rough: {rough}, Precise: {precise}")
 

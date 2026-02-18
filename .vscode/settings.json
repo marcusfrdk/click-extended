@@ -1,6 +1,6 @@
 {
   "[python]": {
-    "editor.rulers": [80]
+    "editor.rulers": [88]
   },
   "markdownlint.config": {
     "MD024": false, // No duplicate heading

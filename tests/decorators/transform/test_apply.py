@@ -382,9 +382,7 @@ class TestApplyWithMultipleOptions:
         assert result.exit_code == 0
         assert "X: 10, Y: 13" in result.output
 
-    def test_apply_order_with_multiple_options(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_apply_order_with_multiple_options(self, cli_runner: CliRunner) -> None:
         """Test that apply only affects most recent option."""
 
         @command()
@@ -507,9 +505,7 @@ class TestApplyPractical:
         assert result.exit_code == 0
         assert "Email: user@example.com" in result.output
 
-    def test_apply_for_percentage_to_decimal(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_apply_for_percentage_to_decimal(self, cli_runner: CliRunner) -> None:
         """Test converting percentage to decimal."""
 
         @command()
@@ -522,9 +518,7 @@ class TestApplyPractical:
         assert result.exit_code == 0
         assert "Rate: 0.75" in result.output
 
-    def test_apply_for_temperature_conversion(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_apply_for_temperature_conversion(self, cli_runner: CliRunner) -> None:
         """Test Celsius to Fahrenheit conversion."""
 
         @command()

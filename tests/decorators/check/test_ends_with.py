@@ -66,9 +66,7 @@ class TestEndsWithExactMatching:
         assert result.exit_code != 0
         assert "Value must end with the pattern '.pdf'" in result.output
 
-    def test_exact_multiple_suffixes_first_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exact_multiple_suffixes_first_match(self, cli_runner: CliRunner) -> None:
         """Test exact matching with multiple suffixes (first matches)."""
 
         @command()
@@ -80,9 +78,7 @@ class TestEndsWithExactMatching:
         result = cli_runner.invoke(cmd, ["--filename", "image.jpg"])
         assert result.exit_code == 0
 
-    def test_exact_multiple_suffixes_second_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exact_multiple_suffixes_second_match(self, cli_runner: CliRunner) -> None:
         """Test exact matching with multiple suffixes (second matches)."""
 
         @command()
@@ -94,9 +90,7 @@ class TestEndsWithExactMatching:
         result = cli_runner.invoke(cmd, ["--filename", "image.png"])
         assert result.exit_code == 0
 
-    def test_exact_multiple_suffixes_no_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exact_multiple_suffixes_no_match(self, cli_runner: CliRunner) -> None:
         """Test exact matching fails when none of multiple suffixes match."""
 
         @command()
@@ -108,8 +102,7 @@ class TestEndsWithExactMatching:
         result = cli_runner.invoke(cmd, ["--filename", "image.gif"])
         assert result.exit_code != 0
         assert (
-            "Value must end with one of the patterns '.jpg' or '.png'"
-            in result.output
+            "Value must end with one of the patterns '.jpg' or '.png'" in result.output
         )
 
 
@@ -132,9 +125,7 @@ class TestEndsWithGlobPatterns:
         result = cli_runner.invoke(cmd, ["--filename", "report_2024.pdf"])
         assert result.exit_code == 0
 
-    def test_glob_asterisk_wildcard_no_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_glob_asterisk_wildcard_no_match(self, cli_runner: CliRunner) -> None:
         """Test glob pattern with * wildcard fails."""
 
         @command()
@@ -159,9 +150,7 @@ class TestEndsWithGlobPatterns:
         result = cli_runner.invoke(cmd, ["--filename", "fileA.txt"])
         assert result.exit_code == 0
 
-    def test_glob_question_wildcard_no_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_glob_question_wildcard_no_match(self, cli_runner: CliRunner) -> None:
         """Test glob pattern with ? wildcard fails (too many chars)."""
 
         @command()
@@ -229,9 +218,7 @@ class TestEndsWithRegexPatterns:
         result = cli_runner.invoke(cmd, ["--filename", "document.pdf"])
         assert result.exit_code == 0
 
-    def test_regex_alternation_first_option(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_regex_alternation_first_option(self, cli_runner: CliRunner) -> None:
         """Test regex pattern matches first option."""
 
         @command()
@@ -243,9 +230,7 @@ class TestEndsWithRegexPatterns:
         result = cli_runner.invoke(cmd, ["--filename", "file.jpg"])
         assert result.exit_code == 0
 
-    def test_regex_alternation_second_option(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_regex_alternation_second_option(self, cli_runner: CliRunner) -> None:
         """Test regex pattern matches second option."""
 
         @command()
@@ -268,10 +253,7 @@ class TestEndsWithRegexPatterns:
 
         result = cli_runner.invoke(cmd, ["--filename", "file.bmp"])
         assert result.exit_code != 0
-        assert (
-            r"Value must end with the pattern '\.(jpg|png|gif)$'"
-            in result.output
-        )
+        assert r"Value must end with the pattern '\.(jpg|png|gif)$'" in result.output
 
     def test_regex_with_digits(self, cli_runner: CliRunner) -> None:
         """Test regex pattern matching digits."""
@@ -433,8 +415,7 @@ class TestEndsWithErrorMessages:
         result = cli_runner.invoke(cmd, ["--filename", "file.txt"])
         assert result.exit_code != 0
         assert (
-            "Value must end with one of the patterns '.jpg' or '.png'"
-            in result.output
+            "Value must end with one of the patterns '.jpg' or '.png'" in result.output
         )
 
     def test_error_message_three_patterns(self, cli_runner: CliRunner) -> None:
@@ -450,9 +431,7 @@ class TestEndsWithErrorMessages:
         assert result.exit_code != 0
         assert "one of the patterns '.jpg', '.png' or '.gif'" in result.output
 
-    def test_error_message_with_regex_pattern(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_with_regex_pattern(self, cli_runner: CliRunner) -> None:
         """Test error message shows regex pattern string."""
 
         @command()
@@ -463,9 +442,7 @@ class TestEndsWithErrorMessages:
 
         result = cli_runner.invoke(cmd, ["--filename", "file.txt"])
         assert result.exit_code != 0
-        assert (
-            r"Value must end with the pattern '\.(jpg|png)$'" in result.output
-        )
+        assert r"Value must end with the pattern '\.(jpg|png)$'" in result.output
 
 
 class TestEndsWithEdgeCases:
@@ -535,9 +512,7 @@ class TestEndsWithEdgeCases:
         result = cli_runner.invoke(cmd, ["--text", "你好世界"])
         assert result.exit_code == 0
 
-    def test_glob_pattern_without_leading_content(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_glob_pattern_without_leading_content(self, cli_runner: CliRunner) -> None:
         """Test glob pattern matches even without content before pattern."""
 
         @command()

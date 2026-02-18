@@ -51,9 +51,7 @@ class ConvertTime(ChildNode):
                 from_unit = str(kwargs["from_unit"])
                 return self._convert(val, from_unit, to_unit)
             except ValueError as e:
-                raise ValueError(
-                    f"Could not parse time string '{value}'."
-                ) from e
+                raise ValueError(f"Could not parse time string '{value}'.") from e
 
         total_seconds = Decimal("0.0")
         for val_str, unit in parts:
@@ -67,9 +65,7 @@ class ConvertTime(ChildNode):
     def handle_numeric(
         self, value: int | float, context: Context, *args: Any, **kwargs: Any
     ) -> Any:
-        return self._convert(
-            float(value), kwargs["from_unit"], kwargs["to_unit"]
-        )
+        return self._convert(float(value), kwargs["from_unit"], kwargs["to_unit"])
 
 
 def convert_time(
@@ -95,14 +91,9 @@ def convert_time(
         - **M**: Months
         - **y**: Years
 
-    Args:
-        from_unit (str):
-            The unit to convert from.
-        to_unit (str):
-            The unit to convert to.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param from_unit: The unit to convert from.
+    :param to_unit: The unit to convert to.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertTime.as_decorator(from_unit=from_unit, to_unit=to_unit)

@@ -29,49 +29,34 @@ def selection(
     more options using arrow keys (or j/k vim-style keys). The list wraps around
     (carousel behavior) when scrolling past the first or last item.
 
-    Args:
-        selections (list[str | tuple[str, str]]):
-            List of options. Each item can be:
-            - str: Used as both display text and value
-            - tuple[str, str]: (display_text, value)
-        prompt (str):
-            Text to display above the selection list.
-            Defaults to "Select an option".
-        multiple (bool):
-            If `True`, allows multiple selections with checkboxes.
-            If `False`, allows single selection only. Defaults to `False`.
-        default (str | list[str] | None):
-            Default selection(s). Should be a string for single mode,
-            or list of strings for multiple mode. Defaults to `None`.
-        min_selections (int):
-            Minimum number of selections required (multiple mode only).
-            Defaults to 0. User cannot confirm until minimum is met.
-        max_selections (int | None):
-            Maximum number of selections allowed (multiple mode only).
-            Defaults to `None` (unlimited). Prevents selecting more than max.
-        cursor_style (str):
-            The cursor indicator string. Defaults to ">".
-            Examples: ">", "→", "▶", "•"
-        checkbox_style (tuple[str, str]):
-            Tuple of (unselected, selected) checkbox indicators.
-            Defaults to ("◯", "◉").
-            Examples: ("☐", "☑"), ("○", "●"), ("[ ]", "[x]")
-        show_count (bool):
-            Whether to show selection count in the prompt.
-            Defaults to `False`. Shows "(X/Y selected)" when enabled.
+    :param selections: List of options. Each item can be:
+        - str: Used as both display text and value
+        - tuple[str, str]: (display_text, value)
+    :param prompt: Text to display above the selection list.
+        Defaults to "Select an option".
+    :param multiple: If ``True``, allows multiple selections with checkboxes.
+        If ``False``, allows single selection only. Defaults to ``False``.
+    :param default: Default selection(s). Should be a string for single mode,
+        or list of strings for multiple mode. Defaults to ``None``.
+    :param min_selections: Minimum number of selections required (multiple mode only).
+        Defaults to 0. User cannot confirm until minimum is met.
+    :param max_selections: Maximum number of selections allowed (multiple mode only).
+        Defaults to ``None`` (unlimited). Prevents selecting more than max.
+    :param cursor_style: The cursor indicator string. Defaults to ">".
+        Examples: ">", "→", "▶", "•"
+    :param checkbox_style: Tuple of (unselected, selected) checkbox indicators.
+        Defaults to ("◯", "◉").
+        Examples: ("☐", "☑"), ("○", "●"), ("[ ]", "[x]")
+    :param show_count: Whether to show selection count in the prompt.
+        Defaults to ``False``. Shows "(X/Y selected)" when enabled.
 
-    Returns:
-        str | list[str]:
-            Selected value(s). `str` for single mode, `list[str]` for
-            multiple mode.
+    :returns: Selected value(s). ``str`` for single mode, ``list[str]`` for
+        multiple mode.
+    :rtype: str | list[str]
 
-    Raises:
-        ValueError:
-            If selections list is empty or invalid.
-        RuntimeError:
-            If not running in a TTY and no default is provided.
-        KeyboardInterrupt:
-            If user presses Ctrl+C.
+    :raises ValueError: If selections list is empty or invalid.
+    :raises RuntimeError: If not running in a TTY and no default is provided.
+    :raises KeyboardInterrupt: If user presses Ctrl+C.
 
     Examples:
         >>> from click_extended.interactive import selection
@@ -100,8 +85,7 @@ def selection(
         if isinstance(item, tuple):
             if len(item) != 2:
                 raise ValueError(
-                    "Tuple selections must have exactly "
-                    f"2 elements, got {len(item)}"
+                    "Tuple selections must have exactly " f"2 elements, got {len(item)}"
                 )
             display, value = item
             normalized.append((str(display), str(value)))
@@ -110,14 +94,10 @@ def selection(
 
     if multiple:
         if min_selections < 0:
-            raise ValueError(
-                f"min_selections must be >= 0, got {min_selections}"
-            )
+            raise ValueError(f"min_selections must be >= 0, got {min_selections}")
         if max_selections is not None:
             if max_selections < 1:
-                raise ValueError(
-                    f"max_selections must be >= 1, got {max_selections}"
-                )
+                raise ValueError(f"max_selections must be >= 1, got {max_selections}")
             if max_selections < min_selections:
                 raise ValueError(
                     f"max_selections ({max_selections}) must be >= "
@@ -133,8 +113,7 @@ def selection(
         if default is not None:
             return default
         raise RuntimeError(
-            "Interactive selection requires a TTY. "
-            "Please provide a default value."
+            "Interactive selection requires a TTY. Please provide a default value."
         )
 
     cursor = 0
@@ -194,9 +173,7 @@ def selection(
                 is_selected = idx in selected
 
                 if multiple:
-                    checkbox = (
-                        checkbox_style[1] if is_selected else checkbox_style[0]
-                    )
+                    checkbox = checkbox_style[1] if is_selected else checkbox_style[0]
                     prefix = f"{cursor_style} " if is_cursor else "  "
                     lines.append(f"{prefix}{checkbox} {display}")
                 else:

@@ -39,19 +39,15 @@ class AtMost(ChildNode):
 
 def at_most(n: int) -> Decorator:
     """
-    Checks if at most `n` number of arguments
+    Checks if at most ``n`` number of arguments
     are provided.
 
     Type: `ChildNode`
 
     Supports: `Tag`
 
-    Args:
-        n (int):
-            The maximum number of arguments allowed.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The maximum number of arguments allowed.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return AtMost.as_decorator(n=n)

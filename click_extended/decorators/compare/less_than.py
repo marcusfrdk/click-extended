@@ -24,14 +24,10 @@ class LessThan(ChildNode):
 
         if inclusive:
             if value > threshold:
-                raise ValueError(
-                    f"Value must be at most {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be at most {threshold}, got {value}")
         else:
             if value >= threshold:
-                raise ValueError(
-                    f"Value must be less than {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be less than {threshold}, got {value}")
 
         return value
 
@@ -47,14 +43,10 @@ class LessThan(ChildNode):
 
         if inclusive:
             if value > threshold:
-                raise ValueError(
-                    f"Value must be at most {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be at most {threshold}, got {value}")
         else:
             if value >= threshold:
-                raise ValueError(
-                    f"Value must be less than {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be less than {threshold}, got {value}")
 
         return value
 
@@ -70,14 +62,10 @@ class LessThan(ChildNode):
 
         if inclusive:
             if value > threshold:
-                raise ValueError(
-                    f"Value must be at most {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be at most {threshold}, got {value}")
         else:
             if value >= threshold:
-                raise ValueError(
-                    f"Value must be less than {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be less than {threshold}, got {value}")
 
         return value
 
@@ -93,14 +81,10 @@ class LessThan(ChildNode):
 
         if inclusive:
             if value > threshold:
-                raise ValueError(
-                    f"Value must be at most {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be at most {threshold}, got {value}")
         else:
             if value >= threshold:
-                raise ValueError(
-                    f"Value must be less than {threshold}, got {value}"
-                )
+                raise ValueError(f"Value must be less than {threshold}, got {value}")
 
         return value
 
@@ -116,19 +100,12 @@ def less_than(
 
     Supports: `int`, `float`, `Decimal`, `datetime`, `date`, `time`
 
-    Args:
-        threshold (int | float | Decimal | datetime | date | time):
-            The threshold value to compare against.
-        inclusive (bool):
-            If `True`, allows values equal to threshold (<=).
-            If `False`, requires values strictly less (<).
-            Defaults to `False`.
-
-    Raises:
-        ValueError:
-            If value is not less than (or at most) the threshold.
-        TypeError:
-            If value type cannot be compared with threshold.
+    :param threshold: The threshold value to compare against.
+    :param inclusive: If ``True``, allows values equal to threshold (<=).
+        If ``False``, requires values strictly less (<).
+        Defaults to ``False``.
+    :raises ValueError: If value is not less than (or at most) the threshold.
+    :raises TypeError: If value type cannot be compared with threshold.
 
     Examples:
         Basic numeric validation:

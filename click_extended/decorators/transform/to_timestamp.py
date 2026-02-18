@@ -63,18 +63,17 @@ def to_timestamp(unit: Literal["s", "ms", "us", "ns"] = "s") -> Decorator:
 
     Supports: `datetime`, `date`, `time`
 
-    Args:
-        unit (Literal["s", "ms", "us", "ns"], optional):
-            The unit of the timestamp:
-            - `"s"`: Seconds (standard Unix timestamp)
-            - `"ms"`: Milliseconds (JavaScript/Java style)
-            - `"us"`: Microseconds (Python datetime precision)
-            - `"ns"`: Nanoseconds (high-precision logging)
-            Defaults to `"s"`.
+    :param unit: The unit of the timestamp:
 
-    Returns:
-        Decorator:
-            The decorated function.
+        - ``"s"``: Seconds (standard Unix timestamp)
+        - ``"ms"``: Milliseconds (JavaScript/Java style)
+        - ``"us"``: Microseconds (Python datetime precision)
+        - ``"ns"``: Nanoseconds (high-precision logging)
+
+        Defaults to ``"s"``.
+
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Examples:
         Basic usage with datetime:

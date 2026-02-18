@@ -38,14 +38,9 @@ def clamp(
 
     Supports: `int`, `float`
 
-    Args:
-        min_val (int | float, optional):
-            The minimum value.
-        max_val (int | float, optional):
-            The maximum value.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param min_val: The minimum value.
+    :param max_val: The maximum value.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Clamp.as_decorator(min_val=min_val, max_val=max_val)

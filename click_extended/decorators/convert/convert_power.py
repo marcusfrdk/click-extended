@@ -49,15 +49,11 @@ class ConvertPower(ChildNode):
 
         if to_unit == "dBW":
             if watts <= 0:
-                raise ValueError(
-                    "Power must be positive for logarithmic conversion"
-                )
+                raise ValueError("Power must be positive for logarithmic conversion")
             result = 10 * watts.log10()
         elif to_unit == "dBm":
             if watts <= 0:
-                raise ValueError(
-                    "Power must be positive for logarithmic conversion"
-                )
+                raise ValueError("Power must be positive for logarithmic conversion")
             result = 10 * (watts * 1000).log10()
         elif to_unit in UNITS:
             result = watts / UNITS[to_unit]
@@ -121,8 +117,7 @@ def convert_power(
         - **ftlbs**: Foot-pounds per second
         - **tonref**: Ton of refrigeration (cooling capacity)
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertPower.as_decorator(from_unit=from_unit, to_unit=to_unit)

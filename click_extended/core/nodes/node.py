@@ -10,13 +10,11 @@ class Node(ABC):
         self, name: str, children: dict[str | int, "Node"] | None = None
     ) -> None:
         """
-        Initialize a new `Node` instance.
+        Initialize a new ``Node`` instance.
 
-        Args:
-            name (str):
-                The name of the node.
-            children (dict[str | int, Node] | None, optional):
-                Optional dictionary mapping child identifiers to child nodes.
+        :param name: The name of the node.
+        :param children: Optional dictionary mapping child identifiers to
+            child nodes.
         """
         self.name = name
         self._children = children if children is not None else {}

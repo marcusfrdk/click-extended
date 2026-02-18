@@ -280,7 +280,6 @@ class TestRandomStringIntegration:
         value = result.output.split("Value: ")[1].strip()
 
         max_consecutive = max(
-            len(list(group))
-            for _, group in __import__("itertools").groupby(value)
+            len(list(group)) for _, group in __import__("itertools").groupby(value)
         )
         assert max_consecutive < 6, "String appears to have suspicious patterns"

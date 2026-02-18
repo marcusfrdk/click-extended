@@ -41,19 +41,14 @@ def load_json(
 
     Supports: `pathlib.Path`
 
-    Args:
-        encoding (str, optional):
-            The encoding to use when reading the file.
-            Defaults to `"utf-8"`.
-        strict (bool, optional):
-            Whether to use strict parsing for numerical values.
-            When `True`, floats are parsed as `Decimal` for precision.
-            When `False`, floats are parsed as standard Python `float`.
-            Defaults to `True`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param encoding: The encoding to use when reading the file.
+        Defaults to ``"utf-8"``.
+    :param strict: Whether to use strict parsing for numerical values.
+        When ``True``, floats are parsed as ``Decimal`` for precision.
+        When ``False``, floats are parsed as standard Python ``float``.
+        Defaults to ``True``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return LoadJson.as_decorator(
         encoding=encoding,

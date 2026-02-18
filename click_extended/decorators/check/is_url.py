@@ -61,15 +61,11 @@ def is_url(
 
     Supports: `str`
 
-    Args:
-        schemes (list[str] | None, optional):
-            List of allowed URL schemes (e.g., ["http", "https"]).
-            Defaults to `None` (all schemes allowed).
-        require_tld (bool, optional):
-            Whether to require a Top-Level Domain (TLD). Defaults to `True`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param schemes: List of allowed URL schemes (e.g., ["http", "https"]).
+        Defaults to ``None`` (all schemes allowed).
+    :param require_tld: Whether to require a Top-Level Domain (TLD).
+        Defaults to ``True``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsUrl.as_decorator(schemes=schemes, require_tld=require_tld)

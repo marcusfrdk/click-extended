@@ -66,9 +66,7 @@ password = "secret"
         assert "DB Host: db.example.com" in result.output
         assert "DB User: admin" in result.output
 
-    def test_load_toml_arrays(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_arrays(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with arrays."""
         toml_file = tmp_path / "config.toml"
         content = """
@@ -94,9 +92,7 @@ features = ["auth", "api", "dashboard"]
         assert "Versions: 3" in result.output
         assert "Features: auth, api, dashboard" in result.output
 
-    def test_load_toml_tables(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_tables(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with table arrays."""
         toml_file = tmp_path / "config.toml"
         content = """
@@ -129,9 +125,7 @@ ip = "10.0.0.2"
 class TestLoadTomlTypes:
     """Test load_toml with different data types."""
 
-    def test_load_toml_strings(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_strings(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with string types."""
         toml_file = tmp_path / "strings.toml"
         content = '''
@@ -158,9 +152,7 @@ literal = 'C:\\Users\\Path'
         assert result.exit_code == 0
         assert "Success" in result.output
 
-    def test_load_toml_numbers(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_numbers(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with numeric types."""
         toml_file = tmp_path / "numbers.toml"
         content = """
@@ -186,9 +178,7 @@ negative = -17
         assert "Float: 3.14" in result.output
         assert "Negative: -17" in result.output
 
-    def test_load_toml_booleans(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_booleans(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with boolean types."""
         toml_file = tmp_path / "bools.toml"
         content = """
@@ -271,9 +261,7 @@ class TestLoadTomlErrors:
 class TestLoadTomlFlatTuple:
     """Test load_toml with flat tuples."""
 
-    def test_load_toml_flat_tuple(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_flat_tuple(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with flat tuple of TOML files."""
         file1 = tmp_path / "service1.toml"
         file2 = tmp_path / "service2.toml"
@@ -291,9 +279,7 @@ class TestLoadTomlFlatTuple:
             assert isinstance(configs, tuple)
             assert len(configs) == 3
             for cfg in configs:
-                click.echo(
-                    f"{cfg['service']['name']}: {cfg['service']['port']}"
-                )
+                click.echo(f"{cfg['service']['name']}: {cfg['service']['port']}")
 
         result = cli_runner.invoke(
             cmd, ["--configs", str(file1), str(file2), str(file3)]
@@ -422,9 +408,7 @@ class TestLoadTomlNestedTuple:
 class TestLoadTomlPractical:
     """Test practical use cases for load_toml."""
 
-    def test_load_toml_pyproject(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_load_toml_pyproject(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test load_toml with pyproject.toml-like file."""
         toml_file = tmp_path / "pyproject.toml"
         content = """

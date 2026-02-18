@@ -76,9 +76,7 @@ class TestRandomChoiceBasic:
         assert result.exit_code == 0
         assert "Value: single" in result.output
 
-    def test_different_seeds_different_results(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_different_seeds_different_results(self, cli_runner: CliRunner) -> None:
         """Test that different seeds can produce different results."""
 
         choices = ["a", "b", "c", "d", "e"]
@@ -204,9 +202,7 @@ class TestRandomChoiceWeights:
 class TestRandomChoiceErrors:
     """Test error conditions."""
 
-    def test_weights_length_mismatch_raises_error(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_weights_length_mismatch_raises_error(self, cli_runner: CliRunner) -> None:
         """Test that mismatched weights and iterable lengths raise error."""
 
         @command()
@@ -254,9 +250,7 @@ class TestRandomChoiceDistribution:
 
         assert results == set(choices)
 
-    def test_roughly_uniform_without_weights(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_roughly_uniform_without_weights(self, cli_runner: CliRunner) -> None:
         """Test that choices are roughly uniform without weights."""
 
         choices = ["a", "b", "c"]

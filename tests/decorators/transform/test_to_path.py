@@ -15,9 +15,7 @@ from click_extended.decorators.transform.to_path import to_path
 class TestToPathBasic:
     """Test basic to_path functionality."""
 
-    def test_to_path_existing_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_existing_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path with existing file."""
         test_file = tmp_path / "test.txt"
         test_file.write_text("content")
@@ -33,8 +31,7 @@ class TestToPathBasic:
         assert result.exit_code == 0
         assert "Path:" in result.output
         assert (
-            "Type: PosixPath" in result.output
-            or "Type: WindowsPath" in result.output
+            "Type: PosixPath" in result.output or "Type: WindowsPath" in result.output
         )
 
     def test_to_path_existing_directory(
@@ -202,9 +199,7 @@ class TestToPathExtensions:
 class TestToPathFileDirectory:
     """Test to_path file/directory restrictions."""
 
-    def test_to_path_only_files(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_only_files(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path allows only files."""
         test_file = tmp_path / "file.txt"
         test_file.write_text("content")
@@ -346,9 +341,7 @@ class TestToPathEmpty:
 class TestToPathPermissions:
     """Test to_path permission checks."""
 
-    def test_to_path_readable(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_readable(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path checks readable permission."""
         test_file = tmp_path / "readable.txt"
         test_file.write_text("content")
@@ -363,9 +356,7 @@ class TestToPathPermissions:
         assert result.exit_code == 0
         assert "Success" in result.output
 
-    def test_to_path_writable(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_writable(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path checks writable permission."""
         test_file = tmp_path / "writable.txt"
         test_file.write_text("content")
@@ -381,9 +372,7 @@ class TestToPathPermissions:
         assert "Success" in result.output
 
     @pytest.mark.skipif(os.name == "nt", reason="Unix-only test")
-    def test_to_path_executable(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_executable(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path checks executable permission."""
         test_file = tmp_path / "script.sh"
         test_file.write_text("#!/bin/bash\necho hello")
@@ -475,9 +464,7 @@ class TestToPathPatterns:
 class TestToPathSymlinks:
     """Test to_path symlink handling."""
 
-    @pytest.mark.skipif(
-        os.name == "nt", reason="Symlinks may require admin on Windows"
-    )
+    @pytest.mark.skipif(os.name == "nt", reason="Symlinks may require admin on Windows")
     def test_to_path_symlink_allowed(
         self, cli_runner: CliRunner, tmp_path: Path
     ) -> None:
@@ -497,9 +484,7 @@ class TestToPathSymlinks:
         assert result.exit_code == 0
         assert "Success" in result.output
 
-    @pytest.mark.skipif(
-        os.name == "nt", reason="Symlinks may require admin on Windows"
-    )
+    @pytest.mark.skipif(os.name == "nt", reason="Symlinks may require admin on Windows")
     def test_to_path_symlink_disallowed(
         self, cli_runner: CliRunner, tmp_path: Path
     ) -> None:
@@ -523,9 +508,7 @@ class TestToPathSymlinks:
 class TestToPathResolve:
     """Test to_path resolve functionality."""
 
-    def test_to_path_resolve_true(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_resolve_true(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path resolves path with resolve=True."""
         test_file = tmp_path / "file.txt"
         test_file.write_text("content")
@@ -582,9 +565,7 @@ class TestToPathFlatTuple:
             assert paths[2].read_text() == "content3"
             click.echo("Success")
 
-        result = cli_runner.invoke(
-            cmd, ["--paths", str(file1), str(file2), str(file3)]
-        )
+        result = cli_runner.invoke(cmd, ["--paths", str(file1), str(file2), str(file3)])
         assert result.exit_code == 0
         assert "Success" in result.output
 
@@ -819,9 +800,7 @@ class TestToPathNestedTuple:
 class TestToPathPractical:
     """Test practical use cases for to_path."""
 
-    def test_to_path_output_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_output_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path for output file creation."""
         output_file = tmp_path / "output" / "result.txt"
 
@@ -839,9 +818,7 @@ class TestToPathPractical:
         assert output_file.exists()
         assert output_file.read_text() == "Generated content"
 
-    def test_to_path_config_file(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_config_file(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path for config file validation."""
         config_file = tmp_path / "config.yaml"
         config_file.write_text("key: value")
@@ -857,9 +834,7 @@ class TestToPathPractical:
         assert result.exit_code == 0
         assert "Config: key: value" in result.output
 
-    def test_to_path_log_directory(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_to_path_log_directory(self, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Test to_path for log directory validation."""
         log_dir = tmp_path / "logs"
         log_dir.mkdir()
@@ -923,9 +898,7 @@ class TestToPathPractical:
             assert batches is not None
             for i, batch in enumerate(batches, 1):
                 total_chars = sum(len(p.read_text()) for p in batch)
-                click.echo(
-                    f"Batch {i}: {len(batch)} files, {total_chars} chars"
-                )
+                click.echo(f"Batch {i}: {len(batch)} files, {total_chars} chars")
 
         result = cli_runner.invoke(
             cmd,

@@ -103,9 +103,7 @@ class TestInteractiveFunctionDefaults:
     def test_single_mode_string_default(self) -> None:
         """Test single mode with string default."""
         with patch("sys.stdin.isatty", return_value=False):
-            result = interactive_selection(
-                ["React", "Vue", "Angular"], default="Vue"
-            )
+            result = interactive_selection(["React", "Vue", "Angular"], default="Vue")
             assert result == "Vue"
 
     def test_multiple_mode_list_default(self) -> None:
@@ -119,9 +117,7 @@ class TestInteractiveFunctionDefaults:
     def test_multiple_mode_single_string_default(self) -> None:
         """Test multiple mode with single string default."""
         with patch("sys.stdin.isatty", return_value=False):
-            result = interactive_selection(
-                ["A", "B", "C"], multiple=True, default="B"
-            )
+            result = interactive_selection(["A", "B", "C"], multiple=True, default="B")
             assert result == "B"
 
     def test_single_mode_list_default_uses_first(self) -> None:
@@ -187,9 +183,7 @@ class TestInteractiveFunctionCustomization:
     def test_custom_cursor_style(self) -> None:
         """Test that custom cursor style is accepted."""
         with patch("sys.stdin.isatty", return_value=False):
-            result = interactive_selection(
-                ["A", "B"], cursor_style="→", default="A"
-            )
+            result = interactive_selection(["A", "B"], cursor_style="→", default="A")
             assert result == "A"
 
     def test_custom_checkbox_style(self) -> None:

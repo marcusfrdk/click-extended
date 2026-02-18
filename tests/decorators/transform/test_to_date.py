@@ -42,9 +42,7 @@ class TestToDateBasic:
 class TestToDateMultipleFormats:
     """Tests for multiple format support."""
 
-    def test_to_date_multiple_formats_first_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_date_multiple_formats_first_match(self, cli_runner: CliRunner) -> None:
         """Test that first matching format is used."""
 
         @command()
@@ -56,9 +54,7 @@ class TestToDateMultipleFormats:
         result = cli_runner.invoke(cmd, ["--date", "2024-03-15"])
         assert result.exit_code == 0
 
-    def test_to_date_multiple_formats_second_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_date_multiple_formats_second_match(self, cli_runner: CliRunner) -> None:
         """Test that second format is tried if first fails."""
 
         @command()

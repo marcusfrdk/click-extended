@@ -52,23 +52,14 @@ def default(
 
     Supports: `Any`
 
-    Order: `from_value`, `from_env`, `from_param`
+    Order: ``from_value``, ``from_env``, ``from_param``
 
-    Args:
-        from_value (Any, optional):
-            A value to default to.
-        from_env (str | None, optional):
-            The environment variable to default to.
-        from_param (str | None, optional):
-            The name of the node which value is used to default to.
-
-    Returns:
-        Decorator:
-            The decorated function.
-
-    Raises:
-        ValueError:
-            If more than one source is provided.
+    :param from_value: A value to default to.
+    :param from_env: The environment variable to default to.
+    :param from_param: The name of the node which value is used to default to.
+    :raises ValueError: If more than one source is provided.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     sources = [
         from_value is not None,
@@ -77,10 +68,13 @@ def default(
     ]
 
     if sum(sources) > 1:
-        raise ValueError(
-            "Only one of 'from_value', 'from_env', or "
-            "'from_param' can be provided."
+        message = (
+            "Only one of 'from_value', "
+            "'from_env', or 'from_param' "
+            "can be provided."
         )
+
+        raise ValueError(message)
 
     if sum(sources) == 0:
         raise ValueError(

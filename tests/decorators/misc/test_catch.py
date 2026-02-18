@@ -16,9 +16,7 @@ from click_extended.decorators.misc.catch import catch
 class TestCatchBasic:
     """Test basic catch functionality."""
 
-    def test_catch_single_exception_with_handler(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_catch_single_exception_with_handler(self, cli_runner: CliRunner) -> None:
         """Test catching a single exception type with handler."""
         caught_exceptions: list[str] = []
 
@@ -51,9 +49,7 @@ class TestCatchBasic:
         assert result.exit_code == 0
         assert result.output == ""
 
-    def test_catch_multiple_exception_types(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_catch_multiple_exception_types(self, cli_runner: CliRunner) -> None:
         """Test catching multiple exception types with one handler."""
         caught_exceptions: list[str] = []
 
@@ -80,9 +76,7 @@ class TestCatchBasic:
         assert result.exit_code == 0
         assert "TypeError" in caught_exceptions
 
-    def test_catch_no_exception_passes_through(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_catch_no_exception_passes_through(self, cli_runner: CliRunner) -> None:
         """Test that execution proceeds normally when no exception occurs."""
 
         @command()
@@ -144,9 +138,7 @@ class TestCatchReraise:
 class TestCatchStacking:
     """Test stacking multiple catch decorators."""
 
-    def test_topmost_matching_catch_handles_first(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_topmost_matching_catch_handles_first(self, cli_runner: CliRunner) -> None:
         """Test that topmost matching catch handles the exception (top-down order)."""
         handlers_called: list[str] = []
 
@@ -168,9 +160,7 @@ class TestCatchStacking:
         # Topmost catch is checked first (top-down), so only outer should handle
         assert handlers_called == ["outer"]
 
-    def test_multiple_catch_different_exceptions(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_multiple_catch_different_exceptions(self, cli_runner: CliRunner) -> None:
         """Test multiple catch decorators handling different exceptions."""
         handlers_called: list[str] = []
 
@@ -296,9 +286,7 @@ class TestCatchAsync:
 class TestCatchPracticalExamples:
     """Real-world usage examples."""
 
-    def test_catch_validation_error_with_fallback(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_catch_validation_error_with_fallback(self, cli_runner: CliRunner) -> None:
         """Example: Catch validation errors and log them."""
         errors_logged: list[str] = []
 
@@ -342,9 +330,7 @@ class TestCatchPracticalExamples:
 class TestCatchValidationErrors:
     """Tests for catching exceptions from validation decorators."""
 
-    def test_catch_exclusive_validator_error(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_catch_exclusive_validator_error(self, cli_runner: CliRunner) -> None:
         """Test that @catch can catch exceptions from @exclusive validator."""
         from click_extended.decorators import exclusive
 

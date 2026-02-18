@@ -28,12 +28,8 @@ def maximum(max_val: Union[int, float]) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        max_val (int | float):
-            The maximum value.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param max_val: The maximum value.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Maximum.as_decorator(max_val=max_val)

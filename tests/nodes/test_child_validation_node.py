@@ -60,9 +60,7 @@ class TestChildValidationNodeChildMode:
         assert result.exit_code == 0
         assert "Name: ALICE" in result.output
 
-    def test_child_validation_handle_all_fallback(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_child_validation_handle_all_fallback(self, cli_runner: CliRunner) -> None:
         """Hybrid uses handle_all when specific handler not implemented."""
 
         class GenericHandler(ChildValidationNode):
@@ -84,9 +82,7 @@ class TestChildValidationNodeChildMode:
         assert result.exit_code == 0
         assert "processed-world" in result.output
 
-    def test_child_validation_with_decorator_args(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_child_validation_with_decorator_args(self, cli_runner: CliRunner) -> None:
         """Hybrid receives decorator args in child mode."""
 
         class Multiplier(ChildValidationNode):
@@ -142,9 +138,7 @@ class TestChildValidationNodeValidationMode:
 
         class ContextChecker(ChildValidationNode):
             def handle_all(self, value: Any, context: Context) -> Any:
-                raise RuntimeError(
-                    "Should not call handle_all in validation mode"
-                )
+                raise RuntimeError("Should not call handle_all in validation mode")
 
             def on_finalize(self, context: Context) -> None:
                 click.echo("Validation mode confirmed")
@@ -168,9 +162,7 @@ class TestChildValidationNodeValidationMode:
             def handle_all(self, value: Any, context: Context) -> Any:
                 return value
 
-            def on_finalize(
-                self, context: Context, *args: Any, **kwargs: Any
-            ) -> None:
+            def on_finalize(self, context: Context, *args: Any, **kwargs: Any) -> None:
                 required_role = args[0] if args else "user"
                 click.echo(f"Required role: {required_role}")
 
@@ -217,9 +209,7 @@ class TestChildValidationNodeWithTags:
             def handle_all(self, value: Any, context: Context) -> Any:
                 return value
 
-            def handle_tag(
-                self, value: dict[str, Any], context: Context
-            ) -> None:
+            def handle_tag(self, value: dict[str, Any], context: Context) -> None:
                 min_val = value.get("min_val")
                 max_val = value.get("max_val")
                 if min_val is not None and max_val is not None:
@@ -366,9 +356,7 @@ class TestChildValidationNodePracticalExamples:
                 # Child mode: just pass through, validation elsewhere
                 return value
 
-            def on_finalize(
-                self, context: Context, *args: Any, **kwargs: Any
-            ) -> None:
+            def on_finalize(self, context: Context, *args: Any, **kwargs: Any) -> None:
                 # Validation mode: just verify it runs
                 click.echo("Validation executed")
 

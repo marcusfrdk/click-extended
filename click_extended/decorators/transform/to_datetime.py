@@ -49,29 +49,23 @@ def to_datetime(
     *formats: str,
     tz: str | None = None,
 ) -> Decorator:
-    """
+    r"""
     Convert a string to a datetime by trying multiple formats.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        *formats (str):
-            One or more datetime format strings to try. Supports both Python
-            strptime format (e.g., "%Y-%m-%d", "%d/%m/%Y") and simplified format
-            (e.g., "YYYY-MM-DD", "DD/MM/YYYY"). The decorator will attempt each
-            format in order until one succeeds. Defaults to `"%Y-%m-%d"`,
-            `"%H:%M:%S"` and `"%Y-%m-%d %H:%M:%S"`,
-
-        tz (str | None, optional):
-            Timezone name (e.g., "UTC", "America/New_York", "Europe/Stockholm")
-            to apply to the parsed datetime. Uses zoneinfo.ZoneInfo for timezone
-            handling. Defaults to `None` (naive datetime).
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*formats: One or more datetime format strings to try. Supports both Python
+        strptime format (e.g., "%Y-%m-%d", "%d/%m/%Y") and simplified format
+        (e.g., "YYYY-MM-DD", "DD/MM/YYYY"). The decorator will attempt each
+        format in order until one succeeds. Defaults to ``"%Y-%m-%d"``,
+        ``"%H:%M:%S"`` and ``"%Y-%m-%d %H:%M:%S"``.
+    :param tz: Timezone name (e.g., "UTC", "America/New_York", "Europe/Stockholm")
+        to apply to the parsed datetime. Uses zoneinfo.ZoneInfo for timezone
+        handling. Defaults to ``None`` (naive datetime).
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Example:
         @to_datetime("YYYY-MM-DD", "DD/MM/YYYY", tz="America/New_York")

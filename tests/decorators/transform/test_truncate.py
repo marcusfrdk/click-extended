@@ -9,9 +9,7 @@ def test_truncate() -> None:
     ctx = Mock(spec=Context)
 
     assert node.handle_str("hello", ctx, length=5, suffix="...") == "hello"
-    assert (
-        node.handle_str("hello world", ctx, length=5, suffix="...") == "he..."
-    )
+    assert node.handle_str("hello world", ctx, length=5, suffix="...") == "he..."
     assert node.handle_str("hi", ctx, length=5, suffix="...") == "hi"
 
 

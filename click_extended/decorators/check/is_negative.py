@@ -30,8 +30,7 @@ def is_negative() -> Decorator:
 
     Supports: `int`, `float`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsNegative.as_decorator()

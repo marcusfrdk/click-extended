@@ -204,8 +204,7 @@ def convert_bits(
         - **Zib**: Zebibits
         - **Yib**: Yobibits
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertBits.as_decorator(from_unit=from_unit, to_unit=to_unit)

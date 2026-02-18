@@ -100,19 +100,13 @@ class ToPath(ChildNode):
 
             # Check permissions
             if is_readable and not os.access(path, os.R_OK):
-                raise PermissionError(
-                    f"Path '{path}' is not readable for '{name}'"
-                )
+                raise PermissionError(f"Path '{path}' is not readable for '{name}'")
 
             if is_writable and not os.access(path, os.W_OK):
-                raise PermissionError(
-                    f"Path '{path}' is not writable for '{name}'"
-                )
+                raise PermissionError(f"Path '{path}' is not writable for '{name}'")
 
             if is_executable and not os.access(path, os.X_OK):
-                raise PermissionError(
-                    f"Path '{path}' is not executable for '{name}'"
-                )
+                raise PermissionError(f"Path '{path}' is not executable for '{name}'")
 
         # Check extensions
         if extensions and (not path.exists() or path.is_file()):
@@ -224,19 +218,13 @@ class ToPath(ChildNode):
 
             # Check permissions
             if is_readable and not os.access(path, os.R_OK):
-                raise PermissionError(
-                    f"Path '{path}' is not readable for '{name}'"
-                )
+                raise PermissionError(f"Path '{path}' is not readable for '{name}'")
 
             if is_writable and not os.access(path, os.W_OK):
-                raise PermissionError(
-                    f"Path '{path}' is not writable for '{name}'"
-                )
+                raise PermissionError(f"Path '{path}' is not writable for '{name}'")
 
             if is_executable and not os.access(path, os.X_OK):
-                raise PermissionError(
-                    f"Path '{path}' is not executable for '{name}'"
-                )
+                raise PermissionError(f"Path '{path}' is not executable for '{name}'")
 
         # Check extensions
         if extensions and (not path.exists() or path.is_file()):
@@ -286,98 +274,65 @@ def to_path(
     is_executable: bool = False,
 ) -> Decorator:
     """
-    Convert, validate, and process a string to a `pathlib.Path` object.
+    Convert, validate, and process a string to a ``pathlib.Path`` object.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        exists (bool, optional):
-            Whether the path needs to exist.
-            Defaults to `True`.
+    :param exists: Whether the path needs to exist. Defaults to ``True``.
+    :param parents: Create parent directories if they don't exist. Defaults to
+        ``False``.
+    :param resolve: Convert the path to an absolute path. When ``True``,
+        resolves ``.`` and ``..`` components. When False, only makes the path
+        absolute without resolution. Defaults to ``True``.
+    :param extensions: A list of extensions to require the path to end with.
+        By default, all extensions are allowed.
+    :param include_pattern: A whitelist pattern. Uses shell-style glob patterns.
+        Defaults to ``None`` (All file names allowed).
 
-        parents (bool, optional):
-            Create parent directories if they don't exist.
-            Defaults to `False`.
+        When both ``include_pattern`` and ``exclude_pattern`` are provided,
+        ``include_pattern`` takes precedence (files matching include
+        are always accepted).
 
-        resolve (bool, optional):
-            Convert the path to an absolute path. When `True`, resolves
-            `.` and `..` components. When False, only makes the path
-            absolute without resolution.
-            Defaults to `True`.
+        ```python
+        include_pattern="*.py"      # Only Python files
+        include_pattern="config_*"  # Files starting with "config_"
+        ```
 
-        extensions (list[str], optional):
-            A list of extensions to require the path to end with.
-            By default, all extensions are allowed.
+    :param exclude_pattern: A blacklist pattern. Uses shell-style glob patterns.
+        Defaults to ``None`` (No file names excluded).
 
-        include_pattern (str, optional):
-            A whitelist pattern. Uses shell-style glob patterns.
-            Defaults to `None` (All file names allowed).
+        If provided without ``include_pattern``, file names matching this
+        pattern will be rejected, and all other file names will be
+        allowed.
 
-            When both `include_pattern` and `exclude_pattern` are provided,
-            `include_pattern` takes precedence (files matching include
-            are always accepted).
+        When both ``include_pattern`` and ``exclude_pattern`` are provided,
+        ``include_pattern`` takes precedence (files matching include
+        are always accepted).
 
-            ```python
-            include_pattern="*.py"      # Only Python files
-            include_pattern="config_*"  # Files starting with "config_"
-            ```
-
-        exclude_pattern (str, optional):
-            A blacklist pattern. Uses shell-style glob patterns.
-            Defaults to `None` (No file names excluded).
-
-            If provided without `include_pattern`, file names matching this
-            pattern will be rejected, and all other file names will be
-            allowed.
-
-            When both `include_pattern` and `exclude_pattern` are provided,
-            `include_pattern` takes precedence (files matching include
-            are always accepted).
-
-        allow_file (bool, optional):
-            Whether to allow the path to be a file or not.
-            Defaults to `True`.
-
-        allow_directory (bool, optional):
-            Whether to allow the path to be a directory or not.
-            Defaults to `True`.
-
-        allow_empty_directory (bool, optional):
-            If the path points to a directory, whether to allow
-            the directory to be empty. Only checked when the path
-            is a directory. Defaults to `True`.
-
-        allow_empty_file (bool, optional):
-            If the path points to a file, whether to allow the
-            file to be empty. Only checked when the path is a file.
-            Defaults to `True`.
-
-        allow_symlink (bool, optional):
-            Whether to allow the path to be a symlink or not.
-            Defaults to `False`.
-
-        follow_symlink (bool, optional):
-            Whether to follow symlinks when resolving the path.
-            Only applies when resolve=True.
-            Defaults to `True`.
-
-        is_readable (bool, optional):
-            Whether the file has `read` permissions.
-            Defaults to `False`.
-
-        is_writable (bool, optional):
-            Whether the file has `write` permissions.
-            Default to `False`.
-
-        is_executable (bool, optional):
-            A unix-only feature that checks if the file has
-            `execute` permissions. Defaults to `False`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param allow_file: Whether to allow the path to be a file or not.
+        Defaults to ``True``.
+    :param allow_directory: Whether to allow the path to be a directory or not.
+        Defaults to ``True``.
+    :param allow_empty_directory: If the path points to a directory, whether to
+        allow the directory to be empty. Only checked when the path
+        is a directory. Defaults to ``True``.
+    :param allow_empty_file: If the path points to a file, whether to allow the
+        file to be empty. Only checked when the path is a file.
+        Defaults to ``True``.
+    :param allow_symlink: Whether to allow the path to be a symlink or not.
+        Defaults to ``False``.
+    :param follow_symlink: Whether to follow symlinks when resolving the path.
+        Only applies when resolve=True. Defaults to ``True``.
+    :param is_readable: Whether the file has ``read`` permissions. Defaults to
+        ``False``.
+    :param is_writable: Whether the file has ``write`` permissions. Default to
+        ``False``.
+    :param is_executable: A unix-only feature that checks if the file has
+        ``execute`` permissions. Defaults to ``False``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ToPath.as_decorator(
         exists=exists,

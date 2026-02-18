@@ -42,18 +42,16 @@ class ChildNode(Node, ABC):
         process_kwargs: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
-        """
-        Initialize a new `ChildNode` instance.
+        r"""
+        Initialize a new ``ChildNode`` instance.
 
-        Args:
-            name (str):
-                The name of the node.
-            process_args (tuple):
-                Positional arguments to pass to handler methods.
-            process_kwargs (dict[str, Any]):
-                Keyword arguments to pass to handler methods.
-            **kwargs (Any):
-                Additional keyword arguments for multiple inheritance.
+        :param name: The name of the node.
+        :param process_args: Positional arguments to pass to handler
+            methods.
+        :param process_kwargs: Keyword arguments to pass to handler
+            methods.
+        :param \*\*kwargs: Additional keyword arguments for multiple
+            inheritance.
         """
         children = kwargs.pop("children", None)
         super().__init__(name=name, children=children, **kwargs)
@@ -61,205 +59,143 @@ class ChildNode(Node, ABC):
         self.process_kwargs = process_kwargs or {}
 
     def handle_none(self, context: "Context", *args: Any, **kwargs: Any) -> Any:
-        """
+        r"""
         Handle None values explicitly.
 
-        Called when value is `None` before any other handler.
-        If not implemented, `None` values are auto-skipped.
+        Called when value is ``None`` before any other handler.
+        If not implemented, ``None`` values are auto-skipped.
 
-        Args:
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                The processed value, or `None` to pass through unchanged.
+        :returns: The processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_all(
         self, value: Any, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle all value types. Called as fallback if no
         specific handler is implemented.
 
-        Also catches `None` values if `handle_none` is not implemented.
+        Also catches ``None`` values if ``handle_none`` is not implemented.
 
-        Args:
-            value (Any):
-                The value to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The value to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or None to pass through unchanged.
+        :returns: Processed value, or None to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_str(
         self, value: str, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle string values.
 
-        Args:
-            value (str):
-                The string value to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The string value to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_int(
         self, value: int, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle integer values.
 
-        Args:
-            value (int):
-                The integer value to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The integer value to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_float(
         self, value: float, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle float values.
 
-        Args:
-            value (float):
-                The float value to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The float value to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_bool(
         self, value: bool, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle boolean values.
 
-        Args:
-            value (bool):
-                The boolean value to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The boolean value to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_numeric(
         self, value: int | float, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle numeric values (int or float).
 
         This is a union handler that works with both integers and floats.
         Use this when your decorator logic applies to all numeric types.
 
-        Args:
-            value (int | float):
-                The numeric value to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The numeric value to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_date(
         self, value: date, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle date objects (datetime.date).
 
-        Args:
-            value (date):
-                The date object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The date object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_time(
         self, value: time, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle time objects (datetime.time).
 
-        Args:
-            value (time):
-                The time object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The time object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
@@ -270,7 +206,7 @@ class ChildNode(Node, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Handle any tuple structure (fallback).
 
         Called when:
@@ -284,23 +220,16 @@ class ChildNode(Node, ABC):
 
         Examples:
 
-            - `(1, 2, 3)` if `handle_flat_tuple` not implemented
-            - `((1, 2),)` if `handle_nested_tuple` not implemented
-            - `(1, [2, 3], "hello")`: mixed types (only option)
+            - ``(1, 2, 3)`` if ``handle_flat_tuple`` not implemented
+            - ``((1, 2),)`` if ``handle_nested_tuple`` not implemented
+            - ``(1, [2, 3], "hello")``: mixed types (only option)
 
-        Args:
-            value (tuple[Any, ...]):
-                The tuple to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The tuple to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
@@ -311,22 +240,15 @@ class ChildNode(Node, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Handle list values.
 
-        Args:
-            value (list[Any]):
-                The list to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The list to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
@@ -337,22 +259,15 @@ class ChildNode(Node, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Handle dictionary values.
 
-        Args:
-            value (dict[Any, Any]):
-                The dictionary to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The dictionary to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
@@ -363,32 +278,26 @@ class ChildNode(Node, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
-        Handle values from a `Tag` parent.
+        r"""
+        Handle values from a ``Tag`` parent.
 
-        Called when the parent node is a `Tag`. The value is a dictionary
+        Called when the parent node is a ``Tag``. The value is a dictionary
         mapping parameter names to their values from all parent nodes
-        (`Option`, `Argument`, `Env`, etc.) that reference this tag.
+        (``Option``, ``Argument``, ``Env``, etc.) that reference this tag.
 
         Can be implemented as sync or async. This handler is validation-only
         and must not return a value (or return None).
 
-        Args:
-            value (dict[str, Any]):
-                Dictionary mapping parameter names to values from
-                all parent nodes referencing this tag. Keys are parent
-                node names (e.g., "username"), values are `None` if not
-                provided by the user.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: Dictionary mapping parameter names to values from
+            all parent nodes referencing this tag. Keys are parent
+            node names (e.g., "username"), values are ``None`` if not
+            provided by the user.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            None:
-                Must return None (validation-only).
+        :returns: Must return None (validation-only).
+        :rtype: None
         """
         raise NotImplementedError
 
@@ -399,110 +308,75 @@ class ChildNode(Node, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Handle datetime objects (datetime.datetime).
 
-        Args:
-            value (datetime):
-                The datetime object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The datetime object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_uuid(
         self, value: UUID, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle UUID objects.
 
-        Args:
-            value (UUID):
-                The UUID object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The UUID object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_path(
         self, value: Path, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle Path objects.
 
-        Args:
-            value (Path):
-                The Path object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The Path object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_bytes(
         self, value: bytes, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle bytes objects.
 
-        Args:
-            value (bytes):
-                The bytes object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The bytes object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
     def handle_decimal(
         self, value: Decimal, context: "Context", *args: Any, **kwargs: Any
     ) -> Any:
-        """
+        r"""
         Handle Decimal objects.
 
-        Args:
-            value (Decimal):
-                The Decimal object to process.
-            context (Context):
-                Information about the current context.
-            *args (Any):
-                Additional positional arguments from decorator.
-            **kwargs (Any):
-                Additional keyword arguments from decorator.
+        :param value: The Decimal object to process.
+        :param context: Information about the current context.
+        :param \*args: Additional positional arguments from decorator.
+        :param \*\*kwargs: Additional keyword arguments from decorator.
 
-        Returns:
-            Any:
-                Processed value, or `None` to pass through unchanged.
+        :returns: Processed value, or ``None`` to pass through unchanged.
         """
         raise NotImplementedError
 
@@ -510,13 +384,10 @@ class ChildNode(Node, ABC):
         """
         The ChildNode has no children, thus this method returns None.
 
-        Args:
-            _name (str):
-                The name of the child.
+        :param _name: The name of the child.
 
-        Returns:
-            None:
-                Always returns None as the ChildNode has no children.
+        :returns: Always returns None as the ChildNode has no children.
+        :rtype: None
         """
         return None
 
@@ -525,21 +396,17 @@ class ChildNode(Node, ABC):
 
     @classmethod
     def as_decorator(cls, *args: Any, **kwargs: Any) -> "Decorator":
-        """
+        r"""
         Return a decorator representation of the child node.
 
-        The provided `args` and `kwargs` are stored and later passed to handler
-        methods when called by the parent processing.
+        The provided ``args`` and ``kwargs`` are stored and later passed
+        to handler methods when called by the parent processing.
 
-        Args:
-            *args (Any):
-                Positional arguments to pass to handler methods.
-            **kwargs (Any):
-                Keyword arguments to pass to handler methods.
+        :param \*args: Positional arguments to pass to handler methods.
+        :param \*\*kwargs: Keyword arguments to pass to handler methods.
 
-        Returns:
-            Decorator:
-                A decorator function that registers the child node.
+        :returns: A decorator function that registers the child node.
+        :rtype: Decorator
         """
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:

@@ -31,12 +31,8 @@ def divide(n: int | float) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        n (int | float):
-            The value to divide by.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The value to divide by.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Divide.as_decorator(n=n)

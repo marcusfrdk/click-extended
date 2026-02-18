@@ -24,9 +24,7 @@ class TestDeprecatedBasic:
         assert result.exit_code == 0
         assert "Flag: test" in result.output
         assert "DeprecationWarning" in result.output
-        assert (
-            "The parameter '--old-flag' has been deprecated." in result.output
-        )
+        assert "The parameter '--old-flag' has been deprecated." in result.output
 
     def test_deprecated_with_alternative(self, cli_runner: CliRunner) -> None:
         """Test deprecated with new parameter specified."""
@@ -77,9 +75,7 @@ class TestDeprecatedBasic:
 class TestDeprecatedCombinations:
     """Test combinations of deprecated parameters."""
 
-    def test_deprecated_with_since_and_alternative(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_deprecated_with_since_and_alternative(self, cli_runner: CliRunner) -> None:
         """Test deprecated with since and new parameter."""
 
         @command()
@@ -167,9 +163,7 @@ class TestDeprecatedNoWarning:
         assert "Opt: default_value" in result.output
         assert "DeprecationWarning" not in result.output
 
-    def test_warning_when_explicitly_provided(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_warning_when_explicitly_provided(self, cli_runner: CliRunner) -> None:
         """Test warning appears when parameter explicitly provided."""
 
         @command()
@@ -230,9 +224,7 @@ class TestDeprecatedValuePassthrough:
 class TestDeprecatedMultipleOptions:
     """Test deprecated with multiple options."""
 
-    def test_deprecated_on_multiple_options(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_deprecated_on_multiple_options(self, cli_runner: CliRunner) -> None:
         """Test multiple deprecated options in same command."""
 
         @command()
@@ -351,9 +343,7 @@ class TestDeprecatedEdgeCases:
         assert result.exit_code == 0
         assert "DeprecationWarning" in result.output
 
-    def test_deprecated_custom_parameter_names(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_deprecated_custom_parameter_names(self, cli_runner: CliRunner) -> None:
         """Test deprecated with custom display names."""
 
         @command()

@@ -16,11 +16,10 @@ class ClickExtendedError(Exception):
         """
         Initialize a ClickExtendedError.
 
-        Args:
-            message (str):
-                The error message describing what went wrong.
-            tip (str):
-                Optional helpful guidance for resolving the error.
+        :param message:
+            The error message describing what went wrong.
+        :param tip:
+            Optional helpful guidance for resolving the error.
         """
         self.message = message
         self.tip = tip
@@ -32,9 +31,8 @@ class ClickExtendedError(Exception):
 
         Subclasses should override this to provide custom formatting.
 
-        Args:
-            file (Any, optional):
-                The file to write to (defaults to sys.stderr).
+        :param file:
+            The file to write to (defaults to sys.stderr).
         """
         if file is None:
             file = sys.stderr
@@ -59,13 +57,12 @@ class ContextAwareError(ClickExtendedError):
 
     def __init__(self, message: str, tip: str | None = None) -> None:
         """
-        Initialize a new `ContextAwareError` instance.
+        Initialize a new ``ContextAwareError`` instance.
 
-        Args:
-            message (str):
-                The error message describing what went wrong.
-            tip (str):
-                Optional helpful guidance for resolving the error.
+        :param message:
+            The error message describing what went wrong.
+        :param tip:
+            Optional helpful guidance for resolving the error.
         """
         super().__init__(message, tip)
         try:
@@ -82,9 +79,9 @@ class ContextAwareError(ClickExtendedError):
         If inside a child node, that will be used, otherwise it checks if a
         parent is defined, and if not that, the root node will be used.
 
-        Returns:
-            str:
-                The name of the most specific node in the current scope.
+        :returns:
+            The name of the most specific node in the current scope.
+        :rtype: str
         """
         if self.context is None:
             return "unknown"
@@ -111,9 +108,8 @@ class ContextAwareError(ClickExtendedError):
             Error (node_name): message
             Tip: helpful guidance
 
-        Args:
-            file (Any, optional):
-                The file to write to (defaults to `sys.stderr`).
+        :param file:
+            The file to write to (defaults to ``sys.stderr``).
         """
         if file is None:
             file = sys.stderr
@@ -151,9 +147,7 @@ class MissingValueError(ContextAwareError):
 
     def __init__(self) -> None:
         """Initialize a new `MissingValueError` instance."""
-        super().__init__(
-            message="Value not provided.", tip=self._generate_tip()
-        )
+        super().__init__(message="Value not provided.", tip=self._generate_tip())
 
     def _generate_tip(self) -> str:
         """Generate a context-aware tip based on the parent node type."""
@@ -168,9 +162,7 @@ class MissingValueError(ContextAwareError):
         except (RuntimeError, AttributeError):
             pass
 
-        return (
-            "Provide a value or set the default parameter to make it optional."
-        )
+        return "Provide a value or set the default parameter to make it optional."
 
     # pylint: disable=too-many-return-statements
     def _tip_for_parent(self, parent: Any) -> str:
@@ -195,8 +187,7 @@ class MissingValueError(ContextAwareError):
                 f"default parameter to make it optional."
             )
         return "".join(
-            "Provide a value or set the default parameter to "
-            "make it optional."
+            "Provide a value or set the default parameter to make it optional."
         )
 
 
@@ -205,11 +196,10 @@ class NoRootError(ContextAwareError):
 
     def __init__(self, tip: str | None = None) -> None:
         """
-        Initialize a new `NoRootError` instance.
+        Initialize a new ``NoRootError`` instance.
 
-        Args:
-            tip (str):
-                Optional helpful guidance (defaults to standard tip).
+        :param tip:
+            Optional helpful guidance (defaults to standard tip).
         """
         super().__init__(
             "No root node has been defined",
@@ -222,22 +212,19 @@ class NoParentError(ContextAwareError):
 
     def __init__(self, child_name: str, tip: str | None = None) -> None:
         """
-        Initialize a new `NoParentError` instance.
+        Initialize a new ``NoParentError`` instance.
 
-        Args:
-            child_name (str):
-                The name of the child node.
-            tip (str):
-                Optional helpful guidance (defaults to standard tip).
+        :param child_name:
+            The name of the child node.
+        :param tip:
+            Optional helpful guidance (defaults to standard tip).
         """
         tip_msg = (
             tip
-            or "Ensure a parent node (option/argument) is defined "
-            "before child nodes"
+            or "Ensure a parent node (option/argument) is defined " "before child nodes"
         )
         super().__init__(
-            f"Cannot register child node '{child_name}' "
-            f"as no parent is defined",
+            f"Cannot register child node '{child_name}' " f"as no parent is defined",
             tip=tip_msg,
         )
 
@@ -247,11 +234,10 @@ class RootExistsError(ContextAwareError):
 
     def __init__(self, tip: str | None = None) -> None:
         """
-        Initialize a new `RootExistsError` instance.
+        Initialize a new ``RootExistsError`` instance.
 
-        Args:
-            tip (str, optional):
-                Optional helpful guidance (defaults to standard tip).
+        :param tip:
+            Optional helpful guidance (defaults to standard tip).
         """
         super().__init__(
             "A root node has already been defined",
@@ -264,13 +250,12 @@ class ParentExistsError(ContextAwareError):
 
     def __init__(self, name: str, tip: str | None = None) -> None:
         """
-        Initialize a new `ParentExistsError` instance.
+        Initialize a new ``ParentExistsError`` instance.
 
-        Args:
-            name (str):
-                The name of the duplicate parent node.
-            tip (str | None, optional):
-                Optional helpful guidance (defaults to standard tip).
+        :param name:
+            The name of the duplicate parent node.
+        :param tip:
+            Optional helpful guidance (defaults to standard tip).
         """
         super().__init__(
             f"Parent node '{name}' already exists",
@@ -295,19 +280,18 @@ class TypeMismatchError(ContextAwareError):
         tip: str | None = None,
     ) -> None:
         """
-        Initialize a new `TypeMismatchError` instance.
+        Initialize a new ``TypeMismatchError`` instance.
 
-        Args:
-            child_name (str):
-                The name of the child node.
-            parent_name (str):
-                The name of the parent node.
-            parent_type (str):
-                The type of the parent (as string).
-            supported_types (list[str]):
-                List of supported type names.
-            tip (str | None, optional):
-                Optional helpful guidance (defaults to supported types).
+        :param child_name:
+            The name of the child node.
+        :param parent_name:
+            The name of the parent node.
+        :param parent_type:
+            The type of the parent (as string).
+        :param supported_types:
+            List of supported type names.
+        :param tip:
+            Optional helpful guidance (defaults to supported types).
         """
         message = (
             f"Child '{child_name}' does not support parent '{parent_name}' "
@@ -326,13 +310,12 @@ class NameExistsError(ContextAwareError):
 
     def __init__(self, name: str, tip: str | None = None) -> None:
         """
-        Initialize a new `NameExistsError` instance.
+        Initialize a new ``NameExistsError`` instance.
 
-        Args:
-            name (str):
-                The conflicting name.
-            tip (str | None, optional):
-                Optional helpful guidance (defaults to standard tip).
+        :param name:
+            The conflicting name.
+        :param tip:
+            Optional helpful guidance (defaults to standard tip).
         """
         super().__init__(
             f"The name '{name}' is already used",
@@ -354,31 +337,27 @@ class UnhandledTypeError(ContextAwareError):
         tip: str | None = None,
     ) -> None:
         """
-        Initialize a new `UnhandledTypeError` instance.
+        Initialize a new ``UnhandledTypeError`` instance.
 
-        Args:
-            child_name (str):
-                The name of the child node.
-            value_type (str):
-                The type of value that couldn't be handled.
-            implemented_handlers (list[str]):
-                List of handler names that are implemented.
-            tip (str, optional):
-                Optional helpful guidance (defaults to list of handlers).
+        :param child_name:
+            The name of the child node.
+        :param value_type:
+            The type of value that couldn't be handled.
+        :param implemented_handlers:
+            List of handler names that are implemented.
+        :param tip:
+            Optional helpful guidance (defaults to list of handlers).
         """
         message = "Child '{}' does not handle values of type '{}'."
         message = message.format(child_name, value_type)
 
         if tip is None:
             if implemented_handlers:
-                tip = (
-                    f"Missing handler for '{value_type}', only "
-                    + humanize_iterable(
-                        implemented_handlers,
-                        wrap="'",
-                        suffix_singular=" is supported.",
-                        suffix_plural=" are supported.",
-                    )
+                tip = f"Missing handler for '{value_type}', only " + humanize_iterable(
+                    implemented_handlers,
+                    wrap="'",
+                    suffix_singular=" is supported.",
+                    suffix_plural=" are supported.",
                 )
             else:
                 tip = "".join(
@@ -399,13 +378,12 @@ class ProcessError(ContextAwareError):
 
     def __init__(self, message: str, tip: str | None = None) -> None:
         """
-        Initialize a new `ProcessError` instance.
+        Initialize a new ``ProcessError`` instance.
 
-        Args:
-            message (str):
-                The error message from the wrapped exception.
-            tip (str | None, optional):
-                Optional helpful guidance for resolving the error.
+        :param message:
+            The error message from the wrapped exception.
+        :param tip:
+            Optional helpful guidance for resolving the error.
         """
         super().__init__(message, tip=tip)
 
@@ -415,13 +393,12 @@ class InvalidHandlerError(ContextAwareError):
 
     def __init__(self, message: str, tip: str | None = None) -> None:
         """
-        Initialize an new `InvalidHandlerError` instance.
+        Initialize an new ``InvalidHandlerError`` instance.
 
-        Args:
-            message (str):
-                Description of the invalid handler behavior.
-            tip (str | None, optional):
-                Optional helpful guidance for correcting the handler.
+        :param message:
+            Description of the invalid handler behavior.
+        :param tip:
+            Optional helpful guidance for correcting the handler.
         """
         super().__init__(message, tip=tip)
 
@@ -435,16 +412,14 @@ class InternalError(ContextAwareError):
 
     def __init__(self, message: str, tip: str | None = None) -> None:
         """
-        Initialize a new `InternalError` instance.
+        Initialize a new ``InternalError`` instance.
 
-        Args:
-            message (str):
-                Description of the internal error.
-            tip (str | None, optional):
-                Optional helpful guidance (defaults to bug report message).
+        :param message:
+            Description of the internal error.
+        :param tip:
+            Optional helpful guidance (defaults to bug report message).
         """
         super().__init__(
             message,
-            tip=tip
-            or "This is likely a bug in click-extended. Please report it.",
+            tip=tip or "This is likely a bug in click-extended. Please report it.",
         )

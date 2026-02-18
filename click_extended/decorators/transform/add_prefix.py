@@ -40,16 +40,13 @@ def add_prefix(
 
     Supports: `str`
 
-    Args:
-        prefix (str):
-            The prefix to add.
-        skip (bool, optional):
-            Skip adding the prefix if it already exists. Defaults to `True`.
-        case_sensitive (bool)
-            Check for exact case matching when `skip=True`. Defaults to `False`.
-    Returns:
-        Decorator:
-            The decorated function.
+    :param prefix: The prefix to add.
+    :param skip: Skip adding the prefix if it already exists.
+        Defaults to ``True``.
+    :param case_sensitive: Check for exact case matching when ``skip=True``.
+        Defaults to ``False``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return AddPrefix.as_decorator(
         prefix=prefix,

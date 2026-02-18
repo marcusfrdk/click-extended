@@ -33,8 +33,7 @@ def is_uuid() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsUuid.as_decorator()

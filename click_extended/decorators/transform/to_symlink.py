@@ -22,48 +22,33 @@ def to_symlink(
     is_executable: bool = False,
 ) -> Decorator:
     """
-    Convert, validate, and process a string to a `pathlib.Path` symlink.
+    Convert, validate, and process a string to a ``pathlib.Path`` symlink.
 
     This decorator is pre-configured to only accept symlinks:
-    - `allow_symlink=True`
-    - `allow_file=True` (the symlink target can be a file)
-    - `allow_directory=True` (the symlink target can be a directory)
+
+    - ``allow_symlink=True``
+    - ``allow_file=True`` (the symlink target can be a file)
+    - ``allow_directory=True`` (the symlink target can be a directory)
 
     Type: `ChildNode`
 
     Supports: `str`, `Path`
 
-    Args:
-        exists (bool, optional):
-            Whether the symlink needs to exist.
-            Defaults to `True`.
-
-        resolve (bool, optional):
-            Convert the path to an absolute path. When `True`, resolves
-            `.` and `..` components and follows the symlink if
-            `follow_symlink=True`.
-            Defaults to `False` (to preserve symlink).
-
-        follow_symlink (bool, optional):
-            Whether to follow the symlink when resolving the path.
-            Only applies when `resolve=True`.
-            Defaults to `False` (to preserve symlink).
-
-        is_readable (bool, optional):
-            Whether the symlink has `read` permissions.
-            Defaults to `False`.
-
-        is_writable (bool, optional):
-            Whether the symlink has `write` permissions.
-            Default to `False`.
-
-        is_executable (bool, optional):
-            A unix-only feature that checks if the symlink has
-            `execute` permissions. Defaults to `False`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param exists: Whether the symlink needs to exist. Defaults to ``True``.
+    :param resolve: Convert the path to an absolute path. When ``True``,
+        resolves ``.`` and ``..`` components and follows the symlink if
+        ``follow_symlink=True``.
+        Defaults to ``False`` (to preserve symlink).
+    :param follow_symlink: Whether to follow the symlink when resolving
+        the path. Only applies when ``resolve=True``. Defaults to ``False``.
+    :param is_readable: Whether the symlink has ``read`` permissions.
+        Defaults to ``False``.
+    :param is_writable: Whether the symlink has ``write`` permissions.
+        Default to ``False``.
+    :param is_executable: A unix-only feature that checks if the symlink has
+        ``execute`` permissions. Defaults to ``False``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ToSymlink.as_decorator(
         exists=exists,

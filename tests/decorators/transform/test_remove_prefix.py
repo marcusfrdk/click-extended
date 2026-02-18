@@ -79,9 +79,7 @@ class TestRemovePrefixBasic:
         assert result.exit_code == 0
         assert "Name: mr. John" in result.output
 
-    def test_remove_single_character_prefix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_remove_single_character_prefix(self, cli_runner: CliRunner) -> None:
         """Test removing a single character prefix."""
 
         @command()
@@ -94,9 +92,7 @@ class TestRemovePrefixBasic:
         assert result.exit_code == 0
         assert "Path: path" in result.output
 
-    def test_remove_entire_string_as_prefix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_remove_entire_string_as_prefix(self, cli_runner: CliRunner) -> None:
         """Test removing prefix when it's the entire string."""
 
         @command()
@@ -213,9 +209,7 @@ class TestRemovePrefixEdgeCases:
         assert result.exit_code == 0
         assert "Result: ''" in result.output
 
-    def test_remove_prefix_with_special_chars(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_remove_prefix_with_special_chars(self, cli_runner: CliRunner) -> None:
         """Test remove_prefix with special characters."""
 
         @command()

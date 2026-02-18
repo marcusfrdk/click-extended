@@ -18,9 +18,7 @@ class IsPort(ChildNode):
         **kwargs: Any,
     ) -> Any:
         if not 1 <= value <= 65535:
-            raise ValueError(
-                f"Value '{value}' is not a valid port number (1-65535)."
-            )
+            raise ValueError(f"Value '{value}' is not a valid port number (1-65535).")
         return value
 
 
@@ -32,8 +30,7 @@ def is_port() -> Decorator:
 
     Supports: `int`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsPort.as_decorator()

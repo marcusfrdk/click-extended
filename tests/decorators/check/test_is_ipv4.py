@@ -20,6 +20,4 @@ def test_ipv4() -> None:
 
     result = runner.invoke(cli, ["256.256.256.256"])
     assert result.exit_code != 0
-    assert (
-        "Value '256.256.256.256' is not a valid IPv4 address." in result.output
-    )
+    assert "Value '256.256.256.256' is not a valid IPv4 address." in result.output

@@ -15,9 +15,7 @@ from click_extended.decorators.transform.to_time import to_time
 class TestToTimeBasic:
     """Test basic to_time functionality."""
 
-    def test_to_time_single_format_strptime(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_single_format_strptime(self, cli_runner: CliRunner) -> None:
         """Test to_time with single Python strptime format."""
 
         @command()
@@ -35,9 +33,7 @@ class TestToTimeBasic:
         assert "Minute: 30" in result.output
         assert "Second: 45" in result.output
 
-    def test_to_time_single_format_simplified(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_single_format_simplified(self, cli_runner: CliRunner) -> None:
         """Test to_time with single simplified format."""
 
         @command()
@@ -73,9 +69,7 @@ class TestToTimeBasic:
         assert "Minute: 30" in result.output
         assert "Second: 0" in result.output
 
-    def test_to_time_simplified_without_seconds(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_simplified_without_seconds(self, cli_runner: CliRunner) -> None:
         """Test to_time with simplified format without seconds."""
 
         @command()
@@ -108,9 +102,7 @@ class TestToTimeBasic:
 class TestToTimeMultipleFormats:
     """Test to_time with multiple format fallbacks."""
 
-    def test_to_time_multiple_formats_first_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_multiple_formats_first_match(self, cli_runner: CliRunner) -> None:
         """Test to_time tries first format and succeeds."""
 
         @command()
@@ -124,9 +116,7 @@ class TestToTimeMultipleFormats:
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
 
-    def test_to_time_multiple_formats_second_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_multiple_formats_second_match(self, cli_runner: CliRunner) -> None:
         """Test to_time falls back to second format."""
 
         @command()
@@ -140,9 +130,7 @@ class TestToTimeMultipleFormats:
         assert result.exit_code == 0
         assert "Hour: 14" in result.output
 
-    def test_to_time_multiple_formats_third_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_multiple_formats_third_match(self, cli_runner: CliRunner) -> None:
         """Test to_time falls back to third format."""
 
         @command()
@@ -282,9 +270,7 @@ class TestToTimeTuples:
         assert "Time 2: 12:30:00" in result.output
         assert "Time 3: 18:45:30" in result.output
 
-    def test_to_time_flat_tuple_multiple_formats(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_to_time_flat_tuple_multiple_formats(self, cli_runner: CliRunner) -> None:
         """Test to_time with tuple where different items match different formats."""
 
         @command()

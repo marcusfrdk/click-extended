@@ -169,9 +169,7 @@ class TestContextGetters:
         """Test get_root() returns the root node."""
         assert full_context.get_root() == mock_root_node
 
-    def test_get_parent_existing(
-        self, full_context: Context, mock_option: Any
-    ) -> None:
+    def test_get_parent_existing(self, full_context: Context, mock_option: Any) -> None:
         """Test get_parent() with existing parent."""
         result = full_context.get_parent("test_opt")
         assert result == mock_option
@@ -181,9 +179,7 @@ class TestContextGetters:
         result = full_context.get_parent("nonexistent")
         assert result is None
 
-    def test_get_node_existing(
-        self, full_context: Context, mock_command: Any
-    ) -> None:
+    def test_get_node_existing(self, full_context: Context, mock_command: Any) -> None:
         """Test get_node() with existing node."""
         result = full_context.get_node("test_command")
         assert result == mock_command
@@ -193,9 +189,7 @@ class TestContextGetters:
         result = full_context.get_node("nonexistent")
         assert result is None
 
-    def test_get_tag_existing(
-        self, full_context: Context, mock_tag: Any
-    ) -> None:
+    def test_get_tag_existing(self, full_context: Context, mock_tag: Any) -> None:
         """Test get_tag() with existing tag."""
         result = full_context.get_tag("test_tag")
         assert result == mock_tag
@@ -259,9 +253,7 @@ class TestContextChildren:
         assert len(children) == 1
         assert child1 in children
 
-    def test_get_children_nonexistent_parent(
-        self, basic_context: Context
-    ) -> None:
+    def test_get_children_nonexistent_parent(self, basic_context: Context) -> None:
         """Test get_children() with non-existent parent returns empty list."""
         children = basic_context.get_children("nonexistent")
         assert children == []
@@ -304,9 +296,7 @@ class TestContextChildren:
         children = context.get_children()
         assert children == []
 
-    def test_get_siblings(
-        self, mock_option: Any, mock_click_context: Any
-    ) -> None:
+    def test_get_siblings(self, mock_option: Any, mock_click_context: Any) -> None:
         """Test get_siblings() returns siblings excluding current."""
         child1 = StubChildNode(name="child1")
         child2 = StubChildNode(name="child2")
@@ -403,9 +393,7 @@ class TestContextProvided:
         assert len(provided) == 1
         assert mock_option in provided
 
-    def test_get_provided_envs(
-        self, mock_env: Any, mock_click_context: Any
-    ) -> None:
+    def test_get_provided_envs(self, mock_env: Any, mock_click_context: Any) -> None:
         """Test get_provided_envs() returns provided environment variables."""
         mock_env.was_provided = True
 
@@ -468,9 +456,7 @@ class TestContextProvided:
         value = context.get_provided_value("test_opt")
         assert value is None
 
-    def test_get_provided_value_nonexistent(
-        self, basic_context: Context
-    ) -> None:
+    def test_get_provided_value_nonexistent(self, basic_context: Context) -> None:
         """Test get_provided_value() with non-existent parent."""
         value = basic_context.get_provided_value("nonexistent")
         assert value is None
@@ -560,9 +546,7 @@ class TestContextProvided:
         values = context.get_provided_values()
         assert values == {}
 
-    def test_get_provided_values_empty_parents(
-        self, basic_context: Context
-    ) -> None:
+    def test_get_provided_values_empty_parents(self, basic_context: Context) -> None:
         """Test get_provided_values() with no parents."""
         values = basic_context.get_provided_values()
         assert values == {}
@@ -615,9 +599,7 @@ class TestContextMissing:
         assert len(missing) == 1
         assert mock_option in missing
 
-    def test_get_missing_envs(
-        self, mock_env: Any, mock_click_context: Any
-    ) -> None:
+    def test_get_missing_envs(self, mock_env: Any, mock_click_context: Any) -> None:
         """Test get_missing_envs() returns unprovided envs."""
         mock_env.was_provided = False
 
@@ -690,9 +672,7 @@ class TestContextCurrent:
         assert "tag1" in tags
         assert "tag2" in tags
 
-    def test_get_current_tags_not_parent_node(
-        self, mock_click_context: Any
-    ) -> None:
+    def test_get_current_tags_not_parent_node(self, mock_click_context: Any) -> None:
         """Test get_current_tags() returns empty list for non-ParentNode."""
         context = Context(
             root=Mock(),  # type: ignore[arg-type]
@@ -880,9 +860,7 @@ class TestContextCurrentParentTyped:
             data={},
         )
 
-        with pytest.raises(
-            RuntimeError, match="No parent node in current context"
-        ):
+        with pytest.raises(RuntimeError, match="No parent node in current context"):
             context.get_current_parent_as_parent()
 
     def test_get_current_parent_as_tag_success(
@@ -920,9 +898,7 @@ class TestContextCurrentParentTyped:
             data={},
         )
 
-        with pytest.raises(
-            RuntimeError, match="Parent node is not a Tag instance"
-        ):
+        with pytest.raises(RuntimeError, match="Parent node is not a Tag instance"):
             context.get_current_parent_as_tag()
 
     def test_get_current_parent_as_tag_with_argument_raises(
@@ -941,9 +917,7 @@ class TestContextCurrentParentTyped:
             data={},
         )
 
-        with pytest.raises(
-            RuntimeError, match="Parent node is not a Tag instance"
-        ):
+        with pytest.raises(RuntimeError, match="Parent node is not a Tag instance"):
             context.get_current_parent_as_tag()
 
     def test_get_current_parent_as_tag_with_env_raises(
@@ -962,9 +936,7 @@ class TestContextCurrentParentTyped:
             data={},
         )
 
-        with pytest.raises(
-            RuntimeError, match="Parent node is not a Tag instance"
-        ):
+        with pytest.raises(RuntimeError, match="Parent node is not a Tag instance"):
             context.get_current_parent_as_tag()
 
     def test_get_current_parent_as_tag_no_parent_raises(
@@ -983,9 +955,7 @@ class TestContextCurrentParentTyped:
             data={},
         )
 
-        with pytest.raises(
-            RuntimeError, match="No parent node in current context"
-        ):
+        with pytest.raises(RuntimeError, match="No parent node in current context"):
             context.get_current_parent_as_tag()
 
 

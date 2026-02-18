@@ -34,19 +34,12 @@ def random_integer(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        min_value (int):
-            The lower value in the range. Defaults to 0.
-        max_value (int):
-            The upper value in the range. Defaults to 100.
-        seed (int | None):
-            Optional seed for reproducible randomness.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param name: The name of the parent node.
+    :param min_value: The lower value in the range. Defaults to 0.
+    :param max_value: The upper value in the range. Defaults to 100.
+    :param seed: Optional seed for reproducible randomness.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return RandomInteger.as_decorator(
         name=name,

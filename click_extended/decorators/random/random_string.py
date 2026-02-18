@@ -46,25 +46,15 @@ def random_string(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        length (int):
-            The length of the string to generate.
-        lowercase (bool):
-            Whether to include lowercase characters.
-        uppercase (bool):
-            Whether to include uppercase characters.
-        numbers (bool):
-            Whether to include numbers.
-        symbols (bool):
-            Whether to include symbols.
-        seed (int | None):
-            Optional seed for reproducible randomness.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param name: The name of the parent node.
+    :param length: The length of the string to generate.
+    :param lowercase: Whether to include lowercase characters.
+    :param uppercase: Whether to include uppercase characters.
+    :param numbers: Whether to include numbers.
+    :param symbols: Whether to include symbols.
+    :param seed: Optional seed for reproducible randomness.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return RandomString.as_decorator(
         name=name,

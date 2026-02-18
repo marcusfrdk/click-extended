@@ -169,9 +169,7 @@ class TestParentNodeInit:
 
     def test_init_with_extra_kwargs(self) -> None:
         """Test that extra kwargs are accepted (for subclasses)."""
-        node = ConcreteParentNode(
-            name="test_node", extra_param="value", another="test"
-        )
+        node = ConcreteParentNode(name="test_node", extra_param="value", another="test")
 
         assert node.name == "test_node"
 

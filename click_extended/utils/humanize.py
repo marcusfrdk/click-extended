@@ -24,36 +24,28 @@ def humanize_iterable(
     - **Two items**: "x and y"
     - **Three+ items**: "x, y and z"
 
-    Args:
-        value (Iterable[str | int | float | bool]):
-            The iterable of primitives to format. All items must be
-            primitives (str, int, float, bool).
-        prefix_singular (str, optional):
-            A prefix to use if the list only contains a single element.
-            If this parameter is set, `prefix_plural` must also be set.
-        prefix_plural (str, optional):
-            A prefix to use if the list contains zero or multiple elements.
-            If this parameter is set, `prefix_singular` must also be set.
-        suffix_singular (str, optional):
-            A suffix to use if the list only contains a single element.
-            If this parameter is set, `suffix_plural` must also be set.
-        suffix_plural (str, optional):
-            A suffix to use if the list contains zero or multiple elements.
-            If this parameter is set, `prefix_singular` must also be set.
-        wrap (str | tuple[str, str], optional):
-            A string to wrap each element with (applied to both sides),
-            or a tuple of (left, right) strings for asymmetric wrapping.
-        sep (str, optional):
-            The sep when the length is greater than 2 (X, Y <sep> Z).
-    Returns:
-        str:
-            The formatted string.
+    :param value: The iterable of primitives to format. All items must be
+        primitives (str, int, float, bool).
+    :param prefix_singular: A prefix to use if the list only contains a
+        single element. If this parameter is set, ``prefix_plural`` must
+        also be set.
+    :param prefix_plural: A prefix to use if the list contains zero or
+        multiple elements. If this parameter is set, ``prefix_singular``
+        must also be set.
+    :param suffix_singular: A suffix to use if the list only contains a
+        single element. If this parameter is set, ``suffix_plural`` must
+        also be set.
+    :param suffix_plural: A suffix to use if the list contains zero or
+        multiple elements. If this parameter is set, ``prefix_singular``
+        must also be set.
+    :param wrap: A string to wrap each element with (applied to both sides),
+        or a tuple of (left, right) strings for asymmetric wrapping.
+    :param sep: The sep when the length is greater than 2 (X, Y <sep> Z).
+    :returns: The formatted string.
+    :rtype: str
 
-    Raises:
-        ValueError:
-            If only one prefix is provided or if the list is empty.
-        TypeError:
-            If a value in the list is not a primitive.
+    :raises ValueError: If only one prefix is provided or if the list is empty.
+    :raises TypeError: If a value in the list is not a primitive.
 
     Examples:
         >>> humanize_iterable(["str"])
@@ -128,17 +120,15 @@ def humanize_iterable(
 
 def humanize_type(value: Any) -> str:
     """
-    Humanize the output of a `type` instance in the same format as
-    `humanize_iterable`.
+    Humanize the output of a ``type`` instance in the same format as
+    ``humanize_iterable``.
 
-    Args:
-        value (type):
-            The type to humanize. This can be simple types like `str` and more
-            complex types like `typing.Union` or `types.UnionType`.
+    :param value: The type to humanize. This can be simple types like
+        ``str`` and more
+        complex types like ``typing.Union`` or ``types.UnionType``.
 
-    Returns:
-        str:
-            The formatted string.
+    :returns: The formatted string.
+    :rtype: str
 
     Examples:
         >>> humanize_type(str)
@@ -159,11 +149,9 @@ def humanize_type(value: Any) -> str:
         """
         Format a type into a string.
 
-        Args:
-            t (Any):
-                The type to format
-            inside_generic (bool):
-                If `True`, unions use `|` instead of `humanize_iterable`
+        :param t: The type to format
+        :param inside_generic: If ``True``, unions use ``|`` instead of
+            ``humanize_iterable``
         """
         if t is type(None):
             return "None"

@@ -76,9 +76,7 @@ class HookRegistry:
         except ValueError:
             pass
 
-    def iter_hooks(
-        self, phase: "HookPhase", root: "RootNode"
-    ) -> list["HookNode"]:
+    def iter_hooks(self, phase: "HookPhase", root: "RootNode") -> list["HookNode"]:
         """
         Return ordered hooks for the given phase and root.
 
@@ -90,14 +88,10 @@ class HookRegistry:
         :returns: Ordered hook nodes to execute.
         """
         scoped = [
-            hook
-            for hook in self._hooks
-            if hook.phase == phase and hook.scope is root
+            hook for hook in self._hooks if hook.phase == phase and hook.scope is root
         ]
         global_hooks = [
-            hook
-            for hook in self._hooks
-            if hook.phase == phase and hook.scope is None
+            hook for hook in self._hooks if hook.phase == phase and hook.scope is None
         ]
         return list(reversed(scoped)) + list(reversed(global_hooks))
 
@@ -268,10 +262,7 @@ class HookRegistry:
 
             raise ProcessError(
                 "Cannot use async hook handlers in an existing event loop.",
-                tip=(
-                    "Use synchronous hooks or run the CLI outside async "
-                    "contexts."
-                ),
+                tip=("Use synchronous hooks or run the CLI outside async " "contexts."),
             )
 
         if self._async_loop is None or self._async_loop.is_closed():

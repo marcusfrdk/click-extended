@@ -29,14 +29,9 @@ def now(name: str, tz: str = "UTC") -> Decorator:
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parameter.
-        tz (str, optional):
-            The timezone to use for the datetime. Defaults to "UTC".
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param name: The name of the parameter.
+    :param tz: The timezone to use for the datetime. Defaults to ``"UTC"``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Now.as_decorator(name=name, tz=tz)

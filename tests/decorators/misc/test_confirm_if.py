@@ -41,9 +41,7 @@ class TestConfirmIfValueOnlyPredicate:
         """Clear pending nodes before each test."""
         Tree._pending_nodes.clear()  # type: ignore
 
-    def test_predicate_false_skips_confirmation(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_predicate_false_skips_confirmation(self, cli_runner: CliRunner) -> None:
         """Test that False predicate skips confirmation."""
 
         @command()
@@ -57,9 +55,7 @@ class TestConfirmIfValueOnlyPredicate:
         assert "Count: 50" in result.output
         assert "Proceed?" not in result.output
 
-    def test_predicate_true_prompts_confirmation(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_predicate_true_prompts_confirmation(self, cli_runner: CliRunner) -> None:
         """Test that True predicate prompts for confirmation."""
 
         @command()
@@ -137,9 +133,7 @@ class TestConfirmIfValueContextPredicate:
         def cmd(force: bool, file: str) -> None:
             click.echo(f"Deleted {file}")
 
-        result = cli_runner.invoke(
-            cmd, ["--file", "important.txt"], input="y\n"
-        )
+        result = cli_runner.invoke(cmd, ["--file", "important.txt"], input="y\n")
         assert result.exit_code == 0
         assert "Delete important.txt?" in result.output
         assert "Deleted important.txt" in result.output
@@ -166,9 +160,7 @@ class TestConfirmIfPromptFormatting:
         def cmd(filename: str) -> None:
             click.echo(f"Deleted {filename}")
 
-        result = cli_runner.invoke(
-            cmd, ["--filename", "important.log"], input="y\n"
-        )
+        result = cli_runner.invoke(cmd, ["--filename", "important.log"], input="y\n")
         assert result.exit_code == 0
         assert "Delete important.log?" in result.output
 
@@ -437,9 +429,7 @@ class TestConfirmIfValueTypes:
         def cmd(path: str) -> None:
             click.echo(f"Modified {path}")
 
-        result = cli_runner.invoke(
-            cmd, ["--path", "/etc/important"], input="yes\n"
-        )
+        result = cli_runner.invoke(cmd, ["--path", "/etc/important"], input="yes\n")
         assert result.exit_code == 0
         assert "Modify /etc/important?" in result.output
 
@@ -477,9 +467,7 @@ class TestConfirmIfPredicateExceptions:
         """Clear pending nodes before each test."""
         Tree._pending_nodes.clear()  # type: ignore
 
-    def test_predicate_exception_propagates(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_predicate_exception_propagates(self, cli_runner: CliRunner) -> None:
         """Test that exceptions in predicate function are propagated."""
 
         def bad_predicate(value: Any) -> bool:

@@ -49,9 +49,7 @@ class TestExclusiveGroupMode:
         assert result.exit_code == 0
         assert "XML: True" in result.output
 
-    def test_exclusive_with_two_provided_fails(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exclusive_with_two_provided_fails(self, cli_runner: CliRunner) -> None:
         """Test that providing two parameters fails."""
 
         @command()
@@ -68,9 +66,7 @@ class TestExclusiveGroupMode:
         assert "format" in result.output
         assert "json" in result.output
 
-    def test_exclusive_with_all_provided_fails(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exclusive_with_all_provided_fails(self, cli_runner: CliRunner) -> None:
         """Test that providing all parameters fails."""
 
         @command()
@@ -89,9 +85,7 @@ class TestExclusiveGroupMode:
 class TestExclusiveTwoParams:
     """Test exclusive with two parameters."""
 
-    def test_two_params_both_provided_fails(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_two_params_both_provided_fails(self, cli_runner: CliRunner) -> None:
         """Test that providing both parameters fails."""
 
         @command()
@@ -107,9 +101,7 @@ class TestExclusiveTwoParams:
         assert "'p'" in result.output or "p" in result.output
         assert "'q'" in result.output or "q" in result.output
 
-    def test_two_params_one_provided_succeeds(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_two_params_one_provided_succeeds(self, cli_runner: CliRunner) -> None:
         """Test that providing one parameter succeeds."""
 
         @command()
@@ -196,9 +188,7 @@ class TestExclusiveWithFlags:
 class TestExclusiveWithDefaults:
     """Test exclusive with default values."""
 
-    def test_defaults_not_considered_provided(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_defaults_not_considered_provided(self, cli_runner: CliRunner) -> None:
         """Test that default values don't trigger exclusivity."""
 
         @command()
@@ -224,9 +214,7 @@ class TestExclusiveWithDefaults:
 class TestExclusiveErrorMessages:
     """Test error message formatting."""
 
-    def test_error_message_shows_all_conflicts(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_shows_all_conflicts(self, cli_runner: CliRunner) -> None:
         """Test that error message shows all conflicting parameters."""
 
         @command()
@@ -241,9 +229,7 @@ class TestExclusiveErrorMessages:
         assert result.exit_code == 1
         assert "2 were given" in result.output or "2" in result.output
 
-    def test_error_message_with_three_conflicts(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_with_three_conflicts(self, cli_runner: CliRunner) -> None:
         """Test error message when three parameters conflict."""
 
         @command()
@@ -331,9 +317,7 @@ class TestExclusivePractical:
         result = cli_runner.invoke(export, ["--json", "--xml"])
         assert result.exit_code == 1
 
-    def test_authentication_method_selection(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_authentication_method_selection(self, cli_runner: CliRunner) -> None:
         """Test exclusive authentication method selection."""
 
         @command()
@@ -341,9 +325,7 @@ class TestExclusivePractical:
         @option("--token", default=None)
         @option("--password", default=None)
         @option("--oauth", default=None)
-        def login(
-            token: str | None, password: str | None, oauth: str | None
-        ) -> None:
+        def login(token: str | None, password: str | None, oauth: str | None) -> None:
             if token:
                 click.echo(f"Logging in with token: {token}")
             elif password:
@@ -354,9 +336,7 @@ class TestExclusivePractical:
         result = cli_runner.invoke(login, ["--token", "abc123"])
         assert result.exit_code == 0
 
-        result = cli_runner.invoke(
-            login, ["--token", "abc", "--password", "xyz"]
-        )
+        result = cli_runner.invoke(login, ["--token", "abc", "--password", "xyz"])
         assert result.exit_code == 1
 
     def test_verbosity_level_selection(self, cli_runner: CliRunner) -> None:

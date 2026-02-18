@@ -16,28 +16,19 @@ def format_list(
     - **Two items**: "x and y" or "Prefix Plural: x and y"
     - **Three+ items**: "x, y and z" or "Prefix Plural: x, y and z"
 
-    Args:
-        value (list[Any]):
-            The list of primitives to format. All items must be
-            primitives (str, int, float, bool).
-        prefix_singular (str, optional):
-            A prefix to use if the list only contains a single element.
-            If this parameter is set, `prefix_plural` must also be set.
-        prefix_plural (str, optional):
-            A prefix to use if the list contains zero or multiple elements.
-            If this parameter is set, `prefix_singular` must also be set.
-        wrap (str | tuple[str, str], optional):
-            A string to wrap each element with (applied to both sides),
-            or a tuple of (left, right) strings for asymmetric wrapping.
-    Returns:
-        str:
-            The formatted string.
-
-    Raises:
-        ValueError:
-            If only one prefix is provided or if the list is empty.
-        TypeError:
-            If a value in the list is not a primitive.
+    :param value: The list of primitives to format. All items must be
+        primitives (str, int, float, bool).
+    :param prefix_singular: A prefix to use if the list only contains a single
+        element. If this parameter is set, ``prefix_plural`` must also be set.
+    :param prefix_plural: A prefix to use if the list contains zero or multiple
+        elements. If this parameter is set, ``prefix_singular`` must also
+        be set.
+    :param wrap: A string to wrap each element with (applied to both sides),
+        or a tuple of (left, right) strings for asymmetric wrapping.
+    :raises ValueError: If only one prefix is provided or if the list is empty.
+    :raises TypeError: If a value in the list is not a primitive.
+    :returns: The formatted string.
+    :rtype: str
 
     Examples:
         >>> format_list(["str"])

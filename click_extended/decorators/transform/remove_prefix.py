@@ -29,13 +29,9 @@ def remove_prefix(prefix: str) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        prefix (str):
-            The prefix to remove from the beginning of the string.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param prefix: The prefix to remove from the beginning of the string.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python

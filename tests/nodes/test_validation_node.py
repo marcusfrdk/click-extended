@@ -19,9 +19,7 @@ class TestValidationNodeBase:
         """Test that ValidationNode can be initialized properly."""
 
         class CustomValidation(ValidationNode):
-            def on_finalize(
-                self, context: Context, *args: Any, **kwargs: Any
-            ) -> None:
+            def on_finalize(self, context: Context, *args: Any, **kwargs: Any) -> None:
                 pass
 
         node = CustomValidation(name="test_validation")
@@ -33,9 +31,7 @@ class TestValidationNodeBase:
         """Test ValidationNode with process arguments."""
 
         class CustomValidation(ValidationNode):
-            def on_finalize(
-                self, context: Context, *args: Any, **kwargs: Any
-            ) -> None:
+            def on_finalize(self, context: Context, *args: Any, **kwargs: Any) -> None:
                 pass
 
         node = CustomValidation(

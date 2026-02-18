@@ -63,9 +63,7 @@ class TestNotEmptyValidation:
 
         result = cli_runner.invoke(cmd, ["--name", ""])
         assert result.exit_code != 0
-        assert (
-            "Value cannot be empty or contain only whitespace" in result.output
-        )
+        assert "Value cannot be empty or contain only whitespace" in result.output
 
     def test_whitespace_only_fails(self, cli_runner: CliRunner) -> None:
         """Test that whitespace-only string fails validation."""
@@ -78,9 +76,7 @@ class TestNotEmptyValidation:
 
         result = cli_runner.invoke(cmd, ["--text", "   "])
         assert result.exit_code != 0
-        assert (
-            "Value cannot be empty or contain only whitespace" in result.output
-        )
+        assert "Value cannot be empty or contain only whitespace" in result.output
 
     def test_tab_only_fails(self, cli_runner: CliRunner) -> None:
         """Test that tab-only string fails validation."""
@@ -93,9 +89,7 @@ class TestNotEmptyValidation:
 
         result = cli_runner.invoke(cmd, ["--text", "\t\t"])
         assert result.exit_code != 0
-        assert (
-            "Value cannot be empty or contain only whitespace" in result.output
-        )
+        assert "Value cannot be empty or contain only whitespace" in result.output
 
     def test_newline_only_fails(self, cli_runner: CliRunner) -> None:
         """Test that newline-only string fails validation."""
@@ -108,9 +102,7 @@ class TestNotEmptyValidation:
 
         result = cli_runner.invoke(cmd, ["--text", "\n\n"])
         assert result.exit_code != 0
-        assert (
-            "Value cannot be empty or contain only whitespace" in result.output
-        )
+        assert "Value cannot be empty or contain only whitespace" in result.output
 
     def test_mixed_whitespace_fails(self, cli_runner: CliRunner) -> None:
         """Test that mixed whitespace fails validation."""
@@ -123,9 +115,7 @@ class TestNotEmptyValidation:
 
         result = cli_runner.invoke(cmd, ["--text", " \t\n "])
         assert result.exit_code != 0
-        assert (
-            "Value cannot be empty or contain only whitespace" in result.output
-        )
+        assert "Value cannot be empty or contain only whitespace" in result.output
 
 
 class TestNotEmptyWithContent:
@@ -147,9 +137,7 @@ class TestNotEmptyWithContent:
         result = cli_runner.invoke(cmd, ["--char", "a"])
         assert result.exit_code == 0
 
-    def test_text_with_leading_whitespace_passes(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_text_with_leading_whitespace_passes(self, cli_runner: CliRunner) -> None:
         """Test that text with leading whitespace passes."""
 
         @command()
@@ -161,9 +149,7 @@ class TestNotEmptyWithContent:
         result = cli_runner.invoke(cmd, ["--text", "  hello"])
         assert result.exit_code == 0
 
-    def test_text_with_trailing_whitespace_passes(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_text_with_trailing_whitespace_passes(self, cli_runner: CliRunner) -> None:
         """Test that text with trailing whitespace passes."""
 
         @command()
@@ -175,9 +161,7 @@ class TestNotEmptyWithContent:
         result = cli_runner.invoke(cmd, ["--text", "hello  "])
         assert result.exit_code == 0
 
-    def test_text_with_embedded_whitespace_passes(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_text_with_embedded_whitespace_passes(self, cli_runner: CliRunner) -> None:
         """Test that text with embedded whitespace passes."""
 
         @command()
@@ -287,9 +271,7 @@ class TestNotEmptyChaining:
 
         result = cli_runner.invoke(cmd, ["--text", ""])
         assert result.exit_code != 0
-        assert (
-            "Value cannot be empty or contain only whitespace" in result.output
-        )
+        assert "Value cannot be empty or contain only whitespace" in result.output
 
 
 class TestNotEmptyPractical:

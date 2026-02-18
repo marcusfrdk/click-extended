@@ -133,9 +133,7 @@ class TestRootNodeDecorator:
         assert result.exit_code == 0
         assert "Hello!" in result.output
 
-    def test_command_decorator_with_explicit_name(
-        self, cli_runner: Any
-    ) -> None:
+    def test_command_decorator_with_explicit_name(self, cli_runner: Any) -> None:
         """Test @command() with explicit name override."""
 
         @command("greet")
@@ -251,14 +249,10 @@ class TestRootNodeDecorator:
 
         assert cmd1.root.tree is not cmd2.root.tree  # type: ignore[attr-defined]
 
-    def test_command_decorator_with_context_settings(
-        self, cli_runner: Any
-    ) -> None:
+    def test_command_decorator_with_context_settings(self, cli_runner: Any) -> None:
         """Test @command() with custom context_settings."""
 
-        @command(
-            context_settings={"help_option_names": ["-h", "--help", "--info"]}
-        )
+        @command(context_settings={"help_option_names": ["-h", "--help", "--info"]})
         def info() -> None:
             """Show info."""
             pass
@@ -502,9 +496,7 @@ class TestRootNodeValueProcessing:
         assert result.exit_code == 0
         assert "Port: 8080" in result.output
 
-    def test_required_option_missing_raises_error(
-        self, cli_runner: Any
-    ) -> None:
+    def test_required_option_missing_raises_error(self, cli_runner: Any) -> None:
         """Test that missing required option raises error."""
 
         @command()
@@ -526,17 +518,13 @@ class TestRootNodeValueProcessing:
 
             click.echo(f"File: {filename}, Port: {port}, Verbose: {verbose}")
 
-        result = cli_runner.invoke(
-            process, ["--verbose", "--port", "5000", "test.txt"]
-        )
+        result = cli_runner.invoke(process, ["--verbose", "--port", "5000", "test.txt"])
         assert result.exit_code == 0
         assert "File: test.txt" in result.output
         assert "Port: 5000" in result.output
         assert "Verbose: True" in result.output
 
-    def test_was_provided_tracking_false_with_default(
-        self, cli_runner: Any
-    ) -> None:
+    def test_was_provided_tracking_false_with_default(self, cli_runner: Any) -> None:
         """Test that was_provided is False when default used."""
 
         @command()
@@ -772,9 +760,7 @@ class TestRootNodeAsync:
 class TestRootNodeErrorHandling:
     """Test RootNode error handling and debug mode."""
 
-    def test_context_aware_error_exits_with_code_1(
-        self, cli_runner: Any
-    ) -> None:
+    def test_context_aware_error_exits_with_code_1(self, cli_runner: Any) -> None:
         """Test that ContextAwareError results in exit code 1."""
 
         class FailingChild(ChildNode):
@@ -834,10 +820,7 @@ class TestRootNodeErrorHandling:
 
         result = cli_runner.invoke(run, [])
         assert result.exit_code != 0
-        assert (
-            "config" in result.output.lower()
-            or "required" in result.output.lower()
-        )
+        assert "config" in result.output.lower() or "required" in result.output.lower()
 
     def test_type_conversion_error(self, cli_runner: Any) -> None:
         """Test error when type conversion fails."""
@@ -998,9 +981,7 @@ class TestRootNodeEdgeCases:
         @argument("filename")
         @Validate.as_decorator()
         def process(filename: str, format: str, verbose: bool) -> None:
-            click.echo(
-                f"File: {filename}, Format: {format}, Verbose: {verbose}"
-            )
+            click.echo(f"File: {filename}, Format: {format}, Verbose: {verbose}")
 
         result = cli_runner.invoke(
             process, ["--verbose", "--format", "xml", "  test.txt  "]
@@ -1282,9 +1263,7 @@ class TestRootNodeGroupFunctionality:
         assert result.exit_code == 0
         assert "No subcommand" in result.output
 
-    def test_group_command_name_collision_prevention(
-        self, cli_runner: Any
-    ) -> None:
+    def test_group_command_name_collision_prevention(self, cli_runner: Any) -> None:
         """Test that duplicate command names are handled."""
 
         @group()
@@ -1446,13 +1425,10 @@ class TestRootNodeEnvIntegration:
         assert result.exit_code == 1
         assert "DATABASE_URL" in result.output
         assert (
-            "environment" in result.output.lower()
-            or "missing" in result.output.lower()
+            "environment" in result.output.lower() or "missing" in result.output.lower()
         )
 
-    def test_env_error_message_formatting_multiple(
-        self, cli_runner: Any
-    ) -> None:
+    def test_env_error_message_formatting_multiple(self, cli_runner: Any) -> None:
         """Test error message format for multiple missing variables."""
 
         @command()
@@ -1584,9 +1560,7 @@ class TestRootNodeAliasInvocation:
 
         assert serve.root.aliases == "s"  # type: ignore[attr-defined]
 
-    def test_command_with_multiple_aliases_storage(
-        self, cli_runner: Any
-    ) -> None:
+    def test_command_with_multiple_aliases_storage(self, cli_runner: Any) -> None:
         """Test that command stores multiple aliases correctly."""
 
         @command(aliases=["s", "start", "run"])
@@ -1643,9 +1617,7 @@ class TestRootNodeAliasInvocation:
         assert test.root.aliases == ["t", "check"]  # type: ignore[attr-defined]
         assert test.root.name == "test"  # type: ignore[attr-defined]
 
-    def test_group_aliases_preserved_with_subcommands(
-        self, cli_runner: Any
-    ) -> None:
+    def test_group_aliases_preserved_with_subcommands(self, cli_runner: Any) -> None:
         """Test that group aliases are preserved with subcommands."""
 
         @group(aliases="c")
@@ -1680,9 +1652,7 @@ class TestRootNodeAliasInvocation:
         assert result.exit_code == 0
         assert "Deploying" in result.output
 
-    def test_aliases_with_special_characters_filtered(
-        self, cli_runner: Any
-    ) -> None:
+    def test_aliases_with_special_characters_filtered(self, cli_runner: Any) -> None:
         """Test that empty aliases are filtered out."""
 
         cmd = Command(name="build", aliases=["", "b", "", "compile"])
@@ -1730,9 +1700,7 @@ class TestClickCommandAndGroupClasses:
         assert click_grp.root == root
         assert click_grp.name == "test"
 
-    def test_click_group_add_command_with_string_alias(
-        self, cli_runner: Any
-    ) -> None:
+    def test_click_group_add_command_with_string_alias(self, cli_runner: Any) -> None:
         """Test ClickGroup.add_command with command that has string alias."""
 
         root_group = Group(name="cli")
@@ -1748,9 +1716,7 @@ class TestClickCommandAndGroupClasses:
         assert "deploy" in click_grp.commands
         assert "d" in click_grp.commands
 
-    def test_click_group_add_command_with_list_aliases(
-        self, cli_runner: Any
-    ) -> None:
+    def test_click_group_add_command_with_list_aliases(self, cli_runner: Any) -> None:
         """Test ClickGroup.add_command with command that has list of aliases."""
 
         root_group = Group(name="cli")
@@ -1810,9 +1776,7 @@ class TestClickCommandAndGroupClasses:
         result = cli_runner.invoke(cli, ["--help"])
         assert "Admin commands" in result.output
 
-    def test_click_group_command_with_explicit_help(
-        self, cli_runner: Any
-    ) -> None:
+    def test_click_group_command_with_explicit_help(self, cli_runner: Any) -> None:
         """Test that .command() decorator uses explicit help parameter."""
 
         @group()
@@ -1829,9 +1793,7 @@ class TestClickCommandAndGroupClasses:
         assert "Explicit help text" in result.output
         assert "Docstring that should be ignored" not in result.output
 
-    def test_click_group_group_with_explicit_help(
-        self, cli_runner: Any
-    ) -> None:
+    def test_click_group_group_with_explicit_help(self, cli_runner: Any) -> None:
         """Test that .group() decorator uses explicit help parameter."""
 
         @group()
@@ -1848,9 +1810,7 @@ class TestClickCommandAndGroupClasses:
         assert "Explicit group help" in result.output
         assert "Docstring that should be ignored" not in result.output
 
-    def test_click_group_group_decorator_with_aliases(
-        self, cli_runner: Any
-    ) -> None:
+    def test_click_group_group_decorator_with_aliases(self, cli_runner: Any) -> None:
         """Test .group() decorator with aliases parameter."""
 
         @group()
@@ -1889,9 +1849,7 @@ class TestClickCommandAndGroupClasses:
 
         assert "deploy (d, push)" in formatter.getvalue()
 
-    def test_group_decorator_extracts_docstring_help(
-        self, cli_runner: Any
-    ) -> None:
+    def test_group_decorator_extracts_docstring_help(self, cli_runner: Any) -> None:
         """Test that group() decorator extracts help from docstring."""
 
         @group()
@@ -1925,9 +1883,7 @@ class TestClickCommandAndGroupClasses:
 class TestCommandAliases:
     """Test command alias functionality."""
 
-    def test_aliases_with_special_characters_filtered(
-        self, cli_runner: Any
-    ) -> None:
+    def test_aliases_with_special_characters_filtered(self, cli_runner: Any) -> None:
 
         cmd = Command(name="test", aliases=["t", "", "check"])
         formatted = cmd.format_name_with_aliases()
@@ -2002,9 +1958,7 @@ class TestInvokeOnSubcommand:
         assert execution_order == ["group"]  # Group invoked
         assert "Group called" in result.output
 
-    def test_group_invoke_on_subcommand_true_default(
-        self, cli_runner: Any
-    ) -> None:
+    def test_group_invoke_on_subcommand_true_default(self, cli_runner: Any) -> None:
         """
         Test that group with invoke_on_subcommand=True (default)
         preserves current behavior.
@@ -2026,9 +1980,7 @@ class TestInvokeOnSubcommand:
         assert result.exit_code == 0
         assert execution_order == ["group", "command"]  # Both invoked
 
-    def test_group_invoke_on_subcommand_default_behavior(
-        self, cli_runner: Any
-    ) -> None:
+    def test_group_invoke_on_subcommand_default_behavior(self, cli_runner: Any) -> None:
         """
         Test that group without explicit invoke_on_subcommand
         defaults to True (current behavior).
@@ -2050,9 +2002,7 @@ class TestInvokeOnSubcommand:
         assert result.exit_code == 0
         assert execution_order == ["group", "command"]  # Both invoked
 
-    def test_nested_groups_independent_invoke_control(
-        self, cli_runner: Any
-    ) -> None:
+    def test_nested_groups_independent_invoke_control(self, cli_runner: Any) -> None:
         """
         Test that nested groups independently control their
         invoke_on_subcommand behavior.
@@ -2105,17 +2055,13 @@ class TestInvokeOnSubcommand:
             received_value.append(f"command-{name}")
             click.echo(f"Name: {name}")
 
-        result = cli_runner.invoke(
-            cli, ["--verbose", "test_cmd", "--name", "demo"]
-        )
+        result = cli_runner.invoke(cli, ["--verbose", "test_cmd", "--name", "demo"])
         assert result.exit_code == 0
         # Group callback not invoked, but command runs successfully
         assert received_value == ["command-demo"]
         assert "Name: demo" in result.output
 
-    def test_three_level_nesting_mixed_invoke_settings(
-        self, cli_runner: Any
-    ) -> None:
+    def test_three_level_nesting_mixed_invoke_settings(self, cli_runner: Any) -> None:
         """
         Test three-level nesting with mixed invoke_on_subcommand settings.
         """
@@ -2150,9 +2096,7 @@ class TestInvokeOnSubcommand:
         # list: invoked
         assert execution_order == ["users", "list"]
 
-    def test_group_with_invoke_false_and_help_flag(
-        self, cli_runner: Any
-    ) -> None:
+    def test_group_with_invoke_false_and_help_flag(self, cli_runner: Any) -> None:
         """
         Test that help still works correctly with invoke_on_subcommand=False.
         """

@@ -124,8 +124,7 @@ def convert_pressure(
         - **torr**: Torr (1/760 atm)
         - **Ba**: Barye (dyn/cm2)
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertPressure.as_decorator(from_unit=from_unit, to_unit=to_unit)

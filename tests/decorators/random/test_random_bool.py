@@ -240,9 +240,7 @@ class TestRandomBoolIntegration:
         assert "Likely:" in result.output
         assert "Unlikely:" in result.output
 
-    def test_multiple_invocations_independent(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_multiple_invocations_independent(self, cli_runner: CliRunner) -> None:
         """Test that multiple bools are independent."""
 
         results: list[tuple[bool, bool]] = []

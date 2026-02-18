@@ -17,18 +17,14 @@ class Group(RootNode):
     """Group implementation for the `click_extended` library."""
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize a new `Group` instance.
+        r"""
+        Initialize a new ``Group`` instance.
 
-        Args:
-            name (str):
-                The name of the group.
-            *args (Any):
-                Additional positional arguments.
-            **kwargs (Any):
-                Additional keyword arguments.
-                May include 'invoke_on_subcommand' to control whether
-                the group callback is invoked when a subcommand runs.
+        :param name: The name of the group.
+        :param \*args: Additional positional arguments.
+        :param \*\*kwargs: Additional keyword arguments.
+            May include 'invoke_on_subcommand' to control whether
+            the group callback is invoked when a subcommand runs.
         """
         self.invoke_on_subcommand = kwargs.pop("invoke_on_subcommand", True)
         super().__init__(name, *args, **kwargs)
@@ -79,36 +75,29 @@ def group(
     invoke_without_command: bool | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickGroup]:
-    """
-    A `RootNode` decorator to create a click group with value injection
+    r"""
+    A ``RootNode`` decorator to create a click group with value injection
     from parent nodes.
 
-    Args:
-        name (str, optional):
-            The name of the group. If `None`, uses the
-            decorated function's name.
-        aliases (str | list[str], optional):
-            Alternative name(s) for the group. Can be a single
-            string or a list of strings.
-        help (str, optional):
-            The help message for the group. If not provided,
-            uses the first line of the function's docstring.
-        invoke_on_subcommand (bool, optional):
-            Whether to invoke the group's callback function when a
-            subcommand is executed. Defaults to `True` (current behavior).
-            When `False`, the group callback is only invoked when the group
-            itself is called directly, not when running nested subcommands.
-        invoke_without_command (bool, optional):
-            Whether the group callback can be invoked without a subcommand.
-            Defaults to `None` (Click's default behavior of requiring a
-            subcommand). When `True`, the group can be called directly
-            without specifying a subcommand.
-        **kwargs (Any):
-            Additional arguments to pass to `click.Group`.
+    :param name: The name of the group. If ``None``, uses the
+        decorated function's name.
+    :param aliases: Alternative name(s) for the group. Can be a single
+        string or a list of strings.
+    :param help: The help message for the group. If not provided,
+        uses the first line of the function's docstring.
+    :param invoke_on_subcommand: Whether to invoke the group's callback
+        function when a subcommand is executed. Defaults to ``True`` (current
+        behavior). When ``False``, the group callback is only invoked when
+        the group itself is called directly, not when running nested
+        subcommands.
+    :param invoke_without_command: Whether the group callback can be invoked
+        without a subcommand. Defaults to ``None`` (Click's default behavior
+        of requiring a subcommand). When ``True``, the group can be called
+        directly without specifying a subcommand.
+    :param \*\*kwargs: Additional arguments to pass to ``click.Group``.
 
-    Returns:
-        Callable:
-            A decorator function that returns a ClickGroup.
+    :returns: A decorator function that returns a ClickGroup.
+    :rtype: Callable
     """
     if aliases is not None:
         kwargs["aliases"] = aliases

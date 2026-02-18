@@ -28,12 +28,8 @@ def rounded(digits: int = 0) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        digits (int):
-            The number of digits to round to. Defaults to `0`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param digits: The number of digits to round to. Defaults to ``0``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Rounded.as_decorator(digits=digits)

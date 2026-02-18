@@ -74,9 +74,7 @@ class TestLengthMinOnly:
 
         result = cli_runner.invoke(cmd, ["--text", "hi"])
         assert result.exit_code != 0
-        assert (
-            "Value is too short, must be at least 5 characters" in result.output
-        )
+        assert "Value is too short, must be at least 5 characters" in result.output
 
     def test_min_length_empty_string(self, cli_runner: CliRunner) -> None:
         """Test that empty string fails minimum length check."""
@@ -89,9 +87,7 @@ class TestLengthMinOnly:
 
         result = cli_runner.invoke(cmd, ["--text", ""])
         assert result.exit_code != 0
-        assert (
-            "Value is too short, must be at least 1 character" in result.output
-        )
+        assert "Value is too short, must be at least 1 character" in result.output
 
 
 class TestLengthMaxOnly:
@@ -137,9 +133,7 @@ class TestLengthMaxOnly:
 
         result = cli_runner.invoke(cmd, ["--text", "verylongstring"])
         assert result.exit_code != 0
-        assert (
-            "Value is too long, must be at most 5 characters" in result.output
-        )
+        assert "Value is too long, must be at most 5 characters" in result.output
 
     def test_max_length_empty_string(self, cli_runner: CliRunner) -> None:
         """Test that empty string passes maximum length check."""
@@ -209,9 +203,7 @@ class TestLengthBothBounds:
 
         result = cli_runner.invoke(cmd, ["--text", "hi"])
         assert result.exit_code != 0
-        assert (
-            "Value is too short, must be at least 5 characters" in result.output
-        )
+        assert "Value is too short, must be at least 5 characters" in result.output
 
     def test_both_bounds_above_max(self, cli_runner: CliRunner) -> None:
         """Test that string above maximum fails."""
@@ -224,9 +216,7 @@ class TestLengthBothBounds:
 
         result = cli_runner.invoke(cmd, ["--text", "verylongstring"])
         assert result.exit_code != 0
-        assert (
-            "Value is too long, must be at most 10 characters" in result.output
-        )
+        assert "Value is too long, must be at most 10 characters" in result.output
 
 
 class TestLengthErrorCases:
@@ -267,9 +257,7 @@ class TestLengthErrorCases:
 
         result = cli_runner.invoke(cmd, ["--text", "a"])
         assert result.exit_code != 0
-        assert (
-            "Value is too long, must be at most 0 characters" in result.output
-        )
+        assert "Value is too long, must be at most 0 characters" in result.output
 
 
 class TestLengthEdgeCases:

@@ -38,28 +38,20 @@ class ParentNode(Node, ABC):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
-        """
-        Initialize a new `ParentNode` instance.
+        r"""
+        Initialize a new ``ParentNode`` instance.
 
-        Args:
-            name (str):
-                The name of the node (parameter name for injection).
-            param (str, optional):
-                The parameter name to inject into the function.
-                If not provided, uses name.
-            help (str, optional):
-                Help text for this parameter. If not provided,
-                may use function's docstring.
-            required (bool):
-                Whether this parameter is required. Defaults to False.
-            default (Any):
-                Default value if not provided. Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this parameter for grouping.
-                Can be a single string or list of strings.
-            **kwargs (Any):
-                Additional keyword arguments (ignored in base class,
-                subclasses can use them if they override __init__).
+        :param name: The name of the node (parameter name for injection).
+        :param param: The parameter name to inject into the function.
+            If not provided, uses name.
+        :param help: Help text for this parameter. If not provided,
+            may use function's docstring.
+        :param required: Whether this parameter is required. Defaults to False.
+        :param default: Default value if not provided. Defaults to ``None``.
+        :param tags: Tag(s) to associate with this parameter for grouping.
+            Can be a single string or list of strings.
+        :param \*\*kwargs: Additional keyword arguments (ignored in base class,
+            subclasses can use them if they override __init__).
         """
         super().__init__(name=name, children={})
         self.param = param if param is not None else name
@@ -82,7 +74,7 @@ class ParentNode(Node, ABC):
 
     @abstractmethod
     def load(self, context: "Context", *args: Any, **kwargs: Any) -> Any:
-        """
+        r"""
         Load and return the value for this node.
 
         This method must be implemented by all ParentNode subclasses to define
@@ -93,20 +85,16 @@ class ParentNode(Node, ABC):
         from its source (environment variables, config files, etc.).
 
         For CLI-sourcing nodes (ArgumentNode, OptionNode), subclasses override
-        this signature to include a `value` parameter with the parsed CLI input.
+        this signature to include a ``value`` parameter with the parsed CLI
+        input.
 
-        Args:
-            context (Context):
-                The current context instance containing node data and state.
-            *args (Any):
-                Optional positional arguments.
-            **kwargs (Any):
-                Optional keyword arguments.
+        :param context: The current context instance containing node data and
+            state.
+        :param \*args: Optional positional arguments.
+        :param \*\*kwargs: Optional keyword arguments.
 
-        Returns:
-            Any:
-                The loaded value to inject into the function. Can return `None`
-                if that's a valid value for this node.
+        :returns: The loaded value to inject into the function. Can return
+            ``None`` if that's a valid value for this node.
         """
         raise NotImplementedError
 
@@ -122,33 +110,25 @@ class ParentNode(Node, ABC):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
-        """
+        r"""
         Return a decorator representation of the parent node.
 
         All configuration parameters are stored and passed to the load() method.
         Subclasses can override __init__ to accept additional parameters.
 
-        Args:
-            name (str):
-                The name of the node (parameter name for injection).
-            param (str, optional):
-                The parameter name to inject into the function.
-                If not provided, uses name.
-            help (str, optional):
-                Help text for this parameter.
-            required (bool):
-                Whether this parameter is required. Defaults to False.
-            default (Any):
-                Default value if not provided. Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this parameter for grouping.
-            **kwargs (Any):
-                Additional keyword arguments specific to the subclass.
-                These are passed to both __init__ and load().
+        :param name: The name of the node (parameter name for injection).
+        :param param: The parameter name to inject into the function.
+            If not provided, uses name.
+        :param help: Help text for this parameter.
+        :param required: Whether this parameter is required.
+            Defaults to False.
+        :param default: Default value if not provided. Defaults to ``None``.
+        :param tags: Tag(s) to associate with this parameter for grouping.
+        :param \*\*kwargs: Additional keyword arguments specific to the subclass.
+            These are passed to both __init__ and load().
 
-        Returns:
-            Callable:
-                A decorator function that registers the parent node.
+        :returns: A decorator function that registers the parent node.
+        :rtype: Callable
         """
         config = {
             "name": name,
@@ -189,14 +169,12 @@ class ParentNode(Node, ABC):
 
     def get_value(self) -> Any:
         """
-        Get the cached value of the `ParentNode`.
+        Get the cached value of the ``ParentNode``.
 
         Returns the cached value that was set after calling load() and
         processing through any child nodes.
 
-        Returns:
-            Any:
-                The cached processed value.
+        :returns: The cached processed value.
         """
         return self.cached_value
 
@@ -204,10 +182,9 @@ class ParentNode(Node, ABC):
         """
         Get a formatted display name for error messages.
 
-        Returns:
-            str:
-                The formatted name for display in error messages.
-                Base implementation returns the name as-is.
+        :returns: The formatted name for display in error messages.
+            Base implementation returns the name as-is.
+        :rtype: str
         """
         return self.name
 

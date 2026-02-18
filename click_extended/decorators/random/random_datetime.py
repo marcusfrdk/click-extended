@@ -27,20 +27,14 @@ class RandomDateTime(ParentNode):
             return datetime.now()
 
         if value_lower == "today":
-            return datetime.now().replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         if value_lower == "tomorrow":
-            today = datetime.now().replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             return today + timedelta(days=1, hours=23, minutes=59, seconds=59)
 
         if value_lower == "yesterday":
-            today = datetime.now().replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             return today - timedelta(days=1)
 
         formats = [
@@ -100,36 +94,29 @@ def random_datetime(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        start_date (str | datetime):
-            The datetime to start at.
-            If a string is provided, the following formats are supported:
-                - YYYY-MM-DD HH:MM:SS
-                - YYYY-MM-DD
-                - HH:MM:SS
-                - Special keywords: 'now', 'today', 'tomorrow', 'yesterday'
-        end_date (str | datetime):
-            The datetime to end at.
-            If a string is provided, the following formats are supported:
-                - YYYY-MM-DD HH:MM:SS
-                - YYYY-MM-DD
-                - HH:MM:SS
-                - Special keywords: 'now', 'today', 'tomorrow', 'yesterday'
-        timezone (str | None, optional):
-            The timezone to use (e.g., 'UTC', 'US/Eastern', 'Europe/London').
-            If None, the datetime will be timezone-naive.
-        seed (int | None, optional):
-            Optional seed for reproducible randomness.
+    :param name: The name of the parent node.
+    :param start_date: The datetime to start at.
+        If a string is provided, the following formats are supported:
 
-    Returns:
-        Decorator:
-            The decorator function.
+        - YYYY-MM-DD HH:MM:SS
+        - YYYY-MM-DD
+        - HH:MM:SS
+        - Special keywords: 'now', 'today', 'tomorrow', 'yesterday'
 
-    Raises:
-        ValueError:
-            If the timezone is invalid or start_date is after end_date.
+    :param end_date: The datetime to end at.
+        If a string is provided, the following formats are supported:
+
+        - YYYY-MM-DD HH:MM:SS
+        - YYYY-MM-DD
+        - HH:MM:SS
+        - Special keywords: 'now', 'today', 'tomorrow', 'yesterday'
+
+    :param timezone: The timezone to use (e.g., 'UTC', 'US/Eastern', 'Europe/London').
+        If None, the datetime will be timezone-naive.
+    :param seed: Optional seed for reproducible randomness.
+    :returns: The decorator function.
+    :rtype: Decorator
+    :raises ValueError: If the timezone is invalid or start_date is after end_date.
     """
     return RandomDateTime.as_decorator(
         name=name,

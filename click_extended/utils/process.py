@@ -33,33 +33,26 @@ def process_children(
 ) -> Any:
     """
     Process a value through a chain of child nodes.
-    This is a `phase 4` function and does the following:
+    This is a ``phase 4`` function and does the following:
 
     1. Updates scope tracking for each child
     2. Dispatches value to appropriate handler
     3. Wraps handler execution to catch exceptions
     4. Converts user exceptions to ProcessError with context
 
-    Args:
-        value (Any):
-            The initial value to process.
-        children (Mapping[Any, Any]):
-            Mapping of child nodes to process the value through.
-        parent (ParentNode | Tag):
-            The parent node that owns these children.
-        tags (dict[str, Tag]):
-            Dictionary mapping tag names to Tag instances.
-        context (click.Context):
-            The Click context for scope tracking and error reporting.
+    :param value: The initial value to process.
+    :param children: Mapping of child nodes to process the value through.
+    :param parent: The parent node that owns these children.
+    :param tags: Dictionary mapping tag names to Tag instances.
+    :param click_context: The Click context for scope tracking and error
+        reporting.
 
-    Returns:
-        The processed value after passing through all children.
+    :returns: The processed value after passing through all children.
 
-    Raises:
-        UnhandledTypeError:
-            If a child node doesn't implement a handler for the value type.
-        ProcessError:
-            If validation or transformation fails in a child node.
+    :raises UnhandledTypeError: If a child node doesn't implement a handler
+        for the value type.
+    :raises ProcessError: If validation or transformation fails in a child
+        node.
     """
     child_nodes = [cast("ChildNode", child) for child in children.values()]
 
@@ -161,33 +154,23 @@ async def process_children_async(
     Async version of process_children for async handler support.
 
     Process a value through a chain of child nodes (async).
-    This is a `phase 4` function and does the following:
+    This is a ``phase 4`` function and does the following:
 
     1. Updates scope tracking for each child
     2. Dispatches value to appropriate handler (with async support)
     3. Wraps handler execution to catch exceptions
     4. Converts user exceptions to ProcessError with context
 
-    Args:
-        value (Any):
-            The initial value to process.
-        children (Mapping[Any, Any]):
-            Mapping of child nodes to process the value through.
-        parent (ParentNode | Tag):
-            The parent node that owns these children.
-        tags (dict[str, Tag]):
-            Dictionary mapping tag names to Tag instances.
-        context (click.Context):
-            The Click context for scope tracking and error reporting.
-
-    Returns:
-        The processed value after passing through all children.
-
-    Raises:
-        UnhandledTypeError:
-            If a child node doesn't implement a handler for the value type.
-        ProcessError:
-            If validation or transformation fails in a child node.
+    :param value: The initial value to process.
+    :param children: Mapping of child nodes to process the value through.
+    :param parent: The parent node that owns these children.
+    :param tags: Dictionary mapping tag names to Tag instances.
+    :param click_context: The Click context for scope tracking and error
+        reporting.
+    :returns: The processed value after passing through all children.
+    :raises UnhandledTypeError: If a child node doesn't implement a handler
+        for the value type.
+    :raises ProcessError: If validation or transformation fails in a child node.
     """
     child_nodes = [cast("ChildNode", child) for child in children.values()]
 
@@ -282,13 +265,10 @@ def check_has_async_handlers(children: Mapping[Any, Any]) -> bool:
     """
     Check if any child in the collection has async handlers.
 
-    Args:
-        children (Mapping[Any, Any]):
-            Mapping of child nodes to check.
+    :param children: Mapping of child nodes to check.
 
-    Returns:
-        bool:
-            `True` if any child has async handlers, `False` otherwise.
+    :returns: ``True`` if any child has async handlers, ``False`` otherwise.
+    :rtype: bool
     """
     child_nodes = [cast("ChildNode", child) for child in children.values()]
     return any(has_async_handlers(child) for child in child_nodes)

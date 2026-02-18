@@ -65,9 +65,7 @@ class TestStartsWithExactMatching:
         assert result.exit_code != 0
         assert "Value must start with the pattern 'https://'" in result.output
 
-    def test_exact_multiple_prefixes_first_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exact_multiple_prefixes_first_match(self, cli_runner: CliRunner) -> None:
         """Test exact matching with multiple prefixes (first matches)."""
 
         @command()
@@ -79,9 +77,7 @@ class TestStartsWithExactMatching:
         result = cli_runner.invoke(cmd, ["--url", "http://example.com"])
         assert result.exit_code == 0
 
-    def test_exact_multiple_prefixes_second_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exact_multiple_prefixes_second_match(self, cli_runner: CliRunner) -> None:
         """Test exact matching with multiple prefixes (second matches)."""
 
         @command()
@@ -93,9 +89,7 @@ class TestStartsWithExactMatching:
         result = cli_runner.invoke(cmd, ["--url", "https://example.com"])
         assert result.exit_code == 0
 
-    def test_exact_multiple_prefixes_no_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_exact_multiple_prefixes_no_match(self, cli_runner: CliRunner) -> None:
         """Test exact matching fails when none of multiple prefixes match."""
 
         @command()
@@ -131,9 +125,7 @@ class TestStartsWithGlobPatterns:
         result = cli_runner.invoke(cmd, ["--name", "user_123"])
         assert result.exit_code == 0
 
-    def test_glob_asterisk_wildcard_no_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_glob_asterisk_wildcard_no_match(self, cli_runner: CliRunner) -> None:
         """Test glob pattern with * wildcard fails."""
 
         @command()
@@ -158,9 +150,7 @@ class TestStartsWithGlobPatterns:
         result = cli_runner.invoke(cmd, ["--code", "A1234"])
         assert result.exit_code == 0
 
-    def test_glob_question_wildcard_no_match(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_glob_question_wildcard_no_match(self, cli_runner: CliRunner) -> None:
         """Test glob pattern with ? wildcard fails (too many chars)."""
 
         @command()
@@ -353,9 +343,7 @@ class TestStartsWithChaining:
         """Clear pending nodes before each test."""
         Tree._pending_nodes.clear()  # type: ignore
 
-    def test_chain_with_multiple_starts_with(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_chain_with_multiple_starts_with(self, cli_runner: CliRunner) -> None:
         """Test chaining multiple starts_with decorators."""
 
         @command()
@@ -429,14 +417,9 @@ class TestStartsWithErrorMessages:
 
         result = cli_runner.invoke(cmd, ["--url", "ssh://example.com"])
         assert result.exit_code != 0
-        assert (
-            "one of the patterns 'http://', 'https://' or 'ftp://'"
-            in result.output
-        )
+        assert "one of the patterns 'http://', 'https://' or 'ftp://'" in result.output
 
-    def test_error_message_with_regex_pattern(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_with_regex_pattern(self, cli_runner: CliRunner) -> None:
         """Test error message shows regex pattern string."""
 
         @command()
@@ -517,9 +500,7 @@ class TestStartsWithEdgeCases:
         result = cli_runner.invoke(cmd, ["--text", "你好世界"])
         assert result.exit_code == 0
 
-    def test_glob_pattern_without_trailing_content(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_glob_pattern_without_trailing_content(self, cli_runner: CliRunner) -> None:
         """Test glob pattern matches even without content after pattern."""
 
         @command()

@@ -36,8 +36,7 @@ def is_email() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsEmail.as_decorator()

@@ -39,19 +39,15 @@ class AtLeast(ChildNode):
 
 def at_least(n: int) -> Decorator:
     """
-    Checks if at least `n` number of arguments
+    Checks if at least ``n`` number of arguments
     are provided.
 
     Type: `ChildNode`
 
     Supports: `Tag`
 
-    Args:
-        n (int):
-            The number of arguments required.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The number of arguments required.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return AtLeast.as_decorator(n=n)

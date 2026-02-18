@@ -15,15 +15,11 @@ class Prompt(ParentNode):
         """
         Get input from the user.
 
-        Args:
-            text (str):
-                The prompt.
-            hide (bool):
-                Whether to hide the user input.
+        :param text: The prompt.
+        :param hide: Whether to hide the user input.
 
-        Returns:
-            str:
-                The value provided from the user.
+        :returns: The value provided from the user.
+        :rtype: str
         """
         if hide:
             return getpass(text)
@@ -45,21 +41,16 @@ def prompt(
     name: str, text: str = "", hide: bool = False, allow_empty: bool = False
 ) -> Decorator:
     """
-    A `ParentNode` decorator to prompt the user for input.
+    A ``ParentNode`` decorator to prompt the user for input.
 
-    Args:
-        name (str):
-            The name of the parent node.
-        text (str):
-            The text to show.
-        hide (bool):
-            Whether to hide the input, defaults to `False`.
-        allow_empty (bool):
-            Whether to allow the input to be empty, defaults to `False`.
+    :param name: The name of the parent node.
+    :param text: The text to show.
+    :param hide: Whether to hide the input, defaults to ``False``.
+    :param allow_empty: Whether to allow the input to be empty,
+        defaults to ``False``.
 
-    Returns:
-        Decorator:
-            The decorator function.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return Prompt.as_decorator(
         name=name,

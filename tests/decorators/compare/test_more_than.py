@@ -56,9 +56,7 @@ class TestMoreThanNumeric:
         assert result.exit_code != 0
         assert "Value must be more than 18, got 18" in result.output
 
-    def test_more_than_int_equal_valid_inclusive(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_more_than_int_equal_valid_inclusive(self, cli_runner: CliRunner) -> None:
         """Test greater_than accepts equal value when inclusive=True."""
 
         @command()
@@ -221,9 +219,7 @@ class TestMoreThanDateTime:
 class TestMoreThanInclusive:
     """Test inclusive parameter behavior."""
 
-    def test_more_than_inclusive_false_default(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_more_than_inclusive_false_default(self, cli_runner: CliRunner) -> None:
         """Test that inclusive defaults to False."""
 
         @command()
@@ -252,9 +248,7 @@ class TestMoreThanInclusive:
         assert result.exit_code != 0
         assert "Value must be at least 10, got 9" in result.output
 
-    def test_more_than_inclusive_true_message(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_more_than_inclusive_true_message(self, cli_runner: CliRunner) -> None:
         """Test inclusive=True uses correct error message."""
 
         @command()

@@ -46,25 +46,23 @@ def load_yaml(
 
     Supports: `pathlib.Path`
 
-    Args:
-        encoding (str, optional):
-            The encoding to use when reading the file.
-            Defaults to `"utf-8"`.
-        loader (Literal["safe", "unsafe", "full"], optional):
-            The YAML loader to use:
-            - `"safe"`: SafeLoader - Only constructs simple Python objects
-              (strings, lists, dicts, numbers, dates). Recommended for
-              untrusted input.
-            - `"unsafe"`: UnsafeLoader - Can construct arbitrary Python
-              objects. Use only with trusted YAML files.
-            - `"full"`: FullLoader - Constructs simple Python objects and
-              some additional types. Safer than unsafe but less restrictive
-              than safe.
-            Defaults to `"safe"`.
+    :param encoding: The encoding to use when reading the file.
+        Defaults to ``"utf-8"``.
+    :param loader: The YAML loader to use:
 
-    Returns:
-        Decorator:
-            The decorated function.
+        - ``"safe"``: SafeLoader - Only constructs simple Python objects
+          (strings, lists, dicts, numbers, dates). Recommended for
+          untrusted input.
+        - ``"unsafe"``: UnsafeLoader - Can construct arbitrary Python
+          objects. Use only with trusted YAML files.
+        - ``"full"``: FullLoader - Constructs simple Python objects and
+          some additional types. Safer than unsafe but less restrictive
+          than safe.
+
+        Defaults to ``"safe"``.
+
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return LoadYaml.as_decorator(
         encoding=encoding,

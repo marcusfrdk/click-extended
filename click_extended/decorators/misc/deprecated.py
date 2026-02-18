@@ -12,9 +12,7 @@ from click_extended.utils import is_option
 OLD_ONLY = "The parameter '{}' has been deprecated."
 OLD_TO_NEW = "The parameter '{}' has been deprecated. Use '{}' instead."
 OLD_SINCE = "The parameter '{}' has been deprecated since '{}'."
-OLD_REMOVED = (
-    "The parameter '{}' has been deprecated and will be removed in '{}'."
-)
+OLD_REMOVED = "The parameter '{}' has been deprecated and will be removed in '{}'."
 OLD_TO_NEW_SINCE = (
     "The parameter '{}' has been deprecated since '{}'. Use '{}' instead."
 )
@@ -81,15 +79,11 @@ class Deprecated(ChildNode):
             (True, False, False): OLD_TO_NEW.format(old_param, new_param),
             (False, True, False): OLD_SINCE.format(old_param, since),
             (False, False, True): OLD_REMOVED.format(old_param, removed),
-            (True, True, False): OLD_TO_NEW_SINCE.format(
-                old_param, since, new_param
-            ),
+            (True, True, False): OLD_TO_NEW_SINCE.format(old_param, since, new_param),
             (True, False, True): OLD_TO_NEW_REMOVED.format(
                 old_param, removed, new_param
             ),
-            (False, True, True): OLD_SINCE_REMOVED.format(
-                old_param, since, removed
-            ),
+            (False, True, True): OLD_SINCE_REMOVED.format(old_param, since, removed),
             (True, True, True): OLD_TO_NEW_SINCE_REMOVED.format(
                 old_param, since, removed, new_param
             ),
@@ -112,17 +106,11 @@ def deprecated(
 
     Supports: `Any`
 
-    Args:
-        name (str):
-            The name of the new parameter.
-        since (str):
-            The version in which the parameter was deprecated.
-        removed (str):
-            The version the parameter will be removed.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param name: The name of the new parameter.
+    :param since: The version in which the parameter was deprecated.
+    :param removed: The version the parameter will be removed.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Deprecated.as_decorator(
         name=name,

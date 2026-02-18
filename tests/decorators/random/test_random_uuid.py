@@ -1,12 +1,6 @@
 """Tests for random_uuid decorator."""
 
-from uuid import (
-    NAMESPACE_DNS,
-    NAMESPACE_OID,
-    NAMESPACE_URL,
-    NAMESPACE_X500,
-    UUID,
-)
+from uuid import NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL, NAMESPACE_X500, UUID
 
 import click
 import pytest
@@ -48,9 +42,7 @@ class TestRandomUUIDVersion1:
         assert len(uuid_str) == 36
         assert uuid_str.count("-") == 4
 
-    def test_version_1_different_on_multiple_calls(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_version_1_different_on_multiple_calls(self, cli_runner: CliRunner) -> None:
         """Test that version 1 generates different UUIDs (time-based)."""
         results: list[str] = []
 
@@ -116,9 +108,7 @@ class TestRandomUUIDVersion3:
         for name in names:
 
             @command()
-            @random_uuid(
-                "uuid", version=3, namespace=NAMESPACE_DNS, uuid_name=name
-            )
+            @random_uuid("uuid", version=3, namespace=NAMESPACE_DNS, uuid_name=name)
             def cmd(uuid: UUID) -> None:
                 click.echo(f"UUID: {uuid}")
 
@@ -146,16 +136,12 @@ class TestRandomUUIDVersion3:
 
         assert len(set(results)) == 3
 
-    def test_version_3_with_string_namespace(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_version_3_with_string_namespace(self, cli_runner: CliRunner) -> None:
         """Test version 3 with string UUID namespace."""
         namespace_str = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
         @command()
-        @random_uuid(
-            "uuid", version=3, namespace=namespace_str, uuid_name="test"
-        )
+        @random_uuid("uuid", version=3, namespace=namespace_str, uuid_name="test")
         def cmd(uuid: UUID) -> None:
             click.echo(f"UUID: {uuid}")
             click.echo(f"Version: {uuid.version}")
@@ -164,9 +150,7 @@ class TestRandomUUIDVersion3:
         assert result.exit_code == 0
         assert "Version: 3" in result.output
 
-    def test_version_3_invalid_namespace_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_version_3_invalid_namespace_string(self, cli_runner: CliRunner) -> None:
         """Test that invalid namespace string raises helpful error."""
 
         @command()
@@ -233,9 +217,7 @@ class TestRandomUUIDVersion4:
         assert result.exit_code == 0
         assert "Version: 4" in result.output
 
-    def test_version_4_with_seed_is_deterministic(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_version_4_with_seed_is_deterministic(self, cli_runner: CliRunner) -> None:
         """Test that same seed produces same UUID."""
         results: list[str] = []
 
@@ -325,9 +307,7 @@ class TestRandomUUIDVersion5:
 
         assert len(set(results)) == 1
 
-    def test_version_5_different_from_version_3(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_version_5_different_from_version_3(self, cli_runner: CliRunner) -> None:
         """Test that version 5 produces different UUID than version 3 with same inputs."""
         results: list[str] = []
 
@@ -372,15 +352,11 @@ class TestRandomUUIDVersion5:
             assert f"Namespace: {name}" in result.output
             assert "Version: 5" in result.output
 
-    def test_version_5_invalid_namespace_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_version_5_invalid_namespace_string(self, cli_runner: CliRunner) -> None:
         """Test that invalid namespace string raises helpful error."""
 
         @command()
-        @random_uuid(
-            "uuid", version=5, namespace="not-a-uuid", uuid_name="test"
-        )
+        @random_uuid("uuid", version=5, namespace="not-a-uuid", uuid_name="test")
         def cmd(uuid: UUID) -> None:
             click.echo(f"UUID: {uuid}")
 

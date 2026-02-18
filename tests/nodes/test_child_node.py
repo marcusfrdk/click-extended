@@ -94,9 +94,7 @@ class TestSyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Flag: False" in result.output
 
-    def test_handle_string_then_dict_parsing(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_handle_string_then_dict_parsing(self, cli_runner: CliRunner) -> None:
         """Test handle_str on JSON string - dict parsing happens in command function."""
 
         class JSONValidator(ChildNode):
@@ -113,8 +111,7 @@ class TestSyncHandlerDispatch:
         def cmd(data: str) -> None:
             data_dict = json.loads(data)
             data_dict = {
-                k: v.upper() if isinstance(v, str) else v
-                for k, v in data_dict.items()
+                k: v.upper() if isinstance(v, str) else v for k, v in data_dict.items()
             }
             click.echo(f"Data: {data_dict}")
 
@@ -122,9 +119,7 @@ class TestSyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Data: {'name': 'HELLO'}" in result.output
 
-    def test_handle_string_with_path_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_handle_string_with_path_string(self, cli_runner: CliRunner) -> None:
         """Test handle_str on path string - Path objects are 'flat' types."""
 
         class PathValidator(ChildNode):
@@ -146,9 +141,7 @@ class TestSyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Path:" in result.output
 
-    def test_handle_string_with_date_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_handle_string_with_date_string(self, cli_runner: CliRunner) -> None:
         """Test handle_str on date string - datetime objects are 'flat' types."""
 
         class DateParser(ChildNode):
@@ -175,9 +168,7 @@ class TestSyncHandlerDispatch:
         class StringParser(ChildNode):
             """First handler: parse string to tuple."""
 
-            def handle_str(
-                self, value: str, context: Context
-            ) -> tuple[Any, ...]:
+            def handle_str(self, value: str, context: Context) -> tuple[Any, ...]:
                 return cast(tuple[Any, ...], eval(value))
 
         class MixedTupleHandler(ChildNode):
@@ -277,9 +268,7 @@ class TestSyncTypeValidation:
         assert result.exit_code == 0
         assert "Num: 20" in result.output
 
-    def test_type_hint_validation_rejects_mismatch(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_type_hint_validation_rejects_mismatch(self, cli_runner: CliRunner) -> None:
         """Handler with value: int rejects str - raises UnhandledTypeError."""
 
         class IntOnlyHandler(ChildNode):
@@ -301,9 +290,7 @@ class TestSyncTypeValidation:
         """Handler with value: str | int accepts both."""
 
         class UnionHandler(ChildNode):
-            def handle_str(
-                self, value: str | int, context: Context
-            ) -> str | int:
+            def handle_str(self, value: str | int, context: Context) -> str | int:
                 if isinstance(value, str):
                     return value.upper()
                 return value * 2
@@ -322,9 +309,7 @@ class TestSyncTypeValidation:
         """Handler with value: str | tuple[str, ...] handles both."""
 
         class FlexibleHandler(ChildNode):
-            def handle_str(
-                self, value: str | tuple[str, ...], context: Context
-            ) -> str:
+            def handle_str(self, value: str | tuple[str, ...], context: Context) -> str:
                 if isinstance(value, tuple):
                     return " ".join(value).upper()
                 return value.upper()
@@ -360,9 +345,7 @@ class TestSyncTypeValidation:
 class TestSyncHandlerPriority:
     """Test that handlers are called in correct priority order."""
 
-    def test_handle_none_priority_over_others(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_handle_none_priority_over_others(self, cli_runner: CliRunner) -> None:
         """handle_none called first for None values."""
 
         class PriorityHandler(ChildNode):
@@ -508,9 +491,7 @@ class TestAsyncHandlerDispatch:
         """Test async handle_float receives and processes float values."""
 
         class AsyncFloatHandler(ChildNode):
-            async def handle_float(
-                self, value: float, context: Context
-            ) -> float:
+            async def handle_float(self, value: float, context: Context) -> float:
                 await asyncio.sleep(0.001)
                 return round(value * 2.5, 2)
 
@@ -542,9 +523,7 @@ class TestAsyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Flag: False" in result.output
 
-    def test_async_handle_string_json_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handle_string_json_string(self, cli_runner: CliRunner) -> None:
         """Test async handle_str on JSON string."""
 
         class AsyncJSONValidator(ChildNode):
@@ -562,8 +541,7 @@ class TestAsyncHandlerDispatch:
         def cmd(data: str) -> None:
             data_dict = json.loads(data)
             data_dict = {
-                k: v.lower() if isinstance(v, str) else v
-                for k, v in data_dict.items()
+                k: v.lower() if isinstance(v, str) else v for k, v in data_dict.items()
             }
             click.echo(f"Data: {data_dict}")
 
@@ -571,9 +549,7 @@ class TestAsyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Data: {'name': 'hello'}" in result.output
 
-    def test_async_handle_string_path_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handle_string_path_string(self, cli_runner: CliRunner) -> None:
         """Test async handle_str on path string."""
 
         class AsyncPathValidator(ChildNode):
@@ -596,9 +572,7 @@ class TestAsyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Path:" in result.output
 
-    def test_async_handle_string_date_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handle_string_date_string(self, cli_runner: CliRunner) -> None:
         """Test async handle_str on date string."""
 
         class AsyncDateParser(ChildNode):
@@ -620,17 +594,13 @@ class TestAsyncHandlerDispatch:
         assert result.exit_code == 0
         assert "Date: 2025/12/25" in result.output
 
-    def test_async_handle_tuple_with_mixed_types(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handle_tuple_with_mixed_types(self, cli_runner: CliRunner) -> None:
         """Test async handle_tuple as fallback for mixed (1, (2, 3)) type tuples."""
 
         class AsyncStringParser(ChildNode):
             """First handler: parse string to tuple."""
 
-            async def handle_str(
-                self, value: str, context: Context
-            ) -> tuple[Any, ...]:
+            async def handle_str(self, value: str, context: Context) -> tuple[Any, ...]:
                 await asyncio.sleep(0.001)
                 return cast(tuple[Any, ...], eval(value))
 
@@ -700,9 +670,7 @@ class TestAsyncHandlerDispatch:
 class TestAsyncMultipleHandlers:
     """Test chains of async handlers."""
 
-    def test_async_multiple_handlers_in_chain(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_multiple_handlers_in_chain(self, cli_runner: CliRunner) -> None:
         """All async handlers in chain."""
 
         class AsyncValidator(ChildNode):
@@ -754,9 +722,7 @@ class TestAsyncTypeValidation:
         """Async handler with union types."""
 
         class AsyncUnionHandler(ChildNode):
-            async def handle_str(
-                self, value: str | int, context: Context
-            ) -> str:
+            async def handle_str(self, value: str | int, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 if isinstance(value, int):
                     return f"INT:{value * 2}"
@@ -776,9 +742,7 @@ class TestAsyncTypeValidation:
         """Async handler with optional types."""
 
         class AsyncOptionalHandler(ChildNode):
-            async def handle_str(
-                self, value: str | None, context: Context
-            ) -> str:
+            async def handle_str(self, value: str | None, context: Context) -> str:
                 await asyncio.sleep(0.001)
                 return value.upper() if value else "ASYNC_EMPTY"
 
@@ -844,9 +808,7 @@ class TestAsyncHandlerPriority:
         assert result.exit_code == 0
         assert "Value: FROM_PRIMITIVE" in result.output
 
-    def test_async_handle_none_called_first(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handle_none_called_first(self, cli_runner: CliRunner) -> None:
         """Async handle_none called first for None values."""
 
         class AsyncNonePriorityHandler(ChildNode):
@@ -872,9 +834,7 @@ class TestAsyncHandlerPriority:
 class TestAsyncErrorHandling:
     """Test error handling in async handlers."""
 
-    def test_async_handler_with_validation_error(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handler_with_validation_error(self, cli_runner: CliRunner) -> None:
         """Async handler with validation error."""
 
         class AsyncValidationHandler(ChildNode):
@@ -894,9 +854,7 @@ class TestAsyncErrorHandling:
         assert result.exit_code == 1
         assert "must be at least 10" in result.output.lower()
 
-    def test_async_handler_with_transform_error(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handler_with_transform_error(self, cli_runner: CliRunner) -> None:
         """Async handler with transformation error."""
 
         class AsyncTransformHandler(ChildNode):
@@ -917,9 +875,7 @@ class TestAsyncErrorHandling:
         assert result.exit_code == 1
         assert "cannot convert" in result.output.lower()
 
-    def test_async_handler_with_value_error(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_async_handler_with_value_error(self, cli_runner: CliRunner) -> None:
         """Async handler raises ValueError."""
 
         class AsyncErrorHandler(ChildNode):
@@ -997,9 +953,7 @@ class TestMixedSyncAsync:
         assert result.exit_code == 0
         assert "Text: HELLO" in result.output
 
-    def test_mixed_three_handlers_alternating(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_mixed_three_handlers_alternating(self, cli_runner: CliRunner) -> None:
         """Sync → async → sync chain."""
 
         class SyncValidator(ChildNode):
@@ -1029,9 +983,7 @@ class TestMixedSyncAsync:
         assert result.exit_code == 0
         assert "Result: 120" in result.output  # (4 * 5) + 100
 
-    def test_mixed_all_sync_except_one_async(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_mixed_all_sync_except_one_async(self, cli_runner: CliRunner) -> None:
         """Mostly sync with one async in middle."""
 
         class SyncHandler1(ChildNode):
@@ -1059,9 +1011,7 @@ class TestMixedSyncAsync:
         assert result.exit_code == 0
         assert "Result: 22" in result.output  # ((5 + 1) * 2) + 10
 
-    def test_mixed_all_async_except_one_sync(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_mixed_all_async_except_one_sync(self, cli_runner: CliRunner) -> None:
         """Mostly async with one sync in middle."""
 
         class AsyncHandler1(ChildNode):
@@ -1090,9 +1040,7 @@ class TestMixedSyncAsync:
         assert result.exit_code == 0
         assert "Result: 27" in result.output  # ((2 * 2) + 5) * 3
 
-    def test_mixed_async_error_in_sync_chain(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_mixed_async_error_in_sync_chain(self, cli_runner: CliRunner) -> None:
         """Async handler throws error in sync chain."""
 
         class SyncHandler1(ChildNode):
@@ -1122,9 +1070,7 @@ class TestMixedSyncAsync:
         assert result.exit_code == 1
         assert "too large" in result.output.lower()
 
-    def test_mixed_sync_error_in_async_chain(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_mixed_sync_error_in_async_chain(self, cli_runner: CliRunner) -> None:
         """Sync handler throws error in async chain."""
 
         class AsyncHandler1(ChildNode):
@@ -1327,9 +1273,7 @@ class TestTagValidation:
         """@tag with one parent node."""
 
         class SingleTagValidator(ChildNode):
-            def handle_tag(
-                self, value: dict[str, Any], context: Context
-            ) -> None:
+            def handle_tag(self, value: dict[str, Any], context: Context) -> None:
                 if "name" in value and value["name"]:
                     if len(value["name"]) < 3:
                         raise ValueError("Name too short")
@@ -1348,15 +1292,11 @@ class TestTagValidation:
         assert result.exit_code == 1
         assert "name too short" in result.output.lower()
 
-    def test_tag_validation_multiple_parents(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_tag_validation_multiple_parents(self, cli_runner: CliRunner) -> None:
         """@tag validates across multiple parameters."""
 
         class MultiTagValidator(ChildNode):
-            def handle_tag(
-                self, value: dict[str, Any], context: Context
-            ) -> None:
+            def handle_tag(self, value: dict[str, Any], context: Context) -> None:
                 username = value.get("username")
                 email = value.get("email")
 
@@ -1366,9 +1306,7 @@ class TestTagValidation:
 
         @command()
         @option("--username", type=str, default="user", tags="user_info")
-        @option(
-            "--email", type=str, default="user@example.com", tags="user_info"
-        )
+        @option("--email", type=str, default="user@example.com", tags="user_info")
         @tag("user_info")
         @MultiTagValidator.as_decorator()
         def cmd(username: str, email: str) -> None:
@@ -1385,17 +1323,13 @@ class TestTagValidation:
         assert result.exit_code == 1
         assert "username must be part of email" in result.output.lower()
 
-    def test_tag_receives_all_parent_values(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_tag_receives_all_parent_values(self, cli_runner: CliRunner) -> None:
         """handle_tag gets dict with all tagged params."""
 
         received_values: dict[str, Any] = {}
 
         class ValueCapture(ChildNode):
-            def handle_tag(
-                self, value: dict[str, Any], context: Context
-            ) -> None:
+            def handle_tag(self, value: dict[str, Any], context: Context) -> None:
                 received_values.update(value)
 
         @command()
@@ -1415,9 +1349,7 @@ class TestTagValidation:
         assert received_values["age"] == 25
         assert received_values["city"] == "LA"
 
-    def test_tag_validation_only_no_transform(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_tag_validation_only_no_transform(self, cli_runner: CliRunner) -> None:
         """@tag handlers cannot transform values."""
 
         class InvalidTransformTag(ChildNode):
@@ -1436,15 +1368,11 @@ class TestTagValidation:
         result = cli_runner.invoke(cmd)
         assert result.exit_code == 1
 
-    def test_tag_async_validation_multiple_parents(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_tag_async_validation_multiple_parents(self, cli_runner: CliRunner) -> None:
         """Async @tag validation across multiple parameters."""
 
         class AsyncMultiTagValidator(ChildNode):
-            async def handle_tag(
-                self, value: dict[str, Any], context: Context
-            ) -> None:
+            async def handle_tag(self, value: dict[str, Any], context: Context) -> None:
                 await asyncio.sleep(0.001)
                 min_val = value.get("min_val")
                 max_val = value.get("max_val")
@@ -1491,9 +1419,7 @@ class TestRealWorldValidators:
         result = cli_runner.invoke(cmd, ["--email", "user@domain.com"])
         assert result.exit_code == 0
 
-        result = cli_runner.invoke(
-            cmd, ["--email", "test.user+tag@sub.domain.co.uk"]
-        )
+        result = cli_runner.invoke(cmd, ["--email", "test.user+tag@sub.domain.co.uk"])
         assert result.exit_code == 0
 
         result = cli_runner.invoke(cmd, ["--email", "invalid.email"])
@@ -1545,9 +1471,7 @@ class TestRealWorldValidators:
         def cmd(url: str) -> None:
             click.echo(f"URL: {url}")
 
-        result = cli_runner.invoke(
-            cmd, ["--url", "https://github.com/user/repo"]
-        )
+        result = cli_runner.invoke(cmd, ["--url", "https://github.com/user/repo"])
         assert result.exit_code == 0
 
         result = cli_runner.invoke(cmd, ["--url", "http://localhost:8000/path"])
@@ -1625,9 +1549,7 @@ class TestRealWorldValidators:
                 **kwargs: Any,
             ) -> int:
                 if not (min <= value <= max):
-                    raise ValueError(
-                        f"Value {value} not in range [{min}, {max}]"
-                    )
+                    raise ValueError(f"Value {value} not in range [{min}, {max}]")
                 return value
 
         @command()
@@ -1770,9 +1692,7 @@ class TestRealWorldTransformers:
         """Parse JSON string to dict (sync)."""
 
         class JSONParser(ChildNode):
-            def handle_str(
-                self, value: str, context: Context
-            ) -> dict[str, Any]:
+            def handle_str(self, value: str, context: Context) -> dict[str, Any]:
                 try:
                     return cast(dict[str, Any], json.loads(value))
                 except json.JSONDecodeError as e:
@@ -1784,9 +1704,7 @@ class TestRealWorldTransformers:
         def cmd(data: dict[str, Any]) -> None:
             click.echo(f"Parsed: {data}")
 
-        result = cli_runner.invoke(
-            cmd, ["--data", '{"name": "test", "count": 42}']
-        )
+        result = cli_runner.invoke(cmd, ["--data", '{"name": "test", "count": 42}'])
         assert result.exit_code == 0
         assert "Parsed: {'name': 'test', 'count': 42}" in result.output
 
@@ -1798,9 +1716,7 @@ class TestRealWorldTransformers:
         """Parse JSON string to dict (async)."""
 
         class AsyncJSONParser(ChildNode):
-            async def handle_str(
-                self, value: str, context: Context
-            ) -> dict[str, Any]:
+            async def handle_str(self, value: str, context: Context) -> dict[str, Any]:
                 await asyncio.sleep(0.001)
                 try:
                     return cast(dict[str, Any], json.loads(value))
@@ -1900,9 +1816,7 @@ class TestRealWorldTransformers:
         def cmd(title: str) -> None:
             click.echo(f"Slug: {title}")
 
-        result = cli_runner.invoke(
-            cmd, ["--title", "Hello World! This is a Test."]
-        )
+        result = cli_runner.invoke(cmd, ["--title", "Hello World! This is a Test."])
         assert result.exit_code == 0
         assert "Slug: hello-world-this-is-a-test" in result.output
 
@@ -1930,9 +1844,7 @@ class TestRealWorldTransformers:
         """Parse date string to datetime (async)."""
 
         class AsyncDateParser(ChildNode):
-            async def handle_str(
-                self, value: str, context: Context
-            ) -> datetime:
+            async def handle_str(self, value: str, context: Context) -> datetime:
                 await asyncio.sleep(0.001)
                 try:
                     return datetime.strptime(value, "%Y-%m-%d")
@@ -2036,9 +1948,7 @@ class TestRealWorldChained:
         def cmd(url: str) -> None:
             click.echo(f"URL: {url}")
 
-        result = cli_runner.invoke(
-            cmd, ["--url", "HTTPS://Example.COM/Path/#fragment"]
-        )
+        result = cli_runner.invoke(cmd, ["--url", "HTTPS://Example.COM/Path/#fragment"])
         assert result.exit_code == 0
         assert "URL: https://example.com/Path" in result.output
 
@@ -2065,9 +1975,7 @@ class TestRealWorldChained:
         result = cli_runner.invoke(cmd, ["--value", "5"])
         assert result.exit_code == 0
 
-    def test_password_strength_validator_complex(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_password_strength_validator_complex(self, cli_runner: CliRunner) -> None:
         """Complex multi-rule validation."""
 
         class PasswordValidator(ChildNode):
@@ -2086,9 +1994,7 @@ class TestRealWorldChained:
                     errors.append("one special character")
 
                 if errors:
-                    raise ValueError(
-                        f"Password must contain: {', '.join(errors)}"
-                    )
+                    raise ValueError(f"Password must contain: {', '.join(errors)}")
                 return value
 
         @command()
@@ -2246,9 +2152,7 @@ class TestChildNodeStructure:
 
         child = TestChild(name="test")
 
-        with pytest.raises(
-            KeyError, match="A ChildNode instance has no children"
-        ):
+        with pytest.raises(KeyError, match="A ChildNode instance has no children"):
             _ = child["some_key"]
 
     def test_child_node_getitem_with_int_raises_key_error(self) -> None:
@@ -2259,7 +2163,5 @@ class TestChildNodeStructure:
 
         child = TestChild(name="test")
 
-        with pytest.raises(
-            KeyError, match="A ChildNode instance has no children"
-        ):
+        with pytest.raises(KeyError, match="A ChildNode instance has no children"):
             _ = child[0]

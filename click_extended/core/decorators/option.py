@@ -15,11 +15,7 @@ from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 from click_extended.core.nodes.option_node import OptionNode
 from click_extended.core.other.context import Context
 from click_extended.utils.humanize import humanize_type
-from click_extended.utils.naming import (
-    is_long_flag,
-    is_short_flag,
-    validate_name,
-)
+from click_extended.utils.naming import is_long_flag, is_short_flag, validate_name
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -158,9 +154,7 @@ class Option(OptionNode):
             else:
                 type = str
         elif type not in SUPPORTED_TYPES:
-            types = humanize_type(
-                type.__name__ if hasattr(type, "__name__") else type
-            )
+            types = humanize_type(type.__name__ if hasattr(type, "__name__") else type)
 
             raise ValueError(
                 f"Option '{derived_name}' has unsupported type '{types}'. "
@@ -192,9 +186,9 @@ class Option(OptionNode):
         """
         Get a formatted display name for error messages.
 
-        Returns:
-            str:
-                The first long flag if available, otherwise the first flag.
+        :returns:
+            The first long flag if available, otherwise the first flag.
+        :rtype: str
         """
         if self.long_flags:
             return self.long_flags[0]
@@ -212,19 +206,18 @@ class Option(OptionNode):
         """
         Load and return the CLI option value.
 
-        Args:
-            value (str | int | float | bool | None):
-                The parsed CLI option value from Click.
-            context (Context):
-                The current context instance.
-            *args (Any):
-                Optional positional arguments.
-            **kwargs (Any):
-                Optional keyword arguments.
+        :param value:
+            The parsed CLI option value from Click.
+        :param context:
+            The current context instance.
+        :param \\*args:
+            Optional positional arguments.
+        :param \\*\\*kwargs:
+            Optional keyword arguments.
 
-        Returns:
-            Any:
-                The option value to inject into the function.
+        :returns:
+            The option value to inject into the function.
+        :rtype: Any
         """
         return value
 
@@ -244,47 +237,46 @@ def option(
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    A `ParentNode` decorator to create a Click option with value injection.
+    A ``ParentNode`` decorator to create a Click option with value injection.
 
-    Args:
-        name (str):
-            The option name (parameter name) in snake_case.
-            Examples: "verbose", "config_file"
-        *flags (str):
-            Optional flags for the option. Can include any number of short flags
-            (e.g., "-v", "-V") and long flags (e.g., "--verbose", "--verb").
-            If no long flags provided, auto-generates "--kebab-case(name)".
-            Examples:
-                @option("verbose", "-v")
-                @option("config", "-c", "--cfg", "--config")
-                @option("verbose", "-v", "-V", "--verbose", "--verb")
-        param (str, optional):
-            Custom parameter name for the function.
-            If not provided, uses the name directly.
-        is_flag (bool):
-            Whether this is a boolean flag (no value needed).
-            Defaults to `False`.
-        type (Type[str | int | float | bool] | None, optional):
-            The type to convert the value to.
-        nargs (int):
-            Number of arguments each occurrence accepts. Defaults to `1`.
-        multiple (bool):
-            Whether the option can be provided multiple times.
-            Defaults to `False`.
-        help (str, optional):
-            Help text for this option.
-        required (bool):
-            Whether this option is required. Defaults to `False`.
-        default (Any):
-            Default value if not provided. Defaults to None.
-        tags (str | list[str], optional):
-            Tag(s) to associate with this option for grouping.
-        **kwargs (Any):
-            Additional Click option parameters.
+    :param name:
+        The option name (parameter name) in snake_case.
+        Examples: "verbose", "config_file"
+    :param \\*flags:
+        Optional flags for the option. Can include any number of short flags
+        (e.g., "-v", "-V") and long flags (e.g., "--verbose", "--verb").
+        If no long flags provided, auto-generates "--kebab-case(name)".
+        Examples:
+            @option("verbose", "-v")
+            @option("config", "-c", "--cfg", "--config")
+            @option("verbose", "-v", "-V", "--verbose", "--verb")
+    :param param:
+        Custom parameter name for the function.
+        If not provided, uses the name directly.
+    :param is_flag:
+        Whether this is a boolean flag (no value needed).
+        Defaults to ``False``.
+    :param type:
+        The type to convert the value to.
+    :param nargs:
+        Number of arguments each occurrence accepts. Defaults to ``1``.
+    :param multiple:
+        Whether the option can be provided multiple times.
+        Defaults to ``False``.
+    :param help:
+        Help text for this option.
+    :param required:
+        Whether this option is required. Defaults to ``False``.
+    :param default:
+        Default value if not provided. Defaults to None.
+    :param tags:
+        Tag(s) to associate with this option for grouping.
+    :param \\*\\*kwargs:
+        Additional Click option parameters.
 
-    Returns:
-        Callable:
-            A decorator function that registers the option parent node.
+    :returns:
+        A decorator function that registers the option parent node.
+    :rtype: Callable
 
     Examples:
 
@@ -334,9 +326,7 @@ def option(
         if asyncio.iscoroutinefunction(func):
 
             @wraps(func)
-            async def async_wrapper(
-                *call_args: P.args, **call_kwargs: P.kwargs
-            ) -> T:
+            async def async_wrapper(*call_args: P.args, **call_kwargs: P.kwargs) -> T:
                 """Async wrapper that preserves the original function."""
                 result = await func(*call_args, **call_kwargs)
                 return cast(T, result)

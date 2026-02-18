@@ -79,9 +79,7 @@ class TestRemoveSuffixBasic:
         assert result.exit_code == 0
         assert "Name: document.TXT" in result.output
 
-    def test_remove_single_character_suffix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_remove_single_character_suffix(self, cli_runner: CliRunner) -> None:
         """Test removing a single character suffix."""
 
         @command()
@@ -94,9 +92,7 @@ class TestRemoveSuffixBasic:
         assert result.exit_code == 0
         assert "Path: path" in result.output
 
-    def test_remove_entire_string_as_suffix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_remove_entire_string_as_suffix(self, cli_runner: CliRunner) -> None:
         """Test removing suffix when it's the entire string."""
 
         @command()
@@ -213,9 +209,7 @@ class TestRemoveSuffixEdgeCases:
         assert result.exit_code == 0
         assert "Result: ''" in result.output
 
-    def test_remove_suffix_with_special_chars(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_remove_suffix_with_special_chars(self, cli_runner: CliRunner) -> None:
         """Test remove_suffix with special characters."""
 
         @command()
@@ -249,9 +243,7 @@ class TestRemoveSuffixPractical:
         """Clear pending nodes before each test."""
         Tree._pending_nodes.clear()  # type: ignore
 
-    def test_get_filename_without_extension(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_get_filename_without_extension(self, cli_runner: CliRunner) -> None:
         """Test extracting filename without extension."""
 
         @command()

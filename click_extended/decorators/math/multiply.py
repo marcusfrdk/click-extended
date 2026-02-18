@@ -40,12 +40,8 @@ def multiply(n: int | float) -> Decorator:
 
     Supports: `int`, `float`, `str`
 
-    Args:
-        n (int | float):
-            The value to multiply by.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The value to multiply by.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Multiply.as_decorator(n=n)

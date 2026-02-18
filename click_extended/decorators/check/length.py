@@ -41,19 +41,11 @@ def length(min: int | None = None, max: int | None = None) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        min (int | None):
-            Minimum length or `None` for no minimum.
-        max (int | None):
-            Maximum length or `None` for no maximum.
-
-    Returns:
-        Decorator:
-            The decorated function.
-
-    Raises:
-        ValueError:
-            If neither min nor max is specified.
+    :param min: Minimum length or ``None`` for no minimum.
+    :param max: Maximum length or ``None`` for no maximum.
+    :raises ValueError: If neither min nor max is specified.
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Examples:
         ```python

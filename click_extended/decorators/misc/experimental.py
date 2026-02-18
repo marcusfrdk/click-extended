@@ -12,9 +12,7 @@ from click_extended.utils import is_option
 EMPTY = "The parameter '{}' is experimental."
 SINCE = "The parameter '{}' is experimental since '{}'."
 STABLE = "The parameter '{}' is experimental and will stable in '{}'."
-SINCE_STABLE = (
-    "The parameter '{}' is experimental since '{}' and will stable in '{}'."
-)
+SINCE_STABLE = "The parameter '{}' is experimental since '{}' and will stable in '{}'."
 
 
 class Experimental(ChildNode):
@@ -68,9 +66,8 @@ def experimental(
 
     Supports: `Any`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Experimental.as_decorator(
         message=message,

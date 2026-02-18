@@ -33,8 +33,7 @@ def is_json() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsJson.as_decorator()

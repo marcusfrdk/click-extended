@@ -210,9 +210,7 @@ class TestRandomPrimeRanges:
 class TestRandomPrimeDistribution:
     """Test distribution properties."""
 
-    def test_distribution_includes_small_primes(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_distribution_includes_small_primes(self, cli_runner: CliRunner) -> None:
         """Test that small primes are generated."""
 
         values: set[int] = set()
@@ -228,9 +226,7 @@ class TestRandomPrimeDistribution:
 
         assert 2 in values or 3 in values or 5 in values
 
-    def test_distribution_includes_larger_primes(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_distribution_includes_larger_primes(self, cli_runner: CliRunner) -> None:
         """Test that larger primes in range are also generated."""
 
         values: set[int] = set()
@@ -267,9 +263,7 @@ class TestRandomPrimeSeedReproducibility:
 
         assert len(set(results)) == 1
 
-    def test_different_seed_different_result(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_different_seed_different_result(self, cli_runner: CliRunner) -> None:
         """Test that different seeds produce different results."""
 
         values: set[int] = set()

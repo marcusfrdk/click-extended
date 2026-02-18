@@ -418,9 +418,7 @@ class TestToCaseNestedTuple:
 class TestToCasePractical:
     """Practical usage tests."""
 
-    def test_convert_identifiers_to_snake_case(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_convert_identifiers_to_snake_case(self, cli_runner: CliRunner) -> None:
         """Test converting programming identifiers to snake_case."""
 
         @command()
@@ -442,9 +440,7 @@ class TestToCasePractical:
         )
         assert result.exit_code == 0
 
-    def test_convert_class_names_to_pascal_case(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_convert_class_names_to_pascal_case(self, cli_runner: CliRunner) -> None:
         """Test converting class names to PascalCase."""
 
         @command()
@@ -469,9 +465,7 @@ class TestToCasePractical:
             assert slugs[0] == "my-blog-post"
             assert slugs[1] == "another-article"
 
-        result = cli_runner.invoke(
-            cmd, ["--slugs", "My Blog Post", "Another Article"]
-        )
+        result = cli_runner.invoke(cmd, ["--slugs", "My Blog Post", "Another Article"])
         assert result.exit_code == 0
 
     def test_nested_tuple_with_multiple_conversions(

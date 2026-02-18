@@ -19,9 +19,7 @@ from click_extended.types import Decorator
 
 _catch_handlers: WeakKeyDictionary[
     Callable[..., Any],
-    list[
-        tuple[tuple[type[BaseException], ...], Callable[..., Any] | None, bool]
-    ],
+    list[tuple[tuple[type[BaseException], ...], Callable[..., Any] | None, bool]],
 ] = WeakKeyDictionary()
 
 
@@ -136,7 +134,7 @@ def catch(
     handler: Callable[..., Any] | None = None,
     reraise: bool = False,
 ) -> Decorator:
-    """
+    r"""
     Catch and handle exceptions from command/group functions.
 
     Wraps the function in a try-except block. When exceptions occur, an optional
@@ -144,17 +142,13 @@ def catch(
 
     Type: `ValidationNode`
 
-    Args:
-        *exception_types: Exception types to catch (defaults to Exception)
-        handler: Optional function with signature `()`, `(exception)`, or
-            `(exception, context)` to handle caught exceptions
-        reraise: If True, re-raise after handling (default: False)
-
-    Returns:
-        Decorator function
-
-    Raises:
-        TypeError: If exception_types contains non-exception classes
+    :param \*exception_types: Exception types to catch (defaults to Exception).
+    :param handler: Optional function with signature ``()``, ``(exception)``, or
+        ``(exception, context)`` to handle caught exceptions.
+    :param reraise: If True, re-raise after handling (default: False).
+    :raises TypeError: If exception_types contains non-exception classes.
+    :returns: Decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python
@@ -216,12 +210,8 @@ def catch(
         exception_types = (Exception,)
 
     for exc_type in exception_types:
-        if not isinstance(exc_type, type) or not issubclass(
-            exc_type, BaseException
-        ):
-            raise TypeError(
-                f"catch() requires exception types, got {exc_type!r}"
-            )
+        if not isinstance(exc_type, type) or not issubclass(exc_type, BaseException):
+            raise TypeError(f"catch() requires exception types, got {exc_type!r}")
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """The actual decorator that wraps the function."""
@@ -240,9 +230,7 @@ def catch(
 
         if original_func not in _catch_handlers:
             _catch_handlers[original_func] = []
-        _catch_handlers[original_func].insert(
-            0, (exception_types, handler, reraise)
-        )
+        _catch_handlers[original_func].insert(0, (exception_types, handler, reraise))
 
         # Only wrap if this is the first @catch (check handlers dict)
         if len(_catch_handlers[original_func]) > 1:
@@ -301,9 +289,7 @@ def catch(
     return decorator
 
 
-async def _call_handler_async(
-    handler: Callable[..., Any], exc: BaseException
-) -> Any:
+async def _call_handler_async(handler: Callable[..., Any], exc: BaseException) -> Any:
     """Call async handler with appropriate number of arguments."""
     sig = inspect.signature(handler)
     params = list(sig.parameters.values())

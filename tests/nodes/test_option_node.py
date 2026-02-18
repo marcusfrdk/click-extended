@@ -362,9 +362,7 @@ class TestOptionNaming:
 
     def test_short_flag_invalid_format(self) -> None:
         """Test invalid short flag format raises error."""
-        with pytest.raises(
-            ValueError, match="Multiple non-flag arguments provided"
-        ):
+        with pytest.raises(ValueError, match="Multiple non-flag arguments provided"):
             Option("port", "p")
 
     def test_short_flag_invalid_multiple_chars(self) -> None:
@@ -721,10 +719,7 @@ class TestOptionCommandIntegration:
 
         result = cli_runner.invoke(run, [])
         assert result.exit_code != 0
-        assert (
-            "required" in result.output.lower()
-            or "missing" in result.output.lower()
-        )
+        assert "required" in result.output.lower() or "missing" in result.output.lower()
 
     def test_required_option_provided(self, cli_runner: Any) -> None:
         """Test required option when provided."""
@@ -774,9 +769,7 @@ class TestOptionCommandIntegration:
         def serve(host: str, port: int) -> None:
             click.echo(f"Serving on {host}:{port}")
 
-        result = cli_runner.invoke(
-            serve, ["--host", "0.0.0.0", "--port", "3000"]
-        )
+        result = cli_runner.invoke(serve, ["--host", "0.0.0.0", "--port", "3000"])
         assert result.exit_code == 0
         assert "Serving on 0.0.0.0:3000" in result.output
 
@@ -1056,9 +1049,7 @@ class TestOptionNodeEdgeCases:
 
     def test_invalid_long_flag_no_dashes(self) -> None:
         """Test that providing two names raises error."""
-        with pytest.raises(
-            ValueError, match="Multiple non-flag arguments provided"
-        ):
+        with pytest.raises(ValueError, match="Multiple non-flag arguments provided"):
             Option("port", "port")
 
     def test_invalid_long_flag_single_dash(self) -> None:
@@ -1069,9 +1060,7 @@ class TestOptionNodeEdgeCases:
 
     def test_invalid_short_flag_no_dash(self) -> None:
         """Test that providing two names raises error."""
-        with pytest.raises(
-            ValueError, match="Multiple non-flag arguments provided"
-        ):
+        with pytest.raises(ValueError, match="Multiple non-flag arguments provided"):
             Option("port", "p")
 
     def test_invalid_short_flag_multiple_chars(self) -> None:

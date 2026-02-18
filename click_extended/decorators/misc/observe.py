@@ -67,14 +67,10 @@ def observe(
 
     Supports: `Any`
 
-    Args:
-        handler (Callable[[Any], Any] | Callable[[Any, Context], Any]):
-            Handler to observe the value. Accepts `(value)` or
-            `(value, context)`.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param handler: Handler to observe the value. Accepts ``(value)`` or
+        ``(value, context)``.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python

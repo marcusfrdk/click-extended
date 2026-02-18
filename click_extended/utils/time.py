@@ -8,14 +8,10 @@ def normalize_datetime_format(fmt: str) -> str:
     Supports both Python strptime format (e.g., %Y-%m-%d, %H:%M:%S)
     and simplified format (e.g., YYYY-MM-DD, HH:mm:SS).
 
-    Args:
-        fmt (str):
-            A format string in either Python strptime format or
-            simplified format.
-
-    Returns:
-        str:
-            The normalized Python strptime format string.
+    :param fmt: A format string in either Python strptime format or
+        simplified format.
+    :returns: The normalized Python strptime format string.
+    :rtype: str
 
     Example:
         ```python

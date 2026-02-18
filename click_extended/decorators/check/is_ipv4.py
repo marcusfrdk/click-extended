@@ -21,13 +21,9 @@ class IsIpv4(ChildNode):
         try:
             ip = ipaddress.ip_address(value)
             if not isinstance(ip, ipaddress.IPv4Address):
-                raise ValueError(
-                    f"Value '{value}' is not a valid IPv4 address."
-                )
+                raise ValueError(f"Value '{value}' is not a valid IPv4 address.")
         except ValueError as e:
-            raise ValueError(
-                f"Value '{value}' is not a valid IPv4 address."
-            ) from e
+            raise ValueError(f"Value '{value}' is not a valid IPv4 address.") from e
         return value
 
 
@@ -39,8 +35,7 @@ def is_ipv4() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsIpv4.as_decorator()

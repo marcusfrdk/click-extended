@@ -125,9 +125,7 @@ class TestDefaultFromParam:
         assert result.exit_code == 0
         assert "Timeout: 30" in result.output
 
-    def test_default_from_param_not_provided(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_default_from_param_not_provided(self, cli_runner: CliRunner) -> None:
         """Test default from another parameter when it's not provided."""
 
         @command()
@@ -141,9 +139,7 @@ class TestDefaultFromParam:
         assert result.exit_code == 0
         assert "Timeout: None" in result.output
 
-    def test_default_from_param_both_provided(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_default_from_param_both_provided(self, cli_runner: CliRunner) -> None:
         """Test that explicit value takes precedence over from_param."""
 
         @command()
@@ -153,9 +149,7 @@ class TestDefaultFromParam:
         def cmd(global_timeout: int | None, timeout: int | None) -> None:
             click.echo(f"Timeout: {timeout}")
 
-        result = cli_runner.invoke(
-            cmd, ["--global-timeout", "30", "--timeout", "60"]
-        )
+        result = cli_runner.invoke(cmd, ["--global-timeout", "30", "--timeout", "60"])
         assert result.exit_code == 0
         assert "Timeout: 60" in result.output
 
@@ -163,9 +157,7 @@ class TestDefaultFromParam:
 class TestDefaultNotAppliedWhenProvided:
     """Test that default doesn't override provided values."""
 
-    def test_default_from_value_not_applied(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_default_from_value_not_applied(self, cli_runner: CliRunner) -> None:
         """Test default not applied when value is provided."""
 
         @command()
@@ -193,9 +185,7 @@ class TestDefaultNotAppliedWhenProvided:
         assert result.exit_code == 0
         assert "Value: Explicit" in result.output
 
-    def test_default_from_param_not_applied(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_default_from_param_not_applied(self, cli_runner: CliRunner) -> None:
         """Test param default not applied when value is provided."""
 
         @command()
@@ -307,9 +297,7 @@ class TestDefaultMultipleOptions:
         assert result.exit_code == 0
         assert "Name: Alice, Age: 25" in result.output
 
-    def test_multiple_defaults_mixed_sources(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_multiple_defaults_mixed_sources(self, cli_runner: CliRunner) -> None:
         """Test multiple options with different default sources."""
 
         @command()
@@ -337,9 +325,7 @@ class TestDefaultPractical:
         def cmd(config: str | None) -> None:
             click.echo(f"Config: {config}")
 
-        result = cli_runner.invoke(
-            cmd, [], env={"CONFIG_PATH": "/etc/app/config.yaml"}
-        )
+        result = cli_runner.invoke(cmd, [], env={"CONFIG_PATH": "/etc/app/config.yaml"})
         assert result.exit_code == 0
         assert "Config: /etc/app/config.yaml" in result.output
 
@@ -378,9 +364,7 @@ class TestDefaultPractical:
         def cmd(host: str | None, port: int | None) -> None:
             click.echo(f"Server: {host}:{port}")
 
-        result = cli_runner.invoke(
-            cmd, [], env={"HOST": "localhost", "PORT": "8080"}
-        )
+        result = cli_runner.invoke(cmd, [], env={"HOST": "localhost", "PORT": "8080"})
         assert result.exit_code == 0
         assert "Server: localhost:8080" in result.output
 
@@ -401,9 +385,7 @@ class TestDefaultEdgeCases:
         assert result.exit_code == 0
         assert "Count: 0" in result.output
 
-    def test_default_from_value_empty_string(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_default_from_value_empty_string(self, cli_runner: CliRunner) -> None:
         """Test default with empty string (falsy but valid)."""
 
         @command()
@@ -429,9 +411,7 @@ class TestDefaultEdgeCases:
         assert result.exit_code == 0
         assert "Flag: False" in result.output
 
-    def test_default_from_param_nonexistent(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_default_from_param_nonexistent(self, cli_runner: CliRunner) -> None:
         """Test default from_param with non-existent parameter."""
 
         @command()

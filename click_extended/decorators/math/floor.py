@@ -29,8 +29,7 @@ def floor() -> Decorator:
 
     Supports: `int`, `float`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Floor.as_decorator()

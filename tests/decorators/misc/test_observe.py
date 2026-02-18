@@ -124,9 +124,7 @@ class TestObserveInvalidHandler:
         assert result.exit_code != 0
         assert "observe() handler must accept" in result.output
 
-    def test_handler_with_three_params_errors(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_handler_with_three_params_errors(self, cli_runner: CliRunner) -> None:
         """Test that handler with too many params raises error."""
 
         def handler(value: Any, ctx: Context, extra: Any) -> None:

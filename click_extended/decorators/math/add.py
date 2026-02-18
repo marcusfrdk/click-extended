@@ -37,12 +37,8 @@ def add(n: int | float | str) -> Decorator:
 
     Supports: `int`, `float`, `str`
 
-    Args:
-        n (int | float | str):
-            The value to add.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The value to add.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Add.as_decorator(n=n)

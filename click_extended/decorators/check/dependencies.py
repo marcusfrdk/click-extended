@@ -78,18 +78,16 @@ class Dependencies(ValidationNode):
 
 
 def dependencies(*names: str) -> Decorator:
-    """
+    r"""
     Decorator that validates mutual dependencies between parameters.
 
     If any parameter in the dependency group is provided, all must be provided.
 
     Type: `ValidationNode`
 
-    Args:
-        *names: Parameter names or tag names that are mutually dependent
-
-    Returns:
-        Decorator function
+    :param \*names: Parameter names or tag names that are mutually dependent.
+    :returns: Decorator function.
+    :rtype: Decorator
 
     Examples:
         @command()

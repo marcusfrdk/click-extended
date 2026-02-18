@@ -359,8 +359,7 @@ class TestScreamingSnakeCase:
         """Test cases."""
         for case in cases:
             assert (
-                Casing.to_screaming_snake_case(case.value)
-                == case.screaming_snake_case
+                Casing.to_screaming_snake_case(case.value) == case.screaming_snake_case
             )
 
 

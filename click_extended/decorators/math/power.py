@@ -28,12 +28,8 @@ def power(n: int | float) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        n (int | float):
-            The exponent.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The exponent.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Power.as_decorator(n=n)

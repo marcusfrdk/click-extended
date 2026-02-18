@@ -20,23 +20,11 @@ from datetime import date, datetime, time
 from decimal import Decimal
 from pathlib import Path
 from types import UnionType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Union,
-    cast,
-    get_args,
-    get_origin,
-    get_type_hints,
-)
+from typing import TYPE_CHECKING, Any, Union, cast, get_args, get_origin, get_type_hints
 from uuid import UUID
 
 from click_extended.core.nodes.child_node import ChildNode
-from click_extended.errors import (
-    InvalidHandlerError,
-    ProcessError,
-    UnhandledTypeError,
-)
+from click_extended.errors import InvalidHandlerError, ProcessError, UnhandledTypeError
 
 if TYPE_CHECKING:
     from click_extended.core.other.context import Context
@@ -73,20 +61,17 @@ def _extract_inner_types(type_hint: Any) -> set[type]:
     Extract the expected types from a type hint.
 
     Examples:
-        - `int` -> `{int}`
-        - `int | str` -> `{int, str}`
-        - `tuple[int, ...]` -> `{int}`
-        - `tuple[int | str, ...]` -> `{int, str}`
-        - `tuple[tuple[int, ...], ...]` -> `{int}` (from innermost)
-        - `list[str]` -> `{str}`
+        - ``int`` -> ``{int}``
+        - ``int | str`` -> ``{int, str}``
+        - ``tuple[int, ...]`` -> ``{int}``
+        - ``tuple[int | str, ...]`` -> ``{int, str}``
+        - ``tuple[tuple[int, ...], ...]`` -> ``{int}`` (from innermost)
+        - ``list[str]`` -> ``{str}``
 
-    Args:
-        type_hint (Any):
-            The type hint to extract from.
+    :param type_hint: The type hint to extract from.
 
-    Returns:
-        set[type]:
-            Set of expected types.
+    :returns: Set of expected types.
+    :rtype: set[type]
     """
     if type_hint is Any:
         return set()
@@ -139,17 +124,13 @@ def _validate_handler_type(
     """
     Validate that value matches handler's type hint.
 
-    Args:
-        handler_name (str):
-            Name of the handler being called.
-        value (Any):
-            The runtime value to validate.
-        type_hint (Any):
-            The type hint from the handler's signature.
+    :param handler_name: Name of the handler being called.
+    :param value: The runtime value to validate.
+    :param type_hint: The type hint from the handler's signature.
 
-    Returns:
-        tuple[bool, str]:
-            `(is_valid, error_message)` where `error_message` is empty if valid.
+    :returns: ``(is_valid, error_message)`` where ``error_message`` is empty
+        if valid.
+    :rtype: tuple[bool, str]
     """
     origin = get_origin(type_hint)
 
@@ -168,10 +149,7 @@ def _validate_handler_type(
                     "to convert strings to integers."
                 )
             elif actual_type == "int" and type_hint == str:
-                suggestion = (
-                    "\nTip: Change type=int to type=str in "
-                    "your option/argument."
-                )
+                suggestion = "\nTip: Change int to str for the type argument."
 
             return (
                 False,
@@ -212,10 +190,7 @@ def _validate_handler_type(
                     "to convert strings to integers."
                 )
             elif actual_type == "int" and expected == str:
-                suggestion = (
-                    "\nTip: Change type=int to type=str in "
-                    "your option/argument."
-                )
+                suggestion = "\nTip: Change type from int to str in option/argument."
 
             return (
                 False,
@@ -239,9 +214,7 @@ def _validate_handler_type(
                     list_mismatches.append((i, type(item).__name__, item))
 
             if list_mismatches:
-                type_names = " | ".join(
-                    sorted(t.__name__ for t in expected_types)
-                )
+                type_names = " | ".join(sorted(t.__name__ for t in expected_types))
 
                 examples: list[str] = []
                 for (
@@ -274,24 +247,17 @@ def dispatch_to_child(
     """
     Dispatch value to appropriate child handler with priority system.
 
-    Args:
-        child (ChildNode):
-            The child node to dispatch to.
-        value (Any):
-            The value to process.
-        context (Context):
-            Processing context with parent, siblings, tags.
+    :param child: The child node to dispatch to.
+    :param value: The value to process.
+    :param context: Processing context with parent, siblings, tags.
 
-    Returns:
-        Any:
-            The processed value. Returns original value if the
-            handler returns `None`.
+    :returns: The processed value. Returns original value if the
+        handler returns ``None``.
 
-    Raises:
-        UnhandledTypeError:
-            If no handler is implemented for this value type.
-        InvalidHandlerError:
-            If `handle_tag` returns a modified dictionary.
+    :raises UnhandledTypeError: If no handler is implemented for this value
+        type.
+    :raises InvalidHandlerError: If ``handle_tag`` returns a modified
+        dictionary.
     """
     if isinstance(value, tuple):
         meta = context.click_context.meta.get("click_extended", {})
@@ -421,17 +387,12 @@ def _determine_handler(
     """
     Determine which handler should process this value based on priority.
 
-    Args:
-        child (ChildNode):
-            The child node to check for implemented handlers.
-        value (Any):
-            The value to check.
-        context (Context):
-            The processing context.
+    :param child: The child node to check for implemented handlers.
+    :param value: The value to check.
+    :param context: The processing context.
 
-    Returns:
-        str | None:
-            Handler method name, or `None` if no handler found.
+    :returns: Handler method name, or ``None`` if no handler found.
+    :rtype: str | None
     """
     if context.is_tag() and _is_handler_implemented(child, "handle_tag"):
         return "handle_tag"
@@ -492,26 +453,19 @@ def _determine_handler(
     return None
 
 
-def _should_call_handler(
-    child: "ChildNode", handler_name: str, value: Any
-) -> bool:
+def _should_call_handler(child: "ChildNode", handler_name: str, value: Any) -> bool:
     """
     Check if handler should be called for this value.
 
-    Checks type hints to see if `None` values are accepted.
+    Checks type hints to see if ``None`` values are accepted.
 
-    Args:
-        child (ChildNode):
-            The child node.
-        handler_name (str):
-            Name of the handler method.
-        value (Any):
-            The value to check.
+    :param child: The child node.
+    :param handler_name: Name of the handler method.
+    :param value: The value to check.
 
-    Returns:
-        bool:
-            `True` if handler should be called, `False` if
-            value should be skipped.
+    :returns: ``True`` if handler should be called, ``False`` if
+        value should be skipped.
+    :rtype: bool
     """
     if value is not None:
         return True
@@ -549,15 +503,12 @@ def _is_handler_implemented(child: "ChildNode", handler_name: str) -> bool:
     """
     Check if a handler is implemented by the child (not just inherited).
 
-    Args:
-        child (ChildNode):
-            The child node instance.
-        handler_name (str):
-            Name of the handler method to check.
+    :param child: The child node instance.
+    :param handler_name: Name of the handler method to check.
 
-    Returns:
-        bool:
-            `True` if handler is implemented by child class, `False` otherwise.
+    :returns: ``True`` if handler is implemented by child class, ``False``
+        otherwise.
+    :rtype: bool
     """
     for cls in type(child).__mro__:
         if handler_name in cls.__dict__:
@@ -570,14 +521,11 @@ def _get_implemented_handlers(child: "ChildNode") -> list[str]:
     """
     Get list of implemented handler names by checking class hierarchy.
 
-    Args:
-        child (ChildNode):
-            The child node instance.
+    :param child: The child node instance.
 
-    Returns:
-        list[str]:
-            List of handler names (without `'handle_'` prefix)
-            that are implemented.
+    :returns: List of handler names (without ``'handle_'`` prefix)
+        that are implemented.
+    :rtype: list[str]
     """
     handlers: list[str] = []
 
@@ -601,30 +549,20 @@ def _process_container_tuple(
     Process a container tuple by applying handlers to each element in-place.
 
     This function recursively processes tuples from options/arguments with
-    `multiple=True` or `nargs>1`, applying appropriate handlers to each
+    ``multiple=True`` or ``nargs>1``, applying appropriate handlers to each
     leaf element based on its type and preserving the tuple structure.
 
-    Args:
-        child (ChildNode):
-            The child node to dispatch handlers from.
-        value (tuple[Any, ...]):
-            The container tuple to process.
-        context (Context):
-            Processing context.
-        path (list[int] | None):
-            Current path for error reporting. Defaults to empty list.
+    :param child: The child node to dispatch handlers from.
+    :param value: The container tuple to process.
+    :param context: Processing context.
+    :param path: Current path for error reporting. Defaults to empty list.
 
-    Returns:
-        tuple[Any, ...]:
-            New tuple with same structure but processed elements.
+    :returns: New tuple with same structure but processed elements.
+    :rtype: tuple[Any, ...]
 
-    Raises:
-        ValueError:
-            If validation fails, with path information added.
-        TypeError:
-            If type mismatch occurs, with path information added.
-        UnhandledTypeError:
-            If no handler exists for an element's type.
+    :raises ValueError: If validation fails, with path information added.
+    :raises TypeError: If type mismatch occurs, with path information added.
+    :raises UnhandledTypeError: If no handler exists for an element's type.
     """
     if path is None:
         path = []
@@ -695,30 +633,20 @@ async def _process_container_tuple_async(
     Process a container tuple by applying handlers to each element in-place.
 
     This function recursively processes tuples from options/arguments with
-    `multiple=True` or `nargs>1`, applying appropriate handlers to each
+    ``multiple=True`` or ``nargs>1``, applying appropriate handlers to each
     leaf element based on its type and preserving the tuple structure.
 
-    Args:
-        child (ChildNode):
-            The child node to dispatch handlers from.
-        value (tuple[Any, ...]):
-            The container tuple to process.
-        context (Context):
-            Processing context.
-        path (list[int] | None):
-            Current path for error reporting. Defaults to empty list.
+    :param child: The child node to dispatch handlers from.
+    :param value: The container tuple to process.
+    :param context: Processing context.
+    :param path: Current path for error reporting. Defaults to empty list.
 
-    Returns:
-        tuple[Any, ...]:
-            New tuple with same structure but processed elements.
+    :returns: New tuple with same structure but processed elements.
+    :rtype: tuple[Any, ...]
 
-    Raises:
-        ValueError:
-            If validation fails, with path information added.
-        TypeError:
-            If type mismatch occurs, with path information added.
-        UnhandledTypeError:
-            If no handler exists for an element's type.
+    :raises ValueError: If validation fails, with path information added.
+    :raises TypeError: If type mismatch occurs, with path information added.
+    :raises UnhandledTypeError: If no handler exists for an element's type.
     """
     if path is None:
         path = []
@@ -798,13 +726,10 @@ def has_async_handlers(child: "ChildNode") -> bool:
     """
     Check if a child node has any async handlers implemented.
 
-    Args:
-        child (ChildNode):
-            The child node to check.
+    :param child: The child node to check.
 
-    Returns:
-        bool:
-            `True` if any handler is async, `False` otherwise.
+    :returns: ``True`` if any handler is async, ``False`` otherwise.
+    :rtype: bool
     """
     for handler_name in ALL_HANDLER_NAMES:
         if _is_handler_implemented(child, handler_name):
@@ -825,24 +750,17 @@ async def dispatch_to_child_async(
 
     Dispatch value to appropriate child handler with priority system.
 
-    Args:
-        child (ChildNode):
-            The child node to dispatch to.
-        value (Any):
-            The value to process.
-        context (Context):
-            Processing context with parent, siblings, tags.
+    :param child: The child node to dispatch to.
+    :param value: The value to process.
+    :param context: Processing context with parent, siblings, tags.
 
-    Returns:
-        Any:
-            The processed value. Returns original value if the
-            handler returns `None`.
+    :returns: The processed value. Returns original value if the
+        handler returns ``None``.
 
-    Raises:
-        UnhandledTypeError:
-            If no handler is implemented for this value type.
-        InvalidHandlerError:
-            If `handle_tag` returns a modified dictionary.
+    :raises UnhandledTypeError: If no handler is implemented for this value
+        type.
+    :raises InvalidHandlerError: If ``handle_tag`` returns a modified
+        dictionary.
     """
     if isinstance(value, tuple):
         is_container = context.click_context.meta.get("click_extended", {}).get(

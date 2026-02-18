@@ -75,37 +75,31 @@ def load_csv(
 
     Supports: `pathlib.Path`
 
-    Args:
-        dialect (Literal["excel", "excel-tab", "unix"] | None, optional):
-            CSV dialect to use:
-            - `"excel"`: Excel-generated CSV files (comma-delimited)
-            - `"excel-tab"`: Excel-generated tab-delimited files
-            - `"unix"`: Unix-style CSV files (quote all fields)
-            If not specified, the reader will use default settings.
-            Defaults to `None`.
-        delimiter (str, optional):
-            Character used to separate fields. Common values are ',' and '\\t'.
-            If not specified, defaults to comma for most dialects.
-            Defaults to `None`.
-        has_header (bool, optional):
-            Whether the CSV file has a header row. Only used when
-            `as_dict=False`. When `as_dict=True`, the first row is
-            always treated as headers. Defaults to `True`.
-        as_dict (bool, optional):
-            Whether to return rows as dictionaries (using header as keys)
-            or as lists. When `True`, uses `csv.DictReader`. When `False`,
-            uses `csv.reader`.
-            Defaults to `True`.
-        encoding (str, optional):
-            The encoding to use when reading the file.
-            Defaults to `"utf-8"`.
-        skip_empty (bool, optional):
-            Whether to skip empty rows in the CSV file.
-            Defaults to `True`.
+    :param dialect: CSV dialect to use:
 
-    Returns:
-        Decorator:
-            The decorated function.
+        - ``"excel"``: Excel-generated CSV files (comma-delimited)
+        - ``"excel-tab"``: Excel-generated tab-delimited files
+        - ``"unix"``: Unix-style CSV files (quote all fields)
+
+        If not specified, the reader will use default settings.
+        Defaults to ``None``.
+
+    :param delimiter: Character used to separate fields. Common values are ','
+        and '\\t'. If not specified, defaults to comma for most dialects.
+        Defaults to ``None``.
+    :param has_header: Whether the CSV file has a header row. Only used when
+        ``as_dict=False``. When ``as_dict=True``, the first row is
+        always treated as headers. Defaults to ``True``.
+    :param as_dict: Whether to return rows as dictionaries (using header as keys)
+        or as lists. When ``True``, uses ``csv.DictReader``. When ``False``,
+        uses ``csv.reader``.
+        Defaults to ``True``.
+    :param encoding: The encoding to use when reading the file.
+        Defaults to ``"utf-8"``.
+    :param skip_empty: Whether to skip empty rows in the CSV file.
+        Defaults to ``True``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return LoadCsv.as_decorator(
         dialect=dialect,

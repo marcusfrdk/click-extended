@@ -52,20 +52,16 @@ class EndsWith(ChildNode):
 
 
 def ends_with(*text: str | re.Pattern[str]) -> Decorator:
-    """
+    r"""
     Check if a string ends with one or more substrings or patterns.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        *text (str | re.Pattern[str]):
-            Patterns to check for.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*text: Patterns to check for.
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Examples:
         ```python

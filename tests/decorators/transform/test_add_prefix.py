@@ -145,9 +145,7 @@ class TestAddPrefixFlatTuple:
         result = cli_runner.invoke(cmd, ["--names", "alice", "bob", "charlie"])
         assert result.exit_code == 0
 
-    def test_add_prefix_flat_tuple_filenames(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_add_prefix_flat_tuple_filenames(self, cli_runner: CliRunner) -> None:
         """Test add_prefix with flat tuple for file naming."""
 
         @command()
@@ -209,9 +207,7 @@ class TestAddPrefixNestedTuple:
         )
         assert result.exit_code == 0
 
-    def test_add_prefix_nested_tuple_environments(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_add_prefix_nested_tuple_environments(self, cli_runner: CliRunner) -> None:
         """Test add_prefix nested tuple for environment prefixing."""
 
         @command()
@@ -312,9 +308,7 @@ class TestAddPrefixPractical:
         )
         assert result.exit_code == 0
 
-    def test_add_prefix_database_table_prefix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_add_prefix_database_table_prefix(self, cli_runner: CliRunner) -> None:
         """Test add_prefix for database table naming."""
 
         @command()
@@ -367,9 +361,7 @@ class TestAddPrefixPractical:
 class TestAddPrefixSkipParameter:
     """Test add_prefix skip parameter functionality."""
 
-    def test_skip_true_prefix_already_exists(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_skip_true_prefix_already_exists(self, cli_runner: CliRunner) -> None:
         """Test skip=True when prefix already exists (default behavior)."""
 
         @command()
@@ -393,9 +385,7 @@ class TestAddPrefixSkipParameter:
         result = cli_runner.invoke(cmd, ["--text", "value"])
         assert result.exit_code == 0
 
-    def test_skip_false_adds_duplicate_prefix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_skip_false_adds_duplicate_prefix(self, cli_runner: CliRunner) -> None:
         """Test skip=False adds prefix even if it already exists."""
 
         @command()
@@ -451,9 +441,7 @@ class TestAddPrefixSkipParameter:
 class TestAddPrefixCaseSensitive:
     """Test add_prefix case_sensitive parameter functionality."""
 
-    def test_case_insensitive_uppercase_prefix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_insensitive_uppercase_prefix(self, cli_runner: CliRunner) -> None:
         """Test case_sensitive=False with uppercase prefix in value."""
 
         @command()
@@ -465,9 +453,7 @@ class TestAddPrefixCaseSensitive:
         result = cli_runner.invoke(cmd, ["--text", "PREFIX_value"])
         assert result.exit_code == 0
 
-    def test_case_insensitive_lowercase_prefix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_insensitive_lowercase_prefix(self, cli_runner: CliRunner) -> None:
         """Test case_sensitive=False with lowercase prefix in value."""
 
         @command()
@@ -517,9 +503,7 @@ class TestAddPrefixCaseSensitive:
         result = cli_runner.invoke(cmd, ["--text", "PRE_value"])
         assert result.exit_code == 0
 
-    def test_case_sensitive_default_behavior(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_sensitive_default_behavior(self, cli_runner: CliRunner) -> None:
         """Test that case_sensitive defaults to False."""
 
         @command()
@@ -551,9 +535,7 @@ class TestAddPrefixCaseSensitive:
 class TestAddPrefixCombinedParameters:
     """Test add_prefix with combined parameter scenarios."""
 
-    def test_skip_false_case_sensitive_ignored(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_skip_false_case_sensitive_ignored(self, cli_runner: CliRunner) -> None:
         """Test that case_sensitive is ignored when skip=False."""
 
         @command()
@@ -590,9 +572,7 @@ class TestAddPrefixCombinedParameters:
         result = cli_runner.invoke(cmd, ["--text", "value"])
         assert result.exit_code == 0
 
-    def test_special_chars_case_insensitive(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_special_chars_case_insensitive(self, cli_runner: CliRunner) -> None:
         """Test special characters with case insensitive matching."""
 
         @command()

@@ -27,11 +27,7 @@ class TestRandomDateTimeBasic:
         created_str = result.output.split("Created: ")[1].strip()
         created = datetime.fromisoformat(created_str)
 
-        assert (
-            datetime(2024, 1, 1)
-            <= created
-            <= datetime(2024, 12, 31, 23, 59, 59)
-        )
+        assert datetime(2024, 1, 1) <= created <= datetime(2024, 12, 31, 23, 59, 59)
 
     def test_date_only_format(self, cli_runner: CliRunner) -> None:
         """Test using date-only format (YYYY-MM-DD)."""
@@ -74,9 +70,7 @@ class TestRandomDateTimeBasic:
         hour = int(result.output.split("Hour: ")[1].strip())
         assert 12 <= hour <= 18
 
-    def test_different_seeds_different_results(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_different_seeds_different_results(self, cli_runner: CliRunner) -> None:
         """Test that different seeds produce different results."""
 
         results: list[str] = []
@@ -343,9 +337,7 @@ class TestRandomDateTimeIntegration:
         assert result.exit_code == 0
         assert "Start: 2024, End: 2024" in result.output
 
-    def test_datetime_with_timezone_formatting(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_datetime_with_timezone_formatting(self, cli_runner: CliRunner) -> None:
         """Test datetime output with timezone."""
 
         @command()

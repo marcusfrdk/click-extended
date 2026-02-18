@@ -32,22 +32,17 @@ class ExclusiveGroup(ValidationNode):
 
 
 def exclusive(*names: str) -> Decorator:
-    """
+    r"""
     Enforce mutual exclusivity between multiple parameters.
 
     Type: `ValidationNode`
 
-    Args:
-        *names (str):
-            Names of parameters that should be mutually exclusive.
-
-    Returns:
-        Decorator:
-            A decorator function that registers the exclusive group validation.
-
-    Raises:
-        ValueError:
-            If more than one parameter from the group is provided at runtime.
+    :param \*names: Names of parameters that should be mutually exclusive.
+    :raises ValueError: If more than one parameter from the group is
+        provided at runtime.
+    :returns: A decorator function that registers the exclusive
+        group validation.
+    :rtype: Decorator
 
     Examples:
         ```python

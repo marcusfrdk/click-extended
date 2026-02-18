@@ -16,10 +16,10 @@ if TYPE_CHECKING:
 
 class ClickGroup(click.Group):
     """
-    A Click Group that integrates with the `RootNode`.
+    A Click Group that integrates with the ``RootNode``.
 
     This is a regular Click group that works everywhere Click works,
-    with built-in support for aliasing, `click-extended` features,
+    with built-in support for aliasing, ``click-extended`` features,
     and convenience methods for building command hierarchies.
     """
 
@@ -27,15 +27,14 @@ class ClickGroup(click.Group):
         self, *args: Any, root_instance: "RootNode | None" = None, **kwargs: Any
     ) -> None:
         """
-        Initialize a new `ClickGroup` instance.
+        Initialize a new ``ClickGroup`` instance.
 
-        Args:
-            *args (Any):
-                Positional arguments for `click.Group`
-            root_instance (RootNode):
-                The `RootNode` instance that manages this group
-            **kwargs (Any):
-                Keyword arguments for `click.Group`
+        :param \\*args:
+            Positional arguments for ``click.Group``
+        :param root_instance:
+            The ``RootNode`` instance that manages this group
+        :param \\*\\*kwargs:
+            Keyword arguments for ``click.Group``
         """
         if root_instance is None:
             raise ValueError("root_instance is required for ClickGroup")
@@ -52,11 +51,10 @@ class ClickGroup(click.Group):
         """
         Format help text with aliases.
 
-        Args:
-            ctx (click.Context):
-                The Click context.
-            formatter (click.HelpFormatter):
-                The Click help message formatter instance.
+        :param ctx:
+            The Click context.
+        :param formatter:
+            The Click help message formatter instance.
         """
         original_name = self.name
 
@@ -70,11 +68,10 @@ class ClickGroup(click.Group):
         """
         Add a command to the group, including its aliases.
 
-        Args:
-            cmd (click.Command):
-                The command to add to the group.
-            name (str, optional):
-                The name to use for the command.
+        :param cmd:
+            The command to add to the group.
+        :param name:
+            The name to use for the command.
         """
         super().add_command(cmd, name)
 
@@ -91,11 +88,10 @@ class ClickGroup(click.Group):
         """
         Format the command list for display in help text.
 
-        Args:
-            _ctx (click.Context):
-                The Click context containing command information.
-            formatter (click.HelpFormatter):
-                The formatter to write command information to.
+        :param _ctx:
+            The Click context containing command information.
+        :param formatter:
+            The formatter to write command information to.
         """
         commands: dict[str, click.Command] = {}
         for name, cmd in self.commands.items():
@@ -104,9 +100,7 @@ class ClickGroup(click.Group):
                 display_name = name
 
                 if aliases is not None:
-                    aliases_list = (
-                        [aliases] if isinstance(aliases, str) else aliases
-                    )
+                    aliases_list = [aliases] if isinstance(aliases, str) else aliases
                     valid_aliases = [a for a in aliases_list if a]
                     if valid_aliases:
                         display_name = f"{name} ({', '.join(valid_aliases)})"
@@ -125,13 +119,12 @@ class ClickGroup(click.Group):
         """
         A method to add a command or group and return self for chaining.
 
-        Args:
-            cmd (click.Command | click.Group):
-                The command or group to add.
+        :param cmd:
+            The command or group to add.
 
-        Returns:
-            Self:
-                The instance to allow chaining.
+        :returns:
+            The instance to allow chaining.
+        :rtype: Self
 
         Example:
             ```python
@@ -164,21 +157,20 @@ class ClickGroup(click.Group):
         """
         A decorator to create and add a child command.
 
-        Args:
-            name (str, optional):
-                The name of the child command.
-            aliases (str | list[str], optional):
-                Alternative name(s) for the command. Can be a single
-                string or a list of strings.
-            help (str, optional):
-                The help message for the command. If not provided,
-                uses the first line of the function's docstring.
-            **kwargs (Any):
-                Additional arguments for the command.
+        :param name:
+            The name of the child command.
+        :param aliases:
+            Alternative name(s) for the command. Can be a single
+            string or a list of strings.
+        :param help:
+            The help message for the command. If not provided,
+            uses the first line of the function's docstring.
+        :param \\*\\*kwargs:
+            Additional arguments for the command.
 
-        Returns:
-            Decorator:
-                A decorator function.
+        :returns:
+            A decorator function.
+        :rtype: Decorator
         """
         if aliases is not None:
             kwargs["aliases"] = aliases
@@ -208,21 +200,20 @@ class ClickGroup(click.Group):
         """
         A decorator to create and add a child group.
 
-        Args:
-            name (str, optional):
-                The name of the child group.
-            aliases (str | list[str], optional):
-                Alternative name(s) for the group. Can be a single
-                string or a list of strings.
-            help (str, optional):
-                The help message for the group. If not provided,
-                uses the first line of the function's docstring.
-            **kwargs (Any):
-                Additional arguments for the group
+        :param name:
+            The name of the child group.
+        :param aliases:
+            Alternative name(s) for the group. Can be a single
+            string or a list of strings.
+        :param help:
+            The help message for the group. If not provided,
+            uses the first line of the function's docstring.
+        :param \\*\\*kwargs:
+            Additional arguments for the group
 
-        Returns:
-            Decorator:
-                A decorator function
+        :returns:
+            A decorator function
+        :rtype: Decorator
         """
         if aliases is not None:
             kwargs["aliases"] = aliases

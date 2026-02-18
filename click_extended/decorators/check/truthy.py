@@ -30,8 +30,7 @@ def truthy() -> Decorator:
 
     Supports: `Any`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Truthy.as_decorator()

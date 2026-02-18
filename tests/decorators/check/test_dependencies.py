@@ -54,9 +54,7 @@ class TestDependenciesBasic:
 
         result = cli_runner.invoke(login, ["--username", "john"])
         assert result.exit_code == 1
-        assert (
-            "'--username' requires '--password' to be provided" in result.output
-        )
+        assert "'--username' requires '--password' to be provided" in result.output
 
     def test_dependencies_other_provided_fails(self, cli_runner: Any) -> None:
         """Test that command fails when the other param is provided."""
@@ -70,17 +68,13 @@ class TestDependenciesBasic:
 
         result = cli_runner.invoke(login, ["--password", "secret"])
         assert result.exit_code == 1
-        assert (
-            "'--password' requires '--username' to be provided" in result.output
-        )
+        assert "'--password' requires '--username' to be provided" in result.output
 
 
 class TestDependenciesMultipleGroups:
     """Test @dependencies with multiple dependency groups."""
 
-    def test_dependencies_multiple_groups_all_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_multiple_groups_all_provided(self, cli_runner: Any) -> None:
         """Test multiple groups with all params provided."""
 
         @command()
@@ -108,9 +102,7 @@ class TestDependenciesMultipleGroups:
         )
         assert result.exit_code == 0
 
-    def test_dependencies_multiple_groups_none_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_multiple_groups_none_provided(self, cli_runner: Any) -> None:
         """Test multiple groups with no params provided."""
 
         @command()
@@ -143,9 +135,7 @@ class TestDependenciesMultipleGroups:
 
         result = cli_runner.invoke(auth, ["--username", "john"])
         assert result.exit_code == 1
-        assert (
-            "'--username' requires '--password' to be provided" in result.output
-        )
+        assert "'--username' requires '--password' to be provided" in result.output
 
     def test_dependencies_multiple_groups_second_group_incomplete(
         self, cli_runner: Any
@@ -164,10 +154,7 @@ class TestDependenciesMultipleGroups:
 
         result = cli_runner.invoke(auth, ["--api-key", "key123"])
         assert result.exit_code == 1
-        assert (
-            "'--api-key' requires '--api-secret' to be provided"
-            in result.output
-        )
+        assert "'--api-key' requires '--api-secret' to be provided" in result.output
 
     def test_dependencies_multiple_groups_first_complete_second_incomplete(
         self, cli_runner: Any
@@ -196,18 +183,13 @@ class TestDependenciesMultipleGroups:
             ],
         )
         assert result.exit_code == 1
-        assert (
-            "'--api-key' requires '--api-secret' to be provided"
-            in result.output
-        )
+        assert "'--api-key' requires '--api-secret' to be provided" in result.output
 
 
 class TestDependenciesWithThreeOrMore:
     """Test @dependencies with three or more parameters."""
 
-    def test_dependencies_three_params_all_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_three_params_all_provided(self, cli_runner: Any) -> None:
         """Test three params all provided."""
 
         @command()
@@ -225,9 +207,7 @@ class TestDependenciesWithThreeOrMore:
         assert result.exit_code == 0
         assert "Connect: localhost:8080 via http" in result.output
 
-    def test_dependencies_three_params_none_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_three_params_none_provided(self, cli_runner: Any) -> None:
         """Test three params none provided."""
 
         @command()
@@ -241,9 +221,7 @@ class TestDependenciesWithThreeOrMore:
         result = cli_runner.invoke(connect, [])
         assert result.exit_code == 0
 
-    def test_dependencies_three_params_one_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_three_params_one_provided(self, cli_runner: Any) -> None:
         """Test three params with one provided."""
 
         @command()
@@ -258,9 +236,7 @@ class TestDependenciesWithThreeOrMore:
         assert result.exit_code == 1
         assert "'--host' require '--port' and '--protocol'" in result.output
 
-    def test_dependencies_three_params_two_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_three_params_two_provided(self, cli_runner: Any) -> None:
         """Test three params with two provided."""
 
         @command()
@@ -271,9 +247,7 @@ class TestDependenciesWithThreeOrMore:
         def connect(host: str, port: int, protocol: str) -> None:
             print(f"Connect: {host}:{port} via {protocol}")
 
-        result = cli_runner.invoke(
-            connect, ["--host", "localhost", "--port", "8080"]
-        )
+        result = cli_runner.invoke(connect, ["--host", "localhost", "--port", "8080"])
         assert result.exit_code == 1
         assert "'--host' and '--port' requires '--protocol'" in result.output
 
@@ -281,9 +255,7 @@ class TestDependenciesWithThreeOrMore:
 class TestDependenciesWithArguments:
     """Test @dependencies with argument nodes."""
 
-    def test_dependencies_with_arguments_both_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_with_arguments_both_provided(self, cli_runner: Any) -> None:
         """Test dependencies with arguments when both provided."""
 
         @command()
@@ -383,17 +355,13 @@ class TestDependenciesWithTags:
 
         result = cli_runner.invoke(login, ["--username", "john"])
         assert result.exit_code == 1
-        assert (
-            "'--username' require '--password' and '--token'" in result.output
-        )
+        assert "'--username' require '--password' and '--token'" in result.output
 
 
 class TestDependenciesWithDefaults:
     """Test @dependencies with default values."""
 
-    def test_dependencies_with_defaults_not_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_with_defaults_not_provided(self, cli_runner: Any) -> None:
         """Test that params with defaults are not considered provided."""
 
         @command()
@@ -472,9 +440,7 @@ class TestDependenciesEdgeCases:
         result = cli_runner.invoke(process, [])
         assert result.exit_code == 0
 
-    def test_dependencies_mixed_with_other_validators(
-        self, cli_runner: Any
-    ) -> None:
+    def test_dependencies_mixed_with_other_validators(self, cli_runner: Any) -> None:
         """Test dependencies combined with other validators."""
         from click_extended.decorators import not_empty
 
@@ -498,9 +464,7 @@ class TestDependenciesEdgeCases:
         assert result.exit_code == 1
 
         # Both provided but one empty triggers not_empty
-        result = cli_runner.invoke(
-            login, ["--username", "john", "--password", ""]
-        )
+        result = cli_runner.invoke(login, ["--username", "john", "--password", ""])
         assert result.exit_code == 1
 
 

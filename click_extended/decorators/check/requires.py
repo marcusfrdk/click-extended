@@ -109,28 +109,20 @@ class Requires(ChildNode):
 
 
 def requires(*names: str, require_all_tagged: bool = True) -> Decorator:
-    """
+    r"""
     Enforce that specified parameters or tags are provided.
 
     Type: `ChildNode`
 
     Supports: `any`, `tag`
 
-    Args:
-        *names (str):
-            Names of parameters or tags that must be provided.
-        require_all_tagged (bool):
-            If a tag is references, all parents must be provided.
-            Defaults to `True`.
-
-    Returns:
-        Decorator:
-            The decorated function.
-
-    Raises:
-        ValueError:
-            If the parent/tag is provided but required dependencies are not met,
-            or if a required name doesn't exist.
+    :param \*names: Names of parameters or tags that must be provided.
+    :param require_all_tagged: If a tag is references, all parents must
+        be provided. Defaults to ``True``.
+    :raises ValueError: If the parent/tag is provided but required dependencies
+        are not met, or if a required name doesn't exist.
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Examples:
         Basic requirement:

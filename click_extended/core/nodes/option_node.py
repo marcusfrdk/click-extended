@@ -44,40 +44,26 @@ class OptionNode(ParentNode, ABC):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
-        """
-        Initialize a new `OptionNode` instance.
+        r"""
+        Initialize a new ``OptionNode`` instance.
 
-        Args:
-            name (str):
-                The option name (parameter name for injection).
-            param (str, optional):
-                Custom parameter name for the function.
-                If not provided, uses `name`.
-            short_flags (list[str], optional):
-                Short flags for the option (e.g., ["-p", "-P"]).
-            long_flags (list[str], optional):
-                Long flags for the option (e.g., ["--port", "--p"]).
-                If not provided, auto-generates ["--kebab-case(name)"].
-            is_flag (bool):
-                Whether this is a boolean flag (no value needed).
-                Defaults to `False`.
-            type (Type[Any], optional):
-                The type to convert the value to (`int`, `str`, `float`, `bool`).
-            nargs (int):
-                Number of arguments each occurrence accepts. Defaults to `1`.
-            multiple (bool):
-                Whether the option can be provided multiple times.
-                Defaults to `False`.
-            help (str, optional):
-                Help text for this option.
-            required (bool):
-                Whether this option is required. Defaults to `False`.
-            default (Any):
-                Default value if not provided. Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this option for grouping.
-            **kwargs (Any):
-                Additional keyword arguments passed to parent class.
+        :param name: The option name (parameter name for injection).
+        :param param: Custom parameter name for the function.
+            If not provided, uses ``name``.
+        :param short_flags: Short flags for the option (e.g., ["-p", "-P"]).
+        :param long_flags: Long flags for the option (e.g., ["--port", "--p"]).
+            If not provided, auto-generates ["--kebab-case(name)"].
+        :param is_flag: Whether this is a boolean flag (no value needed).
+            Defaults to ``False``.
+        :param type: The type to convert the value to (``int``, ``str``, ``float``, ``bool``).
+        :param nargs: Number of arguments each occurrence accepts. Defaults to ``1``.
+        :param multiple: Whether the option can be provided multiple times.
+            Defaults to ``False``.
+        :param help: Help text for this option.
+        :param required: Whether this option is required. Defaults to ``False``.
+        :param default: Default value if not provided. Defaults to ``None``.
+        :param tags: Tag(s) to associate with this option for grouping.
+        :param \*\*kwargs: Additional keyword arguments passed to parent class.
         """
         super().__init__(
             name=param if param is not None else name,
@@ -107,25 +93,18 @@ class OptionNode(ParentNode, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Load and process the CLI option value.
 
         This method is called with the parsed CLI option value and should
         return the processed value to be injected into the function.
 
-        Args:
-            value (str | int | float | bool | None):
-                The parsed CLI option value from Click.
-            context (Context):
-                The current context instance.
-            *args (Any):
-                Optional positional arguments.
-            **kwargs (Any):
-                Optional keyword arguments.
+        :param value: The parsed CLI option value from Click.
+        :param context: The current context instance.
+        :param \*args: Optional positional arguments.
+        :param \*\*kwargs: Optional keyword arguments.
 
-        Returns:
-            Any:
-                The processed value to inject into the function.
+        :returns: The processed value to inject into the function.
         """
         raise NotImplementedError
 
@@ -147,43 +126,28 @@ class OptionNode(ParentNode, ABC):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
-        """
+        r"""
         Return a decorator representation of the option node.
 
-        Args:
-            name (str):
-                The option name (parameter name for injection).
-            param (str, optional):
-                Custom parameter name for the function.
-                If not provided, uses `name`.
-            short_flags (list[str], optional):
-                Short flags for the option (e.g., ["-p", "-P"]).
-            long_flags (list[str], optional):
-                Long flags for the option (e.g., ["--port", "--p"]).
-            is_flag (bool):
-                Whether this is a boolean flag (no value needed).
-                Defaults to `False`.
-            type (Type[Any], optional):
-                The type to convert the value to (`int`, `str`, `float`, `bool`).
-            nargs (int):
-                Number of arguments each occurrence accepts. Defaults to `1`.
-            multiple (bool):
-                Whether the option can be provided multiple times.
-                Defaults to `False`.
-            help (str, optional):
-                Help text for this option.
-            required (bool):
-                Whether this option is required. Defaults to `False`.
-            default (Any):
-                Default value if not provided. Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this option for grouping.
-            **kwargs (Any):
-                Additional keyword arguments passed to __init__ and load().
+        :param name: The option name (parameter name for injection).
+        :param param: Custom parameter name for the function.
+            If not provided, uses ``name``.
+        :param short_flags: Short flags for the option (e.g., ["-p", "-P"]).
+        :param long_flags: Long flags for the option (e.g., ["--port", "--p"]).
+        :param is_flag: Whether this is a boolean flag (no value needed).
+            Defaults to ``False``.
+        :param type: The type to convert the value to (``int``, ``str``, ``float``, ``bool``).
+        :param nargs: Number of arguments each occurrence accepts. Defaults to ``1``.
+        :param multiple: Whether the option can be provided multiple times.
+            Defaults to ``False``.
+        :param help: Help text for this option.
+        :param required: Whether this option is required. Defaults to ``False``.
+        :param default: Default value if not provided. Defaults to ``None``.
+        :param tags: Tag(s) to associate with this option for grouping.
+        :param \*\*kwargs: Additional keyword arguments passed to __init__ and load().
 
-        Returns:
-            Callable:
-                A decorator function that registers the option node.
+        :returns: A decorator function that registers the option node.
+        :rtype: Callable
         """
         return super().as_decorator(
             name=name,

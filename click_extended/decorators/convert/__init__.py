@@ -8,9 +8,7 @@ from click_extended.decorators.convert.convert_energy import convert_energy
 from click_extended.decorators.convert.convert_power import convert_power
 from click_extended.decorators.convert.convert_pressure import convert_pressure
 from click_extended.decorators.convert.convert_speed import convert_speed
-from click_extended.decorators.convert.convert_temperature import (
-    convert_temperature,
-)
+from click_extended.decorators.convert.convert_temperature import convert_temperature
 from click_extended.decorators.convert.convert_time import convert_time
 from click_extended.decorators.convert.convert_volume import convert_volume
 from click_extended.decorators.convert.convert_weight import convert_weight

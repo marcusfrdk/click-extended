@@ -108,15 +108,11 @@ class TestPhase4Runtime:
         assert_error(result)
 
         error_text = (
-            result.output.lower()
-            if result.output
-            else str(result.exception).lower()
+            result.output.lower() if result.output else str(result.exception).lower()
         )
         assert "must be positive" in error_text
 
-    def test_scope_tracking_during_processing(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_scope_tracking_during_processing(self, cli_runner: CliRunner) -> None:
         """Test that scope is tracked as execution moves through nodes."""
 
         scopes: list[str] = []

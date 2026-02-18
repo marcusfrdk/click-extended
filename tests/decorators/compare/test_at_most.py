@@ -28,9 +28,7 @@ class TestAtMostBasic:
         assert result.exit_code == 0
         assert "Success" in result.output
 
-    def test_at_most_with_less_than_maximum(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_at_most_with_less_than_maximum(self, cli_runner: CliRunner) -> None:
         """Test that providing less than maximum succeeds."""
 
         @command()
@@ -46,9 +44,7 @@ class TestAtMostBasic:
         assert result.exit_code == 0
         assert "Success" in result.output
 
-    def test_at_most_with_more_than_maximum_fails(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_at_most_with_more_than_maximum_fails(self, cli_runner: CliRunner) -> None:
         """Test that providing more than maximum fails."""
 
         @command()
@@ -60,9 +56,7 @@ class TestAtMostBasic:
         def cmd(opt1: str | None, opt2: str | None, opt3: str | None) -> None:
             click.echo("Success")
 
-        result = cli_runner.invoke(
-            cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"]
-        )
+        result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"])
         assert result.exit_code == 1
         assert "At most 2" in result.output
         assert "3 were given" in result.output
@@ -96,9 +90,7 @@ class TestAtMostOne:
         @option("--method3", default=None, tags="method")
         @tag("method")
         @at_most(1)
-        def cmd(
-            method1: str | None, method2: str | None, method3: str | None
-        ) -> None:
+        def cmd(method1: str | None, method2: str | None, method3: str | None) -> None:
             click.echo("Success")
 
         result = cli_runner.invoke(cmd, ["--method1", "a"])
@@ -113,18 +105,14 @@ class TestAtMostOne:
         @option("--method3", default=None, tags="method")
         @tag("method")
         @at_most(1)
-        def cmd(
-            method1: str | None, method2: str | None, method3: str | None
-        ) -> None:
+        def cmd(method1: str | None, method2: str | None, method3: str | None) -> None:
             click.echo("Success")
 
         result = cli_runner.invoke(cmd, ["--method1", "a", "--method2", "b"])
         assert result.exit_code == 1
         assert "At most 1" in result.output
 
-    def test_at_most_one_with_none_succeeds(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_at_most_one_with_none_succeeds(self, cli_runner: CliRunner) -> None:
         """Test at_most(1) succeeds with no parameters."""
 
         @command()
@@ -179,9 +167,7 @@ class TestAtMostMultiple:
         ) -> None:
             click.echo("Success")
 
-        result = cli_runner.invoke(
-            cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"]
-        )
+        result = cli_runner.invoke(cmd, ["--opt1", "a", "--opt2", "b", "--opt3", "c"])
         assert result.exit_code == 0
 
         result = cli_runner.invoke(
@@ -232,9 +218,7 @@ class TestAtMostErrorMessages:
         assert "At most 1" in result.output
         assert "2 were given" in result.output
 
-    def test_error_message_grammar_singular(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_grammar_singular(self, cli_runner: CliRunner) -> None:
         """Test error message uses correct grammar for singular."""
 
         @command()
@@ -249,9 +233,7 @@ class TestAtMostErrorMessages:
         assert result.exit_code == 1
         assert "1 was given" in result.output
 
-    def test_error_message_shows_param_names(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_shows_param_names(self, cli_runner: CliRunner) -> None:
         """Test error message shows parameter names."""
 
         @command()
@@ -262,9 +244,7 @@ class TestAtMostErrorMessages:
         def cmd(format: str | None, style: str | None) -> None:
             click.echo("Success")
 
-        result = cli_runner.invoke(
-            cmd, ["--format", "json", "--style", "pretty"]
-        )
+        result = cli_runner.invoke(cmd, ["--format", "json", "--style", "pretty"])
         assert result.exit_code == 1
         assert "format" in result.output
         assert "style" in result.output

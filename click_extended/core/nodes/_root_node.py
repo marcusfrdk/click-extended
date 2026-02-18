@@ -59,17 +59,13 @@ class RootNode(Node):
     aliases: str | list[str] | None
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize a new `RootNode` instance.
+        r"""
+        Initialize a new ``RootNode`` instance.
 
-        Args:
-            name (str):
-                The name of the node.
-            *args (Any):
-                Additional positional arguments (stored but not passed to Node).
-            **kwargs (Any):
-                Additional keyword arguments (stored but not passed to Node).
-                May include 'aliases' for command/group aliases.
+        :param name: The name of the node.
+        :param \*args: Additional positional arguments (stored but not passed to Node).
+        :param \*\*kwargs: Additional keyword arguments (stored but not passed to Node).
+            May include 'aliases' for command/group aliases.
         """
         super().__init__(name=name, children={})
         self.aliases = kwargs.pop("aliases", None)
@@ -81,16 +77,13 @@ class RootNode(Node):
         """
         Format the node name with its aliases for display.
 
-        Returns:
-            str:
-                Formatted name like "name (alias1, alias2)"
+        :returns: Formatted name like "name (alias1, alias2)"
+        :rtype: str
         """
         if not self.aliases:
             return self.name
 
-        aliases_list = (
-            [self.aliases] if isinstance(self.aliases, str) else self.aliases
-        )
+        aliases_list = [self.aliases] if isinstance(self.aliases, str) else self.aliases
         valid_aliases = [a for a in aliases_list if a]
 
         if valid_aliases:
@@ -105,14 +98,11 @@ class RootNode(Node):
 
         Subclasses must override this to specify which Click decorator to use.
 
-        Returns:
-            Callable:
-                The Click decorator function
-                (e.g.,`click.command`, `click.group`).
+        :returns: The Click decorator function
+            (e.g.,``click.command``, ``click.group``).
+        :rtype: Callable
         """
-        raise NotImplementedError(
-            "Subclasses must implement _get_click_decorator()"
-        )
+        raise NotImplementedError("Subclasses must implement _get_click_decorator()")
 
     @classmethod
     def _get_click_cls(cls) -> type["ClickCommand | ClickGroup"]:
@@ -121,9 +111,8 @@ class RootNode(Node):
 
         Subclasses must override this to specify which Click class to use.
 
-        Returns:
-            type[ClickCommand|ClickGroup]:
-                The Click class (e.g., `ClickCommand`, `ClickGroup`).
+        :returns: The Click class (e.g., ``ClickCommand``, ``ClickGroup``).
+        :rtype: type[ClickCommand|ClickGroup]
         """
         raise NotImplementedError("Subclasses must implement _get_click_cls()")
 
@@ -136,9 +125,8 @@ class RootNode(Node):
         """
         Build Click decorators for options and arguments.
 
-        Returns:
-            tuple:
-                A tuple with `wrapped_func` and `h_flag_taken`
+        :returns: A tuple with ``wrapped_func`` and ``h_flag_taken``
+        :rtype: tuple
         """
         h_flag_taken = False
         seen_short_flags: dict[str, str] = {}
@@ -163,9 +151,7 @@ class RootNode(Node):
         parent_items = list(instance.tree.root.children.items())
 
         option_nodes = [
-            (name, node)
-            for name, node in parent_items
-            if isinstance(node, OptionNode)
+            (name, node) for name, node in parent_items if isinstance(node, OptionNode)
         ]
         argument_nodes = [
             (name, node)
@@ -222,24 +208,20 @@ class RootNode(Node):
     def as_decorator(
         cls, name: str | None = None, /, **kwargs: Any
     ) -> Callable[[Callable[..., Any]], click.Command]:
-        """
+        r"""
         Return a decorator representation of the root node.
 
         The root node is the top-level decorator that triggers tree building
         and collects values from all parent nodes. When the decorated function
         is called, it injects parent node values as keyword arguments.
 
-        Args:
-            name (str, optional):
-                The name of the root node. If None, uses the decorated
-                function's name.
-            **kwargs (Any):
-                Additional keyword arguments for the specific root type.
+        :param name: The name of the root node. If None, uses the decorated
+            function's name.
+        :param \*\*kwargs: Additional keyword arguments for the specific root type.
 
-        Returns:
-            Callable:
-                A decorator function that registers the root node
-                and builds the tree.
+        :returns: A decorator function that registers the root node
+            and builds the tree.
+        :rtype: Callable
         """
 
         def decorator(func: Callable[..., Any]) -> Any:
@@ -343,9 +325,7 @@ class RootNode(Node):
                             p_tags = parent_node.tags
                             for tag_name in p_tags:
                                 if tag_name in tags_dict:
-                                    tags_dict[tag_name].parent_nodes.append(
-                                        parent_node
-                                    )
+                                    tags_dict[tag_name].parent_nodes.append(parent_node)
 
                     meta = context.meta.get("click_extended", {})
 
@@ -417,23 +397,16 @@ class RootNode(Node):
                     assert root.tree.root is not None
                     needs_async = False
                     for parent_node in root.tree.root.children.values():
-                        if isinstance(
-                            parent_node, (OptionNode, ArgumentNode, Env)
-                        ):
-                            if (
+                        if isinstance(parent_node, (OptionNode, ArgumentNode, Env)):
+                            if parent_node.children and check_has_async_handlers(
                                 parent_node.children
-                                and check_has_async_handlers(
-                                    parent_node.children
-                                )
                             ):
                                 needs_async = True
                                 break
 
                     if not needs_async:
                         for tag in root.tree.tags.values():
-                            if tag.children and check_has_async_handlers(
-                                tag.children
-                            ):
+                            if tag.children and check_has_async_handlers(tag.children):
                                 needs_async = True
                                 break
 
@@ -488,9 +461,7 @@ class RootNode(Node):
                                                 **parent_node.decorator_kwargs,
                                             )
                                     else:
-                                        parent_node = cast(
-                                            "ParentNode", parent_node
-                                        )
+                                        parent_node = cast("ParentNode", parent_node)
 
                                         Tree.update_scope(
                                             context,
@@ -537,18 +508,14 @@ class RootNode(Node):
                                         parent_node=parent_node,
                                     )
 
-                                    processed_value = (
-                                        await process_children_async(
-                                            raw_value,
-                                            parent_node.children,
-                                            parent_node,
-                                            tags_dict,
-                                            context,
-                                        )
+                                    processed_value = await process_children_async(
+                                        raw_value,
+                                        parent_node.children,
+                                        parent_node,
+                                        tags_dict,
+                                        context,
                                     )
-                                    async_parent_values[inject_name] = (
-                                        processed_value
-                                    )
+                                    async_parent_values[inject_name] = processed_value
                                     parent_node.cached_value = processed_value
                                 else:
                                     async_parent_values[inject_name] = raw_value
@@ -609,9 +576,7 @@ class RootNode(Node):
                                 raw_value = None
                                 was_provided = False
 
-                                if isinstance(
-                                    parent_node, (OptionNode, ArgumentNode)
-                                ):
+                                if isinstance(parent_node, (OptionNode, ArgumentNode)):
                                     raw_value = call_kwargs.get(parent_name)
                                     was_provided = (
                                         parent_name in call_kwargs
@@ -631,9 +596,7 @@ class RootNode(Node):
                                         **parent_node.decorator_kwargs,
                                     )
                                 else:
-                                    parent_node = cast(
-                                        "ParentNode", parent_node
-                                    )
+                                    parent_node = cast("ParentNode", parent_node)
 
                                     Tree.update_scope(
                                         context,
@@ -712,9 +675,7 @@ class RootNode(Node):
 
                     for i, validation_node in enumerate(root.tree.validations):
                         if validation_node.__class__.__name__ == "Catch":
-                            if hasattr(
-                                validation_node, "remaining_validations"
-                            ):
+                            if hasattr(validation_node, "remaining_validations"):
                                 validation_node.remaining_validations = (  # type: ignore
                                     root.tree.validations[i + 1 :]
                                 )
@@ -783,9 +744,7 @@ class RootNode(Node):
                     child_node = cast("ChildNode | None", child_node)
 
                     parent_from_meta = meta.get("parent_node")
-                    parent_from_meta = cast(
-                        "ParentNode | None", parent_from_meta
-                    )
+                    parent_from_meta = cast("ParentNode | None", parent_from_meta)
 
                     root_node = meta.get("root_node")
                     root_node = cast("RootNode | None", root_node)
@@ -841,20 +800,14 @@ class RootNode(Node):
                             if "value" in handler_params:
                                 expected_type = handler_params["value"]
                                 expected_type = cast(type, expected_type)
-                                expected_types_str = humanize_type(
-                                    expected_type
-                                )
+                                expected_types_str = humanize_type(expected_type)
 
-                            lines.append(
-                                f"Expected types: {expected_types_str}"
-                            )
+                            lines.append(f"Expected types: {expected_types_str}")
 
                             # Previous:
                             has_previous = current_index > 0
                             if has_previous:
-                                prev = parent_from_meta.children[
-                                    current_index - 1
-                                ]
+                                prev = parent_from_meta.children[current_index - 1]
                             else:
                                 prev = parent_from_meta
                             previous_node = prev
@@ -867,9 +820,7 @@ class RootNode(Node):
                             children_len = len(parent_from_meta.children)
                             has_next = current_index < children_len - 1
                             if has_next:
-                                next_node = parent_from_meta.children[
-                                    current_index + 1
-                                ]
+                                next_node = parent_from_meta.children[current_index + 1]
                             else:
                                 next_node = None
                             lines.append(f"Next: {repr(next_node)}")
@@ -934,9 +885,7 @@ class RootNode(Node):
                             echo(hint, file=sys.stderr, color=context.color)
 
                         if parent_from_meta is not None:
-                            error_prefix = (
-                                f"{exc_name} ({parent_from_meta.name})"
-                            )
+                            error_prefix = f"{exc_name} ({parent_from_meta.name})"
                         else:
                             error_prefix = exc_name
 
@@ -962,9 +911,7 @@ class RootNode(Node):
                         if node_type == "parent":
                             node = cast("ParentNode", node)
                             if node.name in root.tree.root.children:
-                                from click_extended.errors import (
-                                    ParentExistsError,
-                                )
+                                from click_extended.errors import ParentExistsError
 
                                 raise ParentExistsError(node.name)
                             root.tree.root[node.name] = node
@@ -973,9 +920,7 @@ class RootNode(Node):
                         elif node_type == "child":
                             node = cast("ChildNode", node)
                             if most_recent_tag is not None:
-                                if not root.tree.has_handle_tag_implemented(
-                                    node
-                                ):
+                                if not root.tree.has_handle_tag_implemented(node):
                                     tip = "".join(
                                         "Children attached to @tag decorators "
                                         "must implement the handle_tag(...) "
@@ -1032,16 +977,12 @@ class RootNode(Node):
                                     )
                                 elif most_recent_parent is not None:
                                     parent_len = len(most_recent_parent)
-                                    most_recent_parent[parent_len] = (
-                                        child_val_inst
-                                    )
+                                    most_recent_parent[parent_len] = child_val_inst
                             else:
                                 root.tree.validations.append(child_val_inst)
                                 most_recent_tag = None
                 except ContextAwareError as e:
-                    echo(
-                        f"{e.__class__.__name__}: {e.message}", file=sys.stderr
-                    )
+                    echo(f"{e.__class__.__name__}: {e.message}", file=sys.stderr)
                     if e.tip:
                         echo(f"Tip: {e.tip}", file=sys.stderr)
                     sys.exit(1)
@@ -1058,26 +999,20 @@ class RootNode(Node):
         instance: "RootNode",
         **kwargs: Any,
     ) -> click.Command:  # type: ignore[return]
-        """
+        r"""
         Create the Click command/group object.
 
         This method creates the actual Click command or group that will be
         returned to the user, with full integration into
-        the `click-extended` system.
+        the ``click-extended`` system.
 
-        Args:
-            wrapped_func (Callable):
-                The function already wrapped with value injection.
-            name (str):
-                The name of the root node.
-            instance (RootNode):
-                The `RootNode` instance that owns this tree.
-            **kwargs (Any):
-                Additional keyword arguments passed to the Click class.
+        :param wrapped_func: The function already wrapped with value injection.
+        :param name: The name of the root node.
+        :param instance: The ``RootNode`` instance that owns this tree.
+        :param \*\*kwargs: Additional keyword arguments passed to the Click class.
 
-        Returns:
-            click.Command:
-                A `ClickCommand` or `ClickGroup` instance.
+        :returns: A ``ClickCommand`` or ``ClickGroup`` instance.
+        :rtype: click.Command
         """
         func, h_flag_taken = cls._build_click_params(wrapped_func, instance)
 

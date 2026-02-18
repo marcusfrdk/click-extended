@@ -23,26 +23,24 @@ class Env(ParentNode):
     """`ParentNode` that loads a value from an environment variable."""
 
     def load(self, context: Context, *args: Any, **kwargs: Any) -> Any:
-        """
+        r"""
         Load and return the environment variable value.
 
-        Args:
-            context (Context):
-                The current context instance.
-            *args (Any):
-                Optional positional arguments.
-            **kwargs (Any):
-                Keyword arguments from the decorator, including:
-                - env_name (str): The environment variable name to read.
+        :param context:
+            The current context instance.
+        :param \*args:
+            Optional positional arguments.
+        :param \*\*kwargs:
+            Keyword arguments from the decorator, including:
+            - env_name (str): The environment variable name to read.
 
-        Returns:
-            Any:
-                The value of the environment variable, or the default value
-                if not required and not set.
+        :returns:
+            The value of the environment variable, or the default value
+            if not required and not set.
+        :rtype: Any
 
-        Raises:
-            ValueError:
-                If the environment variable is required but not set.
+        :raises ValueError:
+            If the environment variable is required but not set.
         """
         env_name = kwargs.get("env_name")
         if env_name is None:
@@ -63,9 +61,9 @@ class Env(ParentNode):
         """
         Get a formatted display name for error messages.
 
-        Returns:
-            str:
-                The environment variable name in SCREAMING_SNAKE_CASE.
+        :returns:
+            The environment variable name in SCREAMING_SNAKE_CASE.
+        :rtype: str
         """
         return Casing.to_screaming_snake_case(self.name)
 
@@ -73,10 +71,10 @@ class Env(ParentNode):
         """
         Check if required environment variable is set.
 
-        Returns:
-            str | None:
-                The name of the missing environment variable if required
-                and not set, otherwise None.
+        :returns:
+            The name of the missing environment variable if required
+            and not set, otherwise None.
+        :rtype: str | None
         """
         env_name = self.decorator_kwargs.get("env_name")
         if env_name and self.required and os.getenv(env_name) is None:
@@ -94,40 +92,39 @@ def env(
     tags: str | list[str] | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    """
-    A `ParentNode` decorator to inject an environment variable value
+    r"""
+    A ``ParentNode`` decorator to inject an environment variable value
     into a command.
 
-    Type: `ParentNode`
+    Type: ``ParentNode``
 
-    Args:
-        env_name (str):
-            The name of the environment variable to read (e.g., "API_KEY").
-            Can be in any format, typically SCREAMING_SNAKE_CASE.
-        name (str, optional):
-            Internal node name (must be snake_case). If not provided,
-            uses env_name converted to snake_case.
-        param (str, optional):
-            The parameter name to inject into the function.
-            If not provided, uses name (or derived name).
-        help (str, optional):
-            Help text for this parameter.
-        required (bool):
-            Whether this parameter is required. Defaults to `False`.
-            If `True`, the environment variable must be set, even if
-            a default value is provided. The default is ignored when
-            `required=True`.
-        default (Any):
-            Default value if environment variable is not set and
-            `required=False`. Defaults to `None`.
-        tags (str | list[str], optional):
-            Tag(s) to associate with this parameter for grouping.
-        **kwargs (Any):
-            Additional keyword arguments.
+    :param env_name:
+        The name of the environment variable to read (e.g., "API_KEY").
+        Can be in any format, typically SCREAMING_SNAKE_CASE.
+    :param name:
+        Internal node name (must be snake_case). If not provided,
+        uses env_name converted to snake_case.
+    :param param:
+        The parameter name to inject into the function.
+        If not provided, uses name (or derived name).
+    :param help:
+        Help text for this parameter.
+    :param required:
+        Whether this parameter is required. Defaults to ``False``.
+        If ``True``, the environment variable must be set, even if
+        a default value is provided. The default is ignored when
+        ``required=True``.
+    :param default:
+        Default value if environment variable is not set and
+        ``required=False``. Defaults to ``None``.
+    :param tags:
+        Tag(s) to associate with this parameter for grouping.
+    :param \*\*kwargs:
+        Additional keyword arguments.
 
-    Returns:
-        Callable:
-            A decorator function that registers the env parent node.
+    :returns:
+        A decorator function that registers the env parent node.
+    :rtype: Callable
 
     Examples:
         >>> @env("API_KEY")

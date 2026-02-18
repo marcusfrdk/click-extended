@@ -35,31 +35,25 @@ class Regex(ChildNode):
             p.pattern if isinstance(p, re.Pattern) else p for p in patterns
         ]
         raise ValueError(
-            f"Value '{value}' does not match any "
-            + f"of the patterns: {pattern_strs}"
+            f"Value '{value}' does not match any " + f"of the patterns: {pattern_strs}"
         )
 
 
 def regex(*patterns: Union[str, re.Pattern[str]], flags: int = 0) -> Decorator:
-    """
+    r"""
     Check if a value matches a regex pattern.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        *patterns (Union[str, Pattern[str]]):
-            The regex patterns to check against. Can be strings or compiled
-            Pattern objects. If strings are provided, they will be compiled
-            with the specified flags.
-        flags (int):
-            Regex flags to use when compiling string patterns (e.g.,
-            re.IGNORECASE, re.MULTILINE). Ignored for pre-compiled patterns.
-            Default is 0 (no flags).
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*patterns: The regex patterns to check against. Can be strings or compiled
+        Pattern objects. If strings are provided, they will be compiled
+        with the specified flags.
+    :param flags: Regex flags to use when compiling string patterns (e.g.,
+        re.IGNORECASE, re.MULTILINE). Ignored for pre-compiled patterns.
+        Default is 0 (no flags).
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Regex.as_decorator(patterns=patterns, flags=flags)

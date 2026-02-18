@@ -28,19 +28,13 @@ def random_bool(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        weight (float):
-            The probability of returning `True` (0.0 to 1.0).
-            Defaults to 0.5 (50% chance). The value is clamped and will always
-            be in the range 0.0 to 1.0.
-        seed (int | None):
-            Optional seed for reproducible randomness.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param name: The name of the parent node.
+    :param weight: The probability of returning ``True`` (0.0 to 1.0).
+        Defaults to 0.5 (50% chance). The value is clamped and will always
+        be in the range 0.0 to 1.0.
+    :param seed: Optional seed for reproducible randomness.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return RandomBool.as_decorator(
         name=name,

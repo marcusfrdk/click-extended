@@ -34,14 +34,9 @@ def truncate(length: int, suffix: str = "...") -> Decorator:
 
     Supports: `str`
 
-    Args:
-        length (int):
-            The maximum length of the string.
-        suffix (str):
-            The suffix to append when truncated. Defaults to `...`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param length: The maximum length of the string.
+    :param suffix: The suffix to append when truncated. Defaults to ``...``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Truncate.as_decorator(length=length, suffix=suffix)

@@ -19,9 +19,7 @@ class ConfirmIf(ChildNode):
     def handle_all(
         self, value: Any, context: Context, *args: Any, **kwargs: Any
     ) -> Any:
-        fn: Callable[[Any], bool] | Callable[[Any, Context], bool] = kwargs[
-            "fn"
-        ]
+        fn: Callable[[Any], bool] | Callable[[Any, Context], bool] = kwargs["fn"]
         prompt_text: str = kwargs["prompt"]
         truthy: list[str] = kwargs["truthy"]
 
@@ -67,40 +65,31 @@ def confirm_if(
 
     Supports: `Any`
 
-    The predicate function can accept either just the value `fn(value)` or
-    both the value and context `fn(value, context)`. The decorator automatically
+    The predicate function can accept either just the value ``fn(value)`` or
+    both the value and context ``fn(value, context)``. The decorator automatically
     detects the function signature and calls it appropriately.
 
-    When the predicate returns `True`, the user is prompted for confirmation.
-    The prompt text can include `{value}` placeholder which will be replaced
+    When the predicate returns ``True``, the user is prompted for confirmation.
+    The prompt text can include ``{value}`` placeholder which will be replaced
     with the actual value. The prompt is automatically formatted to remove any
-    trailing colon and append ` (y/n):` where `y` is the first truthy value.
+    trailing colon and append `` (y/n):`` where ``y`` is the first truthy value.
 
-    If the environment variable `CLICK_EXTENDED_TESTING=1` is set, confirmation
+    If the environment variable ``CLICK_EXTENDED_TESTING=1`` is set, confirmation
     is automatically granted without prompting (useful for automated tests).
 
-    Args:
-        prompt (str):
-            The confirmation prompt text. Can include `{value}` placeholder
-            for the current value (e.g., "Delete {value}"). Trailing colons
-            are automatically removed and ` (first_truthy/n):` is appended.
-        fn (Callable[[Any], bool] | Callable[[Any, Context], bool]):
-            Predicate function that determines whether to prompt. Returns
-            `True` to prompt for confirmation, `False` to skip. Can accept
-            either `fn(value)` or `fn(value, context)`.
-        truthy (list[str] | None, optional):
-            List of accepted confirmation responses. Case-insensitive.
-            Any response not in this list will abort execution. The first
-            value in this list is shown in the prompt hint (e.g., `(ok/n):`).
-            Defaults to `["y", "yes", "ok", "1"]`.
-
-    Raises:
-        click.Abort:
-            If the user provides a non-truthy response.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param prompt: The confirmation prompt text. Can include ``{value}`` placeholder
+        for the current value (e.g., "Delete {value}"). Trailing colons
+        are automatically removed and `` (first_truthy/n):`` is appended.
+    :param fn: Predicate function that determines whether to prompt. Returns
+        ``True`` to prompt for confirmation, ``False`` to skip. Can accept
+        either ``fn(value)`` or ``fn(value, context)``.
+    :param truthy: List of accepted confirmation responses. Case-insensitive.
+        Any response not in this list will abort execution. The first
+        value in this list is shown in the prompt hint (e.g., ``(ok/n):``).
+        Defaults to ``["y", "yes", "ok", "1"]``.
+    :raises click.Abort: If the user provides a non-truthy response.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         Basic usage with value-only predicate:

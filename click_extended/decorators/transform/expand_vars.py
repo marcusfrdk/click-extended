@@ -29,8 +29,7 @@ def expand_vars() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ExpandVars.as_decorator()

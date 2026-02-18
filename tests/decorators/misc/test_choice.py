@@ -163,9 +163,7 @@ class TestChoiceCaseSensitive:
         result = cli_runner.invoke(cmd, ["--answer", "YeS"])
         assert result.exit_code == 0
 
-    def test_case_insensitive_lowercase_choice(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_insensitive_lowercase_choice(self, cli_runner: CliRunner) -> None:
         """Test case-insensitive with lowercase defined choice."""
 
         @command()
@@ -177,9 +175,7 @@ class TestChoiceCaseSensitive:
         result = cli_runner.invoke(cmd, ["--command", "START"])
         assert result.exit_code == 0
 
-    def test_case_insensitive_invalid_still_fails(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_insensitive_invalid_still_fails(self, cli_runner: CliRunner) -> None:
         """Test that case-insensitive still rejects invalid choices."""
 
         @command()
@@ -222,10 +218,7 @@ class TestChoiceNumericValues:
 
         result = cli_runner.invoke(cmd, ["--port", "3000"])
         assert result.exit_code != 0
-        assert (
-            "Value must be one of '80', '443', '8080' or '8443'"
-            in result.output
-        )
+        assert "Value must be one of '80', '443', '8080' or '8443'" in result.output
 
     def test_float_choices(self, cli_runner: CliRunner) -> None:
         """Test choice with float values."""
@@ -251,32 +244,24 @@ class TestChoiceTypeValidation:
         """Test that invalid types raise TypeError."""
         with pytest.raises(TypeError) as exc_info:
             choice("red", "green", [1, 2, 3])  # type: ignore
-        assert "All choice values must be str, int, or float" in str(
-            exc_info.value
-        )
+        assert "All choice values must be str, int, or float" in str(exc_info.value)
         assert "got list" in str(exc_info.value)
 
     def test_dict_type_raises_error(self) -> None:
         """Test that dict type raises TypeError."""
         with pytest.raises(TypeError) as exc_info:
             choice("red", {"key": "value"})  # type: ignore
-        assert "All choice values must be str, int, or float" in str(
-            exc_info.value
-        )
+        assert "All choice values must be str, int, or float" in str(exc_info.value)
         assert "got dict" in str(exc_info.value)
 
     def test_none_type_raises_error(self) -> None:
         """Test that None type raises TypeError."""
         with pytest.raises(TypeError) as exc_info:
             choice("red", None)  # type: ignore
-        assert "All choice values must be str, int, or float" in str(
-            exc_info.value
-        )
+        assert "All choice values must be str, int, or float" in str(exc_info.value)
         assert "got NoneType" in str(exc_info.value)
 
-    def test_mixed_string_and_integer_valid(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_mixed_string_and_integer_valid(self, cli_runner: CliRunner) -> None:
         """Test choice with mixed string and integer values."""
 
         @command()
@@ -345,13 +330,9 @@ class TestChoiceErrorMessages:
 
         result = cli_runner.invoke(cmd, ["--size", "xl"])
         assert result.exit_code != 0
-        assert (
-            "Value must be one of 'small', 'medium' or 'large'" in result.output
-        )
+        assert "Value must be one of 'small', 'medium' or 'large'" in result.output
 
-    def test_error_message_shows_invalid_value(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_error_message_shows_invalid_value(self, cli_runner: CliRunner) -> None:
         """Test that error message shows the invalid value."""
 
         @command()

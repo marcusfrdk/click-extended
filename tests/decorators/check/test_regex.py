@@ -208,7 +208,4 @@ def test_regex_email_pattern() -> None:
 
     result = runner.invoke(cli, ["invalid-email"])
     assert result.exit_code != 0
-    assert (
-        "Value 'invalid-email' does not match any of the patterns"
-        in result.output
-    )
+    assert "Value 'invalid-email' does not match any of the patterns" in result.output

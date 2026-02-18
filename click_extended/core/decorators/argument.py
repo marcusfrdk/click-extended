@@ -33,37 +33,38 @@ class Argument(ArgumentNode):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
-        """
-        Initialize a new `Argument` instance.
+        r"""
+        Initialize a new ``Argument`` instance.
 
-        Args:
-            name (str):
-                The argument name in snake_case.
-                Examples: "filename", "input_file"
-            param (str, optional):
-                Custom parameter name for the function.
-                If not provided, uses the name directly.
-            nargs (int):
-                Number of arguments to accept. Use `-1` for unlimited.
-                Defaults to `1`.
-            type (Any, optional):
-                The type to convert the value to (`int`, `str`, `float`, etc.).
-            help (str, optional):
-                Help text for this argument.
-            required (bool):
-                Whether this argument is required. Defaults to `True` unless
-                `default` is provided, which makes it optional automatically.
-            default (Any):
-                Default value if not provided. When set, automatically makes
-                the argument optional (`required=False`). Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this argument for grouping.
-            **kwargs (Any):
-                Additional keyword arguments.
+        :param name:
+            The argument name in snake_case.
+            Examples: "filename", "input_file"
+        :param param:
+            Custom parameter name for the function.
+            If not provided, uses the name directly.
+        :param nargs:
+            Number of arguments to accept. Use ``-1`` for unlimited.
+            Defaults to ``1``.
+        :param type:
+            The type to convert the value to (``int``, ``str``, ``float``,
+            etc.).
+        :param help:
+            Help text for this argument.
+        :param required:
+            Whether this argument is required. Defaults to ``True`` unless
+            ``default`` is provided, which makes it optional automatically.
+        :param default:
+            Default value if not provided. When set, automatically makes
+            the argument optional (``required=False``). Defaults to ``None``.
+        :param tags:
+            Tag(s) to associate with this argument for grouping.
+        :param \*\*kwargs:
+            Additional keyword arguments.
 
-        Raises:
-            ValueError: If both `default` is provided and `required=True` is
-                explicitly set (detected via kwargs inspection in decorator).
+        :raises ValueError:
+            If both ``default`` is provided and ``required=True`` is
+            explicitly set (detected via kwargs inspection in
+            decorator).
         """
         validate_name(name, "argument name")
 
@@ -90,9 +91,7 @@ class Argument(ArgumentNode):
             else:
                 type = str
         elif type not in SUPPORTED_TYPES:
-            types = humanize_type(
-                type.__name__ if hasattr(type, "__name__") else type
-            )
+            types = humanize_type(type.__name__ if hasattr(type, "__name__") else type)
             raise ValueError(
                 f"Argument '{name}' has unsupported type '{types}'. "
                 "Only basic primitives are supported: str, int, float, bool. "
@@ -116,9 +115,9 @@ class Argument(ArgumentNode):
         """
         Get a formatted display name for error messages.
 
-        Returns:
-            str:
-                The argument name in SCREAMING_SNAKE_CASE.
+        :returns:
+            The argument name in SCREAMING_SNAKE_CASE.
+        :rtype: str
         """
         return Casing.to_screaming_snake_case(self.name)
 
@@ -129,22 +128,21 @@ class Argument(ArgumentNode):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Load and return the CLI argument value.
 
-        Args:
-            value (str | int | float | bool | None):
-                The parsed CLI argument value from Click.
-            context (Context):
-                The current context instance.
-            *args (Any):
-                Optional positional arguments.
-            **kwargs (Any):
-                Optional keyword arguments.
+        :param value:
+            The parsed CLI argument value from Click.
+        :param context:
+            The current context instance.
+        :param \*args:
+            Optional positional arguments.
+        :param \*\*kwargs:
+            Optional keyword arguments.
 
-        Returns:
-            Any:
-                The argument value to inject into the function.
+        :returns:
+            The argument value to inject into the function.
+        :rtype: Any
         """
         return value
 
@@ -160,37 +158,36 @@ def argument(
     tags: str | list[str] | None = None,
     **kwargs: Any,
 ) -> Decorator:
-    """
-    A `ParentNode` decorator to create a Click argument with value injection.
+    r"""
+    A ``ParentNode`` decorator to create a Click argument with value injection.
 
-    Args:
-        name (str):
-            The argument name in snake_case.
-            Examples: "filename", "input_file"
-        param (str, optional):
-            Custom parameter name for the function.
-            If not provided, uses the name directly.
-        nargs (int):
-            Number of arguments to accept. Use `-1` for unlimited.
-            Defaults to `1`.
-        type (Type[str | int | float | bool] | None, optional):
-            The type to convert the value to.
-        help (str, optional):
-            Help text for this argument.
-        required (bool):
-            Whether this argument is required. Defaults to `True` unless
-            `default` is provided, which automatically makes it optional.
-        default (Any):
-            Default value if not provided. When set, automatically makes
-            the argument optional (`required=False`). Defaults to `None`.
-        tags (str | list[str], optional):
-            Tag(s) to associate with this argument for grouping.
-        **kwargs (Any):
-            Additional Click argument parameters.
+    :param name:
+        The argument name in snake_case.
+        Examples: "filename", "input_file"
+    :param param:
+        Custom parameter name for the function.
+        If not provided, uses the name directly.
+    :param nargs:
+        Number of arguments to accept. Use ``-1`` for unlimited.
+        Defaults to ``1``.
+    :param type:
+        The type to convert the value to.
+    :param help:
+        Help text for this argument.
+    :param required:
+        Whether this argument is required. Defaults to ``True`` unless
+        ``default`` is provided, which automatically makes it optional.
+    :param default:
+        Default value if not provided. When set, automatically makes
+        the argument optional (``required=False``). Defaults to ``None``.
+    :param tags:
+        Tag(s) to associate with this argument for grouping.
+    :param \*\*kwargs:
+        Additional Click argument parameters.
 
-    Returns:
-        Decorator:
-            A decorator function that registers the argument parent node.
+    :returns:
+        A decorator function that registers the argument parent node.
+    :rtype: Decorator
 
     Examples:
 

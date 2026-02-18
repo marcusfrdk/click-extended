@@ -30,8 +30,7 @@ def is_non_zero() -> Decorator:
 
     Supports: `int`, `float`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsNonZero.as_decorator()

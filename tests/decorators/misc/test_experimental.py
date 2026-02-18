@@ -40,8 +40,7 @@ class TestExperimentalBasic:
         assert "Value: value" in result.output
         assert "ExperimentalWarning" in result.output
         assert (
-            "The parameter '--new-opt' is experimental since 'v2.0.0'."
-            in result.output
+            "The parameter '--new-opt' is experimental since 'v2.0.0'." in result.output
         )
 
     def test_experimental_stable_version(self, cli_runner: CliRunner) -> None:
@@ -103,9 +102,7 @@ class TestExperimentalCombinations:
 
         @command()
         @option("feature", default=None)
-        @experimental(
-            message="Custom warning!", since="v1.0.0", stable="v2.0.0"
-        )
+        @experimental(message="Custom warning!", since="v1.0.0", stable="v2.0.0")
         def cmd(feature: str | None) -> None:
             click.echo(f"Feature: {feature}")
 
@@ -290,9 +287,7 @@ class TestExperimentalPractical:
 class TestExperimentalEdgeCases:
     """Test edge cases for experimental."""
 
-    def test_experimental_empty_string_value(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_experimental_empty_string_value(self, cli_runner: CliRunner) -> None:
         """Test experimental with empty string value."""
 
         @command()

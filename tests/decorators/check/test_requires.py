@@ -28,9 +28,7 @@ class TestRequiresBasic:
         assert result.exit_code == 0
         assert "Login: john/secret" in result.output
 
-    def test_requires_fails_when_dependency_missing(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_fails_when_dependency_missing(self, cli_runner: Any) -> None:
         """Test that command fails when required dependency is missing."""
 
         @command()
@@ -42,13 +40,9 @@ class TestRequiresBasic:
 
         result = cli_runner.invoke(login, ["--username", "john"])
         assert result.exit_code == 1
-        assert (
-            "'--username' requires '--password' to be provided" in result.output
-        )
+        assert "'--username' requires '--password' to be provided" in result.output
 
-    def test_requires_succeeds_when_neither_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_succeeds_when_neither_provided(self, cli_runner: Any) -> None:
         """Test that command succeeds when neither param is provided."""
 
         @command()
@@ -66,9 +60,7 @@ class TestRequiresBasic:
 class TestRequiresMultipleDependencies:
     """Test @requires with multiple dependencies."""
 
-    def test_requires_multiple_params_all_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_multiple_params_all_provided(self, cli_runner: Any) -> None:
         """Test requires with multiple dependencies, all provided."""
 
         @command()
@@ -86,9 +78,7 @@ class TestRequiresMultipleDependencies:
         assert result.exit_code == 0
         assert "Connect: localhost:8080 via http" in result.output
 
-    def test_requires_multiple_params_one_missing(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_multiple_params_one_missing(self, cli_runner: Any) -> None:
         """Test requires with multiple dependencies, one missing."""
 
         @command()
@@ -99,15 +89,11 @@ class TestRequiresMultipleDependencies:
         def connect(host: str, port: int, protocol: str) -> None:
             print(f"Connect: {host}:{port} via {protocol}")
 
-        result = cli_runner.invoke(
-            connect, ["--host", "localhost", "--port", "8080"]
-        )
+        result = cli_runner.invoke(connect, ["--host", "localhost", "--port", "8080"])
         assert result.exit_code == 1
         assert "'--host' requires '--protocol' to be provided" in result.output
 
-    def test_requires_multiple_params_all_missing(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_multiple_params_all_missing(self, cli_runner: Any) -> None:
         """Test requires with multiple dependencies, all missing."""
 
         @command()
@@ -154,9 +140,7 @@ class TestRequiresWithArguments:
         assert result.exit_code == 1
         assert "'FILENAME' requires '--format' to be provided" in result.output
 
-    def test_requires_optional_argument_not_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_optional_argument_not_provided(self, cli_runner: Any) -> None:
         """Test requires succeeds when optional argument not provided."""
 
         @command()
@@ -238,9 +222,7 @@ class TestRequiresWithDefaults:
         assert result.exit_code == 0
         assert "Verbose: False, Output: None" in result.output
 
-    def test_requires_with_default_explicitly_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_with_default_explicitly_provided(self, cli_runner: Any) -> None:
         """Test that explicitly providing param triggers requires."""
 
         @command()
@@ -258,9 +240,7 @@ class TestRequiresWithDefaults:
 class TestRequiresErrorMessages:
     """Test error message formatting."""
 
-    def test_requires_single_dependency_error_message(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_single_dependency_error_message(self, cli_runner: Any) -> None:
         """Test error message with single dependency."""
 
         @command()
@@ -274,9 +254,7 @@ class TestRequiresErrorMessages:
         assert result.exit_code == 1
         assert "'--input' requires '--output' to be provided" in result.output
 
-    def test_requires_two_dependencies_error_message(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_two_dependencies_error_message(self, cli_runner: Any) -> None:
         """Test error message with two dependencies."""
 
         @command()
@@ -289,13 +267,9 @@ class TestRequiresErrorMessages:
 
         result = cli_runner.invoke(connect, ["--host", "localhost"])
         assert result.exit_code == 1
-        assert (
-            "'--host' requires '--username' and '--password'" in result.output
-        )
+        assert "'--host' requires '--username' and '--password'" in result.output
 
-    def test_requires_three_dependencies_error_message(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_three_dependencies_error_message(self, cli_runner: Any) -> None:
         """Test error message with three dependencies."""
 
         @command()
@@ -309,10 +283,7 @@ class TestRequiresErrorMessages:
 
         result = cli_runner.invoke(auth, ["--action", "login"])
         assert result.exit_code == 1
-        assert (
-            "'--action' requires '--user', '--pass' and '--token'"
-            in result.output
-        )
+        assert "'--action' requires '--user', '--pass' and '--token'" in result.output
 
 
 class TestRequiresEdgeCases:
@@ -331,9 +302,7 @@ class TestRequiresEdgeCases:
         result = cli_runner.invoke(process, [])
         assert result.exit_code == 0
 
-    def test_requires_multiple_decorators_same_param(
-        self, cli_runner: Any
-    ) -> None:
+    def test_requires_multiple_decorators_same_param(self, cli_runner: Any) -> None:
         """Test multiple requires decorators on same param."""
 
         @command()

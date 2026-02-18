@@ -145,9 +145,7 @@ class TestAddSuffixFlatTuple:
         result = cli_runner.invoke(cmd, ["--names", "file1", "file2", "file3"])
         assert result.exit_code == 0
 
-    def test_add_suffix_flat_tuple_extensions(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_add_suffix_flat_tuple_extensions(self, cli_runner: CliRunner) -> None:
         """Test add_suffix with flat tuple for multiple extensions."""
 
         @command()
@@ -161,9 +159,7 @@ class TestAddSuffixFlatTuple:
         result = cli_runner.invoke(cmd, ["--files", "data.csv", "config.json"])
         assert result.exit_code == 0
 
-    def test_add_suffix_flat_tuple_compiled_files(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_add_suffix_flat_tuple_compiled_files(self, cli_runner: CliRunner) -> None:
         """Test add_suffix with flat tuple for compiled file naming."""
 
         @command()
@@ -176,9 +172,7 @@ class TestAddSuffixFlatTuple:
             assert modules[0] == "main.o"
             assert modules[3] == "utils.o"
 
-        result = cli_runner.invoke(
-            cmd, ["--modules", "main", "app", "lib", "utils"]
-        )
+        result = cli_runner.invoke(cmd, ["--modules", "main", "app", "lib", "utils"])
         assert result.exit_code == 0
 
 
@@ -213,9 +207,7 @@ class TestAddSuffixNestedTuple:
         )
         assert result.exit_code == 0
 
-    def test_add_suffix_nested_tuple_dated_backups(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_add_suffix_nested_tuple_dated_backups(self, cli_runner: CliRunner) -> None:
         """Test add_suffix nested tuple for dated backup files."""
 
         @command()
@@ -290,9 +282,7 @@ class TestAddSuffixPractical:
             assert images[1] == "photo2.png"
             assert images[2] == "photo3.png"
 
-        result = cli_runner.invoke(
-            cmd, ["--images", "photo1", "photo2", "photo3"]
-        )
+        result = cli_runner.invoke(cmd, ["--images", "photo1", "photo2", "photo3"])
         assert result.exit_code == 0
 
     def test_add_suffix_log_rotation(self, cli_runner: CliRunner) -> None:
@@ -347,18 +337,14 @@ class TestAddSuffixPractical:
             assert files[1] == "cache.tmp"
             assert files[2] == "download.tmp"
 
-        result = cli_runner.invoke(
-            cmd, ["--files", "processing", "cache", "download"]
-        )
+        result = cli_runner.invoke(cmd, ["--files", "processing", "cache", "download"])
         assert result.exit_code == 0
 
 
 class TestAddSuffixSkipParameter:
     """Test add_suffix skip parameter functionality."""
 
-    def test_skip_true_suffix_already_exists(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_skip_true_suffix_already_exists(self, cli_runner: CliRunner) -> None:
         """Test skip=True when suffix already exists (default behavior)."""
 
         @command()
@@ -382,9 +368,7 @@ class TestAddSuffixSkipParameter:
         result = cli_runner.invoke(cmd, ["--text", "file"])
         assert result.exit_code == 0
 
-    def test_skip_false_adds_duplicate_suffix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_skip_false_adds_duplicate_suffix(self, cli_runner: CliRunner) -> None:
         """Test skip=False adds suffix even if it already exists."""
 
         @command()
@@ -440,9 +424,7 @@ class TestAddSuffixSkipParameter:
 class TestAddSuffixCaseSensitive:
     """Test add_suffix case_sensitive parameter functionality."""
 
-    def test_case_insensitive_uppercase_suffix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_insensitive_uppercase_suffix(self, cli_runner: CliRunner) -> None:
         """Test case_sensitive=False with uppercase suffix in value."""
 
         @command()
@@ -454,9 +436,7 @@ class TestAddSuffixCaseSensitive:
         result = cli_runner.invoke(cmd, ["--text", "file.TXT"])
         assert result.exit_code == 0
 
-    def test_case_insensitive_lowercase_suffix(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_insensitive_lowercase_suffix(self, cli_runner: CliRunner) -> None:
         """Test case_sensitive=False with lowercase suffix in value."""
 
         @command()
@@ -506,9 +486,7 @@ class TestAddSuffixCaseSensitive:
         result = cli_runner.invoke(cmd, ["--text", "file.TXT"])
         assert result.exit_code == 0
 
-    def test_case_sensitive_default_behavior(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_case_sensitive_default_behavior(self, cli_runner: CliRunner) -> None:
         """Test that case_sensitive defaults to False."""
 
         @command()
@@ -531,18 +509,14 @@ class TestAddSuffixCaseSensitive:
             assert files[1] == "error.Log"
             assert files[2] == "debug.LOG"
 
-        result = cli_runner.invoke(
-            cmd, ["--files", "app.log", "error", "debug.LOG"]
-        )
+        result = cli_runner.invoke(cmd, ["--files", "app.log", "error", "debug.LOG"])
         assert result.exit_code == 0
 
 
 class TestAddSuffixCombinedParameters:
     """Test add_suffix with combined parameter scenarios."""
 
-    def test_skip_false_case_sensitive_ignored(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_skip_false_case_sensitive_ignored(self, cli_runner: CliRunner) -> None:
         """Test that case_sensitive is ignored when skip=False."""
 
         @command()
@@ -579,9 +553,7 @@ class TestAddSuffixCombinedParameters:
         result = cli_runner.invoke(cmd, ["--text", "file"])
         assert result.exit_code == 0
 
-    def test_multiple_extensions_case_insensitive(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_multiple_extensions_case_insensitive(self, cli_runner: CliRunner) -> None:
         """Test compound extensions with case insensitive matching."""
 
         @command()

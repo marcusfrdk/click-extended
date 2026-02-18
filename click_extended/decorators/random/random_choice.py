@@ -15,9 +15,7 @@ class RandomChoice(ParentNode):
         if kwargs.get("seed") is not None:
             random.seed(kwargs["seed"])
 
-        iterable: Sequence[str | int | float | bool] = kwargs.get(
-            "iterable", []
-        )
+        iterable: Sequence[str | int | float | bool] = kwargs.get("iterable", [])
         weights: Sequence[float] | None = kwargs.get("weights")
 
         if weights:
@@ -41,19 +39,12 @@ def random_choice(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        iterable (Sequence[str|int|float|bool]):
-            The iterable to choose from.
-        weights (Sequence[float] | None, optional):
-            A sequence of floating point numbers representing the weights.
-        seed (int | None, None):
-            The seed to use for reproducibility.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param name: The name of the parent node.
+    :param iterable: The iterable to choose from.
+    :param weights: A sequence of floating point numbers representing the weights.
+    :param seed: The seed to use for reproducibility.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return RandomChoice.as_decorator(
         name=name,

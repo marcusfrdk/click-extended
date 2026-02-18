@@ -39,30 +39,20 @@ class ArgumentNode(ParentNode, ABC):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ):
-        """
-        Initialize a new `ArgumentNode` instance.
+        r"""
+        Initialize a new ``ArgumentNode`` instance.
 
-        Args:
-            name (str):
-                The argument name (parameter name for injection).
-            param (str, optional):
-                Custom parameter name for the function.
-                If not provided, uses `name`.
-            nargs (int):
-                Number of arguments to accept. Use `-1` for unlimited.
-                Defaults to `1`.
-            type (Type[Any], optional):
-                The type to convert the value to (`int`, `str`, `float`, `bool`).
-            help (str, optional):
-                Help text for this argument.
-            required (bool):
-                Whether this argument is required. Defaults to `True`.
-            default (Any):
-                Default value if not provided. Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this argument for grouping.
-            **kwargs (Any):
-                Additional keyword arguments passed to parent class.
+        :param name: The argument name (parameter name for injection).
+        :param param: Custom parameter name for the function.
+            If not provided, uses ``name``.
+        :param nargs: Number of arguments to accept. Use ``-1`` for unlimited.
+            Defaults to ``1``.
+        :param type: The type to convert the value to (``int``, ``str``, ``float``, ``bool``).
+        :param help: Help text for this argument.
+        :param required: Whether this argument is required. Defaults to ``True``.
+        :param default: Default value if not provided. Defaults to ``None``.
+        :param tags: Tag(s) to associate with this argument for grouping.
+        :param \*\*kwargs: Additional keyword arguments passed to parent class.
         """
         super().__init__(
             name=param if param is not None else name,
@@ -84,25 +74,18 @@ class ArgumentNode(ParentNode, ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """
+        r"""
         Load and process the CLI argument value.
 
         This method is called with the parsed CLI argument value and should
         return the processed value to be injected into the function.
 
-        Args:
-            value (str | int | float | bool | None):
-                The parsed CLI argument value from Click.
-            context (Context):
-                The current context instance.
-            *args (Any):
-                Optional positional arguments.
-            **kwargs (Any):
-                Optional keyword arguments.
+        :param value: The parsed CLI argument value from Click.
+        :param context: The current context instance.
+        :param \*args: Optional positional arguments.
+        :param \*\*kwargs: Optional keyword arguments.
 
-        Returns:
-            Any:
-                The processed value to inject into the function.
+        :returns: The processed value to inject into the function.
         """
         raise NotImplementedError
 
@@ -120,34 +103,23 @@ class ArgumentNode(ParentNode, ABC):
         tags: str | list[str] | None = None,
         **kwargs: Any,
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
-        """
+        r"""
         Return a decorator representation of the argument node.
 
-        Args:
-            name (str):
-                The argument name (parameter name for injection).
-            param (str, optional):
-                Custom parameter name for the function.
-                If not provided, uses `name`.
-            nargs (int):
-                Number of arguments to accept. Use `-1` for unlimited.
-                Defaults to `1`.
-            type (Type[Any], optional):
-                The type to convert the value to (`int`, `str`, `float`, `bool`).
-            help (str, optional):
-                Help text for this argument.
-            required (bool):
-                Whether this argument is required. Defaults to `True`.
-            default (Any):
-                Default value if not provided. Defaults to `None`.
-            tags (str | list[str], optional):
-                Tag(s) to associate with this argument for grouping.
-            **kwargs (Any):
-                Additional keyword arguments passed to __init__ and load().
+        :param name: The argument name (parameter name for injection).
+        :param param: Custom parameter name for the function.
+            If not provided, uses ``name``.
+        :param nargs: Number of arguments to accept. Use ``-1`` for unlimited.
+            Defaults to ``1``.
+        :param type: The type to convert the value to (``int``, ``str``, ``float``, ``bool``).
+        :param help: Help text for this argument.
+        :param required: Whether this argument is required. Defaults to ``True``.
+        :param default: Default value if not provided. Defaults to ``None``.
+        :param tags: Tag(s) to associate with this argument for grouping.
+        :param \*\*kwargs: Additional keyword arguments passed to __init__ and load().
 
-        Returns:
-            Callable:
-                A decorator function that registers the argument node.
+        :returns: A decorator function that registers the argument node.
+        :rtype: Callable
         """
         return super().as_decorator(
             name=name,

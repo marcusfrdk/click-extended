@@ -115,8 +115,7 @@ def convert_speed(
         - **kmday**: Kilometers per day
         - **pcyr**: Parsecs per year
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertSpeed.as_decorator(from_unit=from_unit, to_unit=to_unit)

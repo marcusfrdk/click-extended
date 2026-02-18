@@ -66,18 +66,14 @@ def on_error(
         if isinstance(value, (list, tuple, set)):
             types: list[ExceptionType] = []
             for item in value:
-                if not isinstance(item, type) or not issubclass(
-                    item, BaseException
-                ):
+                if not isinstance(item, type) or not issubclass(item, BaseException):
                     raise TypeError(
                         f"{label} must contain exception types, got: {item!r}"
                     )
                 types.append(item)
             return tuple(types)
 
-        raise TypeError(
-            f"{label} must be an exception type or iterable of types"
-        )
+        raise TypeError(f"{label} must be an exception type or iterable of types")
 
     if handler is None or is_exception_type(handler):
         exc_types_raw = ((handler,) + exc) if handler is not None else exc

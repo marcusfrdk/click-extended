@@ -66,20 +66,17 @@ class ChildValidationNode(ChildNode, ValidationNode, ABC):
 
     @classmethod
     def as_decorator(cls, *args: Any, **kwargs: Any) -> "Decorator":
-        """
+        r"""
         Return a decorator representation of the child validation node.
 
-        Args:
-            *args (Any):
-                Positional arguments to pass to handler/lifecycle
-                methods.
-            **kwargs (Any):
-                Keyword arguments to pass to handler/lifecycle methods.
+        :param \*args: Positional arguments to pass to handler/lifecycle
+            methods.
+        :param \*\*kwargs: Keyword arguments to pass to handler/lifecycle
+            methods.
 
-        Returns:
-            Decorator:
-                A decorator function that registers the child
-                validation node.
+        :returns: A decorator function that registers the child
+            validation node.
+        :rtype: Decorator
         """
         from click_extended.core.other._tree import Tree
 

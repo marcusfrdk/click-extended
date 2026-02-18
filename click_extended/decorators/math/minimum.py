@@ -28,12 +28,8 @@ def minimum(min_val: int | float) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        min_val (int | float):
-            The minimum value.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param min_val: The minimum value.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Minimum.as_decorator(min_val=min_val)

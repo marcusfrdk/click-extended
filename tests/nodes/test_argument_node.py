@@ -435,9 +435,7 @@ class TestArgumentCommandIntegration:
         assert result.exit_code == 0
         assert "File: test.txt" in result.output
 
-    def test_single_argument_optional_with_default(
-        self, cli_runner: Any
-    ) -> None:
+    def test_single_argument_optional_with_default(self, cli_runner: Any) -> None:
         """Test optional argument with default value."""
 
         @command()
@@ -619,9 +617,7 @@ class TestArgumentCommandIntegration:
 class TestArgumentNodeWithChildren:
     """Test ArgumentNode with child validators/transformers."""
 
-    def test_argument_with_single_child_validator(
-        self, cli_runner: Any
-    ) -> None:
+    def test_argument_with_single_child_validator(self, cli_runner: Any) -> None:
         """Test argument with one child validator."""
 
         class MinLength(ChildNode):
@@ -643,9 +639,7 @@ class TestArgumentNodeWithChildren:
         result = cli_runner.invoke(greet, ["Al"])
         assert result.exit_code != 0
 
-    def test_argument_with_single_child_transformer(
-        self, cli_runner: Any
-    ) -> None:
+    def test_argument_with_single_child_transformer(self, cli_runner: Any) -> None:
         """Test argument with one child transformer."""
 
         class Uppercase(ChildNode):
@@ -662,9 +656,7 @@ class TestArgumentNodeWithChildren:
         assert result.exit_code == 0
         assert "Hello ALICE" in result.output
 
-    def test_argument_with_multiple_children_chain(
-        self, cli_runner: Any
-    ) -> None:
+    def test_argument_with_multiple_children_chain(self, cli_runner: Any) -> None:
         """Test argument with multiple child nodes chained."""
 
         class StripWhitespace(ChildNode):
@@ -720,9 +712,7 @@ class TestArgumentNodeWithChildren:
         assert result.exit_code == 0
         assert "Hello ALICE" in result.output
 
-    def test_argument_child_receives_correct_value(
-        self, cli_runner: Any
-    ) -> None:
+    def test_argument_child_receives_correct_value(self, cli_runner: Any) -> None:
         """Test that child receives the argument value."""
 
         class AddPrefix(ChildNode):
@@ -756,9 +746,7 @@ class TestArgumentNodeWithChildren:
         assert result.exit_code == 0
         assert "Final: 21" in result.output
 
-    def test_argument_child_validation_error_propagates(
-        self, cli_runner: Any
-    ) -> None:
+    def test_argument_child_validation_error_propagates(self, cli_runner: Any) -> None:
         """Test that validation errors from children are handled."""
 
         class PositiveOnly(ChildNode):
@@ -779,9 +767,7 @@ class TestArgumentNodeWithChildren:
         result = cli_runner.invoke(process, ["-5"])
         assert result.exit_code != 0
 
-    def test_argument_nargs_unlimited_with_children(
-        self, cli_runner: Any
-    ) -> None:
+    def test_argument_nargs_unlimited_with_children(self, cli_runner: Any) -> None:
         """Test nargs=-1 argument receives values correctly."""
 
         @command()

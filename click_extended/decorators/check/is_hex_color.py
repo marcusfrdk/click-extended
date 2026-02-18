@@ -34,8 +34,7 @@ def is_hex_color() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsHexColor.as_decorator()

@@ -30,14 +30,9 @@ def split(sep: str | None = None, maxsplit: int = -1) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        sep (str | None):
-            The delimiter string. If None, split by whitespace.
-        maxsplit (int):
-            Maximum number of splits. Defaults to `-1` (no limit).
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param sep: The delimiter string. If None, split by whitespace.
+    :param maxsplit: Maximum number of splits. Defaults to ``-1`` (no limit).
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Split.as_decorator(sep=sep, maxsplit=maxsplit)

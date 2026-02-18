@@ -55,10 +55,7 @@ class Conflicts(ChildNode):
             if conflicting := self._get_conflicting_params(context, args):
                 parent_display = parent.get_display_name()
                 conflicting_display = humanize_iterable(
-                    [
-                        self._get_display_name(name, context)
-                        for name in conflicting
-                    ],
+                    [self._get_display_name(name, context) for name in conflicting],
                     wrap="'",
                 )
 
@@ -87,7 +84,7 @@ class Conflicts(ChildNode):
 
 
 def conflicts(*names: str) -> Decorator:
-    """
+    r"""
     Enforce that parameters conflict with each other.
 
     This decorator ensures that when the decorated parameter is provided,
@@ -97,18 +94,11 @@ def conflicts(*names: str) -> Decorator:
 
     Supports: `any`, `tag`
 
-    Args:
-        *names (str):
-            Names of parameters that conflict with the decorated parameter.
-
-    Returns:
-        Decorator:
-            A decorator function that registers the conflicts validation.
-
-    Raises:
-        ValueError:
-            If the decorated parameter and any conflicting parameter
-            are both provided at runtime.
+    :param \*names: Names of parameters that conflict with the decorated parameter.
+    :raises ValueError: If the decorated parameter and any conflicting parameter
+        are both provided at runtime.
+    :returns: A decorator function that registers the conflicts validation.
+    :rtype: Decorator
 
     Examples:
         ```python

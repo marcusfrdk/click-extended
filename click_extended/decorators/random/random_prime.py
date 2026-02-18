@@ -152,9 +152,7 @@ class RandomPrime(ParentNode):
                 if len(primes) == k:
                     return primes[k - 1]
 
-        raise ValueError(
-            f"Unable to calculate {k}th prime with buffer size {n}"
-        )
+        raise ValueError(f"Unable to calculate {k}th prime with buffer size {n}")
 
     def load(self, context: Context, *args: Any, **kwargs: Any) -> int:
         if kwargs.get("seed") is not None:
@@ -174,20 +172,14 @@ def random_prime(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        k (int):
-            A random prime from the first `k` primes.
-            It's important to remember that calculating large prime
-            numbers is a slow process, so try to keep the `k` value
-            small to avoid slowing down your program.
-        seed (int | None):
-            Optional seed for reproducible randomness.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param name: The name of the parent node.
+    :param k: A random prime from the first ``k`` primes.
+        It's important to remember that calculating large prime
+        numbers is a slow process, so try to keep the ``k`` value
+        small to avoid slowing down your program.
+    :param seed: Optional seed for reproducible randomness.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return RandomPrime.as_decorator(
         name=name,

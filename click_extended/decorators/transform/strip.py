@@ -45,14 +45,10 @@ def strip(chars: str | None = None) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        chars (str | None, optional):
-            A string specifying the set of characters to be removed.
-            If `None` (default), whitespace characters are removed.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param chars: A string specifying the set of characters to be removed.
+        If ``None`` (default), whitespace characters are removed.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python
@@ -82,14 +78,10 @@ def lstrip(chars: str | None = None) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        chars (str | None, optional):
-            A string specifying the set of characters to be removed.
-            If `None` (default), whitespace characters are removed.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param chars: A string specifying the set of characters to be removed.
+        If ``None`` (default), whitespace characters are removed.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python
@@ -119,14 +111,10 @@ def rstrip(chars: str | None = None) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        chars (str | None, optional):
-            A string specifying the set of characters to be removed.
-            If `None` (default), whitespace characters are removed.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param chars: A string specifying the set of characters to be removed.
+        If ``None`` (default), whitespace characters are removed.
+    :returns: The decorator function.
+    :rtype: Decorator
 
     Examples:
         ```python

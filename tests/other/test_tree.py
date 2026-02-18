@@ -341,9 +341,7 @@ class TestTreeContextInitialization:
         assert "validation" in tags
         assert tags["validation"] is tag1
 
-    def test_initialize_context_debug_mode_enabled(
-        self, monkeypatch: Any
-    ) -> None:
+    def test_initialize_context_debug_mode_enabled(self, monkeypatch: Any) -> None:
         """Test initialize_context() enables debug mode with env var."""
 
         monkeypatch.setenv("CLICK_EXTENDED_DEBUG", "1")
@@ -355,9 +353,7 @@ class TestTreeContextInitialization:
 
         assert ctx.meta["click_extended"]["debug"] is True
 
-    def test_initialize_context_debug_mode_disabled(
-        self, monkeypatch: Any
-    ) -> None:
+    def test_initialize_context_debug_mode_disabled(self, monkeypatch: Any) -> None:
         """Test initialize_context() debug mode disabled by default."""
 
         monkeypatch.delenv("CLICK_EXTENDED_DEBUG", raising=False)
@@ -1167,9 +1163,7 @@ class TestTreeIntegration:
         def greet(name: str, greeting: str) -> None:
             click.echo(f"{greeting}, {name}!")
 
-        result = cli_runner.invoke(
-            greet, ["--name", "Alice", "--greeting", "Hi"]
-        )
+        result = cli_runner.invoke(greet, ["--name", "Alice", "--greeting", "Hi"])
         assert result.exit_code == 0
         assert "Hi, Alice!" in result.output
 
@@ -1191,9 +1185,7 @@ class TestTreeIntegration:
         assert "input.txt" in result.output
         assert "result.txt" in result.output
 
-    def test_tree_with_command_options_and_children(
-        self, cli_runner: Any
-    ) -> None:
+    def test_tree_with_command_options_and_children(self, cli_runner: Any) -> None:
         """Test full flow: option + child processing."""
 
         class Uppercase(ChildNode):

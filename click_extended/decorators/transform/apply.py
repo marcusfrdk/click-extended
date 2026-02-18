@@ -24,12 +24,8 @@ def apply(fn: Callable[[Any], Any]) -> Decorator:
 
     Supports: `Any`
 
-    Args:
-        fn (Callable[[Any], Any]):
-            The function to apply.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param fn: The function to apply.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Apply.as_decorator(fn=fn)

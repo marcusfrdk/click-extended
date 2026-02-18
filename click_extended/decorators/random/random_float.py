@@ -37,21 +37,13 @@ def random_float(
 
     Type: `ParentNode`
 
-    Args:
-        name (str):
-            The name of the parent node.
-        min_value (float):
-            The lower value in the range. Defaults to 0.0.
-        max_value (float):
-            The upper value in the range. Defaults to 1.0.
-        decimals (int):
-            The number of decimal places to round to. Defaults to 3.
-        seed (int | None):
-            Optional seed for reproducible randomness.
-
-    Returns:
-        Decorator:
-            The decorator function.
+    :param name: The name of the parent node.
+    :param min_value: The lower value in the range. Defaults to 0.0.
+    :param max_value: The upper value in the range. Defaults to 1.0.
+    :param decimals: The number of decimal places to round to. Defaults to 3.
+    :param seed: Optional seed for reproducible randomness.
+    :returns: The decorator function.
+    :rtype: Decorator
     """
     return RandomFloat.as_decorator(
         name=name,

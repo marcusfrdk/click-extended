@@ -139,17 +139,11 @@ def convert_weight(
         - **dyn**: Dyne (force)
         - **slg**: Slug (mass)
 
-    Args:
-        from_unit (str):
-            The unit to convert from.
-        to_unit (str):
-            The unit to convert to.
-        gravity (float, optional):
-            The gravity constant, used for force units. Defaults to `9.80665`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param from_unit: The unit to convert from.
+    :param to_unit: The unit to convert to.
+    :param gravity: The gravity constant, used for force units. Defaults to ``9.80665``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertWeight.as_decorator(
         from_unit=from_unit,

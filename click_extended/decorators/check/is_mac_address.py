@@ -33,8 +33,7 @@ def is_mac_address() -> Decorator:
 
     Supports: `str`
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return IsMacAddress.as_decorator()

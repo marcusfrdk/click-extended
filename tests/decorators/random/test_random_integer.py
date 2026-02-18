@@ -10,9 +10,7 @@ from click_extended.decorators.random.random_integer import random_integer
 class TestRandomIntegerBasic:
     """Test basic random_integer functionality."""
 
-    def test_generates_within_default_range(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_generates_within_default_range(self, cli_runner: CliRunner) -> None:
         """Test that default range is 0-100."""
 
         @command()

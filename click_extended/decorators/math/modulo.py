@@ -28,12 +28,8 @@ def modulo(n: int | float) -> Decorator:
 
     Supports: `int`, `float`
 
-    Args:
-        n (int | float):
-            The divisor.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param n: The divisor.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Modulo.as_decorator(n=n)

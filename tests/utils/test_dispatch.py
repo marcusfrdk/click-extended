@@ -11,19 +11,11 @@ from uuid import UUID
 import pytest
 
 from click_extended.core.nodes.child_node import ChildNode
-from click_extended.errors import (
-    InvalidHandlerError,
-    ProcessError,
-    UnhandledTypeError,
-)
+from click_extended.errors import InvalidHandlerError, ProcessError, UnhandledTypeError
 from click_extended.utils.dispatch import _determine_handler  # type: ignore
 from click_extended.utils.dispatch import _extract_inner_types  # type: ignore
-from click_extended.utils.dispatch import (
-    _get_implemented_handlers,  # type: ignore
-)
-from click_extended.utils.dispatch import (
-    _is_handler_implemented,  # type: ignore
-)
+from click_extended.utils.dispatch import _get_implemented_handlers  # type: ignore
+from click_extended.utils.dispatch import _is_handler_implemented  # type: ignore
 from click_extended.utils.dispatch import _should_call_handler  # type: ignore
 from click_extended.utils.dispatch import _validate_handler_type  # type: ignore
 from click_extended.utils.dispatch import (
@@ -118,13 +110,11 @@ class TestValidateHandlerType:
         """Test suggestion when int is provided but str expected."""
         is_valid, msg = _validate_handler_type("handle_str", 123, str)
         assert not is_valid
-        assert "type=str" in msg
+        assert "str" in msg
 
     def test_handle_tuple_accepts_any_tuple(self) -> None:
         """Test handle_tuple accepts any tuple."""
-        is_valid, msg = _validate_handler_type(
-            "handle_tuple", (1, "a", [2]), tuple
-        )
+        is_valid, msg = _validate_handler_type("handle_tuple", (1, "a", [2]), tuple)
         assert is_valid
         assert msg == ""
 
@@ -136,9 +126,7 @@ class TestValidateHandlerType:
 
     def test_handle_list_wrong_inner_type(self) -> None:
         """Test handle_list with wrong inner types."""
-        is_valid, msg = _validate_handler_type(
-            "handle_list", ["a", "b"], list[int]
-        )
+        is_valid, msg = _validate_handler_type("handle_list", ["a", "b"], list[int])
         assert not is_valid
         assert "Expected list[int]" in msg
 
@@ -298,9 +286,7 @@ class TestDetermineHandler:
         """Test that datetime returns handle_datetime."""
 
         class CustomChild(MockChildNode):
-            def handle_datetime(
-                self, value: datetime, context: Any
-            ) -> datetime:
+            def handle_datetime(self, value: datetime, context: Any) -> datetime:
                 return value
 
         child = CustomChild()

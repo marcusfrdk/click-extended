@@ -35,16 +35,12 @@ class TestConflictsBasic:
         def login(username: str, api_key: str) -> None:
             print(f"Login: username={username}, api_key={api_key}")
 
-        result = cli_runner.invoke(
-            login, ["--username", "john", "--api-key", "key123"]
-        )
+        result = cli_runner.invoke(login, ["--username", "john", "--api-key", "key123"])
         assert result.exit_code == 1
         assert "'--username' conflicts with '--api-key'" in result.output
         assert "They cannot be used together" in result.output
 
-    def test_conflicts_succeeds_when_neither_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_succeeds_when_neither_provided(self, cli_runner: Any) -> None:
         """Test that command succeeds when neither param is provided."""
 
         @command()
@@ -58,9 +54,7 @@ class TestConflictsBasic:
         assert result.exit_code == 0
         assert "Login: username=None, api_key=None" in result.output
 
-    def test_conflicts_succeeds_when_only_other_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_succeeds_when_only_other_provided(self, cli_runner: Any) -> None:
         """Test that command succeeds when only the conflicting param is provided."""
 
         @command()
@@ -78,9 +72,7 @@ class TestConflictsBasic:
 class TestConflictsMultipleParams:
     """Test @conflicts with multiple conflicting parameters."""
 
-    def test_conflicts_multiple_params_none_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_multiple_params_none_provided(self, cli_runner: Any) -> None:
         """Test conflicts with multiple params, none conflicting provided."""
 
         @command()
@@ -95,9 +87,7 @@ class TestConflictsMultipleParams:
         assert result.exit_code == 0
         assert "verbose=True, quiet=False, silent=False" in result.output
 
-    def test_conflicts_multiple_params_one_conflicts(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_multiple_params_one_conflicts(self, cli_runner: Any) -> None:
         """Test conflicts with multiple params, one conflicts."""
 
         @command()
@@ -112,9 +102,7 @@ class TestConflictsMultipleParams:
         assert result.exit_code == 1
         assert "'--verbose' conflicts with '--quiet'" in result.output
 
-    def test_conflicts_multiple_params_multiple_conflict(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_multiple_params_multiple_conflict(self, cli_runner: Any) -> None:
         """Test conflicts with multiple params, multiple conflicts."""
 
         @command()
@@ -127,10 +115,7 @@ class TestConflictsMultipleParams:
 
         result = cli_runner.invoke(cmd, ["--verbose", "--quiet", "--silent"])
         assert result.exit_code == 1
-        assert (
-            "'--verbose' conflicts with '--quiet' and '--silent'"
-            in result.output
-        )
+        assert "'--verbose' conflicts with '--quiet' and '--silent'" in result.output
 
 
 class TestConflictsWithArguments:
@@ -150,9 +135,7 @@ class TestConflictsWithArguments:
         assert result.exit_code == 0
         assert "Process: filename=test.txt, stdin=False" in result.output
 
-    def test_conflicts_argument_fails_with_option(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_argument_fails_with_option(self, cli_runner: Any) -> None:
         """Test conflicts fails when argument and conflicting option both provided."""
 
         @command()
@@ -166,9 +149,7 @@ class TestConflictsWithArguments:
         assert result.exit_code == 1
         assert "'FILENAME' conflicts with '--stdin'" in result.output
 
-    def test_conflicts_optional_argument_not_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_optional_argument_not_provided(self, cli_runner: Any) -> None:
         """Test conflicts succeeds when optional argument not provided."""
 
         @command()
@@ -193,9 +174,7 @@ class TestConflictsWithTags:
         @command()
         @option("username", tags="basic_auth")
         @option("password", tags="basic_auth")
-        @conflicts(
-            "oauth_token"
-        )  # Changed from "oauth" tag to actual param name
+        @conflicts("oauth_token")  # Changed from "oauth" tag to actual param name
         @tag("basic_auth")
         @option("oauth_token", "--oauth-token")
         def login(username: str, password: str, oauth_token: str) -> None:
@@ -214,9 +193,7 @@ class TestConflictsWithTags:
         @command()
         @option("username", tags="basic_auth")
         @option("password", tags="basic_auth")
-        @conflicts(
-            "oauth_token"
-        )  # Changed from "oauth" tag to actual param name
+        @conflicts("oauth_token")  # Changed from "oauth" tag to actual param name
         @tag("basic_auth")
         @option("oauth_token", "--oauth-token")
         def login(username: str, password: str, oauth_token: str) -> None:
@@ -240,9 +217,7 @@ class TestConflictsWithTags:
 class TestConflictsBidirectional:
     """Test @conflicts applied to both conflicting parameters."""
 
-    def test_conflicts_bidirectional_first_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_bidirectional_first_provided(self, cli_runner: Any) -> None:
         """Test conflicts when first param provided."""
 
         @command()
@@ -256,9 +231,7 @@ class TestConflictsBidirectional:
         result = cli_runner.invoke(login, ["--username", "john"])
         assert result.exit_code == 0
 
-    def test_conflicts_bidirectional_second_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_bidirectional_second_provided(self, cli_runner: Any) -> None:
         """Test conflicts when second param provided."""
 
         @command()
@@ -272,9 +245,7 @@ class TestConflictsBidirectional:
         result = cli_runner.invoke(login, ["--api-key", "key123"])
         assert result.exit_code == 0
 
-    def test_conflicts_bidirectional_both_provided(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_bidirectional_both_provided(self, cli_runner: Any) -> None:
         """Test conflicts fails when both params provided (from either side)."""
 
         @command()
@@ -285,9 +256,7 @@ class TestConflictsBidirectional:
         def login(username: str, api_key: str) -> None:
             print(f"Login: username={username}, api_key={api_key}")
 
-        result = cli_runner.invoke(
-            login, ["--username", "john", "--api-key", "key123"]
-        )
+        result = cli_runner.invoke(login, ["--username", "john", "--api-key", "key123"])
         assert result.exit_code == 1
         # Should fail from the first decorator that checks
         assert "conflicts with" in result.output
@@ -339,9 +308,7 @@ class TestConflictsEdgeCases:
         # Should succeed or handle gracefully
         assert result.exit_code == 0 or "conflicts with" in result.output
 
-    def test_conflicts_with_nonexistent_parameter(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_with_nonexistent_parameter(self, cli_runner: Any) -> None:
         """Test conflicts with parameter that doesn't exist."""
 
         @command()
@@ -376,9 +343,7 @@ class TestConflictsEdgeCases:
 class TestConflictsErrorMessages:
     """Test error message formatting for @conflicts."""
 
-    def test_conflicts_error_message_single_param(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_error_message_single_param(self, cli_runner: Any) -> None:
         """Test error message format for single conflicting parameter."""
 
         @command()
@@ -393,9 +358,7 @@ class TestConflictsErrorMessages:
         assert "'--verbose' conflicts with '--quiet'" in result.output
         assert "They cannot be used together" in result.output
 
-    def test_conflicts_error_message_multiple_params(
-        self, cli_runner: Any
-    ) -> None:
+    def test_conflicts_error_message_multiple_params(self, cli_runner: Any) -> None:
         """Test error message format for multiple conflicting parameters."""
 
         @command()

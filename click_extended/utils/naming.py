@@ -17,16 +17,12 @@ SHORT_FLAG_PATTERN = re.compile(r"^-[a-zA-Z][a-zA-Z0-9]*$")
 
 def is_valid_name(name: str) -> bool:
     """
-    Check if a name is a valid name, in this case only `snake_case` formats
+    Check if a name is a valid name, in this case only ``snake_case`` formats
     are considered valid.
 
-    Args:
-        name (str):
-            The name to validate.
-
-    Returns:
-        bool:
-            `True` if the name is valid, `False` otherwise.
+    :param name: The name to validate.
+    :returns: ``True`` if the name is valid, ``False`` otherwise.
+    :rtype: bool
     """
     return bool(SNAKE_CASE_PATTERN.match(name))
 
@@ -35,12 +31,9 @@ def is_long_flag(value: str) -> bool:
     """
     Check if a value is a long flag (e.g. --option).
 
-    Args:
-        value (str):
-            The value to check.
-
-    Returns:
-        `True` if the value is a long flag, `False` otherwise.
+    :param value: The value to check.
+    :returns: ``True`` if the value is a long flag, ``False`` otherwise.
+    :rtype: bool
     """
     return bool(LONG_FLAG_PATTERN.match(value))
 
@@ -49,12 +42,9 @@ def is_short_flag(value: str) -> bool:
     """
     Check if a value is a short flag (e.g. -o).
 
-    Args:
-        value (str):
-            The value to check.
-
-    Returns:
-        `True` if the value is a short flag, `False` otherwise.
+    :param value: The value to check.
+    :returns: ``True`` if the value is a short flag, ``False`` otherwise.
+    :rtype: bool
     """
     return bool(SHORT_FLAG_PATTERN.match(value))
 
@@ -63,16 +53,10 @@ def validate_name(name: str, context: str = "name") -> None:
     """
     Validate a name follows naming conventions.
 
-    Args:
-        name (str):
-            The name to validate.
-        context (Context):
-            Context string for error messages
-            (e.g. "option name", "argument name").
-
-    Raises:
-        ValueError:
-            If the name doesn't follow valid conventions.
+    :param name: The name to validate.
+    :param context: Context string for error messages
+        (e.g. "option name", "argument name").
+    :raises ValueError: If the name doesn't follow valid conventions.
     """
     if not is_valid_name(name):
 
@@ -161,7 +145,7 @@ def validate_name(name: str, context: str = "name") -> None:
 
 
 def parse_option_args(*args: str) -> tuple[str | None, str | None, str | None]:
-    """
+    r"""
     Parse option decorator arguments intelligently.
 
     Supports three forms:
@@ -170,20 +154,15 @@ def parse_option_args(*args: str) -> tuple[str | None, str | None, str | None]:
     2. **@option("--my-option")**: long flag (derives name)
     3. **@option("-m", "--my-option")**: short and long flags
 
-    Args:
-        *args (str):
-            Positional arguments passed to `@option` decorator.
+    :param \*args: Positional arguments passed to ``@option`` decorator.
+    :returns: Tuple of (name, short, long):
 
-    Returns:
-        Tuple of (name, short, long):
+        - **name**: The parameter name (``None`` if not provided)
+        - **short**: The short flag (``None`` if not provided)
+        - **long**: The long flag (``None`` if not provided)
 
-        - **name**: The parameter name (`None` if not provided)
-        - **short**: The short flag (`None` if not provided)
-        - **long**: The long flag (`None` if not provided)
-
-    Raises:
-        ValueError:
-            If arguments are invalid or ambiguous.
+    :rtype: tuple
+    :raises ValueError: If arguments are invalid or ambiguous.
     """
 
     if len(args) == 0:

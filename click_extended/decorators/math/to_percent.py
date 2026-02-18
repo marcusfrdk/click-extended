@@ -56,8 +56,7 @@ def to_percent() -> Decorator:
         - 50 -> 0.5
         - 0.5 -> 0.005
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ToPercent.as_decorator()

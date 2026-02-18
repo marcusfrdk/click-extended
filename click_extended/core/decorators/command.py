@@ -57,26 +57,20 @@ def command(
     help: str | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[..., Any]], ClickCommand]:
-    """
-    A `ParentNode` decorator to create a click command with value injection
+    r"""
+    A ``ParentNode`` decorator to create a click command with value injection
     from parent nodes.
 
-    Args:
-        name (str, optional):
-            The name of the command. If `None`, uses the
-            decorated function's name.
-        aliases (str | list[str], optional):
-            Alternative name(s) for the command. Can be a single
-            string or a list of strings.
-        help (str, optional):
-            The help message for the command. If not provided,
-            uses the first line of the function's docstring.
-        **kwargs (Any):
-            Additional arguments to pass to `click.Command`.
+    :param name: The name of the command. If ``None``, uses the
+        decorated function's name.
+    :param aliases: Alternative name(s) for the command. Can be a single
+        string or a list of strings.
+    :param help: The help message for the command. If not provided,
+        uses the first line of the function's docstring.
+    :param \*\*kwargs: Additional arguments to pass to ``click.Command``.
 
-    Returns:
-        Callable:
-            A decorator function that returns a Click command.
+    :returns: A decorator function that returns a Click command.
+    :rtype: Callable
     """
     if aliases is not None:
         kwargs["aliases"] = aliases

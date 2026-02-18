@@ -34,9 +34,7 @@ class ToDate(ChildNode):
             except ValueError:
                 continue
 
-        fmt_text = (
-            "either of the formats" if len(formats) != 1 else "in the format"
-        )
+        fmt_text = "either of the formats" if len(formats) != 1 else "in the format"
         raise ValueError(
             f"Invalid date '{value}', must be in "
             f"{fmt_text} {humanize_iterable(formats, sep='or')}"
@@ -46,24 +44,20 @@ class ToDate(ChildNode):
 def to_date(
     *formats: str,
 ) -> Decorator:
-    """
+    r"""
     Convert a string to a date by trying multiple formats.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        *formats (str):
-            One or more date format strings to try. Supports both Python
-            strptime format (e.g., "%Y-%m-%d", "%d/%m/%Y") and simplified format
-            (e.g., "YYYY-MM-DD", "DD/MM/YYYY"). The decorator will attempt each
-            format in order until one succeeds. Defaults to `"%Y-%m-%d"`,
-            `"%d/%m/%Y"`, and `"%m/%d/%Y"`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*formats: One or more date format strings to try. Supports both Python
+        strptime format (e.g., "%Y-%m-%d", "%d/%m/%Y") and simplified format
+        (e.g., "YYYY-MM-DD", "DD/MM/YYYY"). The decorator will attempt each
+        format in order until one succeeds. Defaults to ``"%Y-%m-%d"``,
+        ``"%d/%m/%Y"``, and ``"%m/%d/%Y"``.
+    :returns: The decorated function.
+    :rtype: Decorator
 
     Example:
         @to_date("YYYY-MM-DD", "DD/MM/YYYY")

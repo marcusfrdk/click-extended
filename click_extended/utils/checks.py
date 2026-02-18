@@ -11,11 +11,10 @@ if TYPE_CHECKING:
 
 def is_option(node: "Node") -> TypeGuard["Option"]:
     """
-    Check if a node is an `Option` instance.
+    Check if a node is an ``Option`` instance.
 
-    Returns:
-        TypeGuard:
-            `True` if the parent is an `Option` instance, `False` otherwise.
+    :returns: ``True`` if the parent is an ``Option`` instance, ``False`` otherwise.
+    :rtype: TypeGuard
     """
     from click_extended.core.decorators.option import Option
 
@@ -24,11 +23,10 @@ def is_option(node: "Node") -> TypeGuard["Option"]:
 
 def is_argument(node: "Node") -> TypeGuard["Argument"]:
     """
-    Check if a node is an `Argument` instance.
+    Check if a node is an ``Argument`` instance.
 
-    Returns:
-        TypeGuard:
-            `True` if the parent is an `Argument` instance, `False` otherwise.
+    :returns: ``True`` if the parent is an ``Argument`` instance, ``False`` otherwise.
+    :rtype: TypeGuard
     """
     from click_extended.core.decorators.argument import Argument
 
@@ -37,11 +35,10 @@ def is_argument(node: "Node") -> TypeGuard["Argument"]:
 
 def is_tag(node: "Node") -> TypeGuard["Tag"]:
     """
-    Check if a node is an `Tag` instance.
+    Check if a node is an ``Tag`` instance.
 
-    Returns:
-        TypeGuard:
-            `True` if the parent is an `Tag` instance, `False` otherwise.
+    :returns: ``True`` if the parent is an ``Tag`` instance, ``False`` otherwise.
+    :rtype: TypeGuard
     """
     from click_extended.core.decorators.tag import Tag
 

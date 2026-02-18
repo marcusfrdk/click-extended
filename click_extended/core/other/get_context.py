@@ -23,11 +23,11 @@ def get_context() -> Context:
     """
     Get the active context.
 
-    Returns:
-        Context:
-            The active context.
+    :returns:
+        The active context.
+    :rtype: Context
 
-    Raises:
+    :raises RuntimeError:
         RuntimeError:
             If called outside a Click command or before initialization.
     """
@@ -37,17 +37,13 @@ def get_context() -> Context:
 
     meta_raw = click_context.meta.get("click_extended")
     if not isinstance(meta_raw, dict) or not meta_raw:
-        raise RuntimeError(
-            "click-extended context has not been initialized yet."
-        )
+        raise RuntimeError("click-extended context has not been initialized yet.")
 
     meta: dict[str, Any] = cast(dict[str, Any], meta_raw)
 
     root_node = meta.get("root_node")
     if root_node is None:
-        raise RuntimeError(
-            "click-extended root node is not available in context."
-        )
+        raise RuntimeError("click-extended root node is not available in context.")
 
     parents: dict[str, Any] = meta.get("parents", {})
     tags: dict[str, Any] = meta.get("tags", {})

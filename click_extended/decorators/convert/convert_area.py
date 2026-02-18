@@ -116,8 +116,7 @@ def convert_area(
         - **ang2**: Square ångström
         - **tunnland**: Historical Swedish area unit (~4,937 m2)
 
-    Returns:
-        Decorator:
-            The decorated function.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertArea.as_decorator(from_unit=from_unit, to_unit=to_unit)

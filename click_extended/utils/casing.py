@@ -122,9 +122,7 @@ class Casing:
         words = Casing._split_into_words(value)
         if not words:
             return ""
-        return words[0].lower() + "".join(
-            word.capitalize() for word in words[1:]
-        )
+        return words[0].lower() + "".join(word.capitalize() for word in words[1:])
 
     @staticmethod
     def to_pascal_case(value: str) -> str:

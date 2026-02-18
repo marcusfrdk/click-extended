@@ -25,9 +25,7 @@ def test_slugify_kwargs() -> None:
     ctx = Mock(spec=Context)
 
     try:
-        assert (
-            node.handle_str("Hello World", ctx, separator="_") == "hello_world"
-        )
+        assert node.handle_str("Hello World", ctx, separator="_") == "hello_world"
     except ImportError:
         with patch(
             "click_extended.decorators.transform.slugify.slugify"

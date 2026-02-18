@@ -32,9 +32,7 @@ if TYPE_CHECKING:
     from click_extended.core.decorators.tag import Tag
     from click_extended.core.nodes._root_node import RootNode
     from click_extended.core.nodes.child_node import ChildNode
-    from click_extended.core.nodes.child_validation_node import (
-        ChildValidationNode,
-    )
+    from click_extended.core.nodes.child_validation_node import ChildValidationNode
     from click_extended.core.nodes.parent_node import ParentNode
     from click_extended.core.nodes.validation_node import ValidationNode
 
@@ -54,7 +52,7 @@ class Tree:
     - **Phase 4 (Runtime)**:
         Parameters are processed with scope tracking.
 
-    Attributes:
+    :Attributes:
         root (RootNode | None):
             The root node of the tree
         recent (ParentNode | None):
@@ -101,9 +99,9 @@ class Tree:
         Get and clear the pending nodes queue.
         This is where decorators queue nodes during bottom-to-top application.
 
-        Returns:
-            list:
-                List of queued nodes with their types.
+        :returns:
+            List of queued nodes with their types.
+        :rtype: list
         """
         nodes = Tree._pending_nodes.copy()
         Tree._pending_nodes.clear()
@@ -114,9 +112,8 @@ class Tree:
         """
         Queue a parent node for registration.
 
-        Args:
-            node (ParentNode):
-                The parent node to queue.
+        :param node:
+            The parent node to queue.
         """
         Tree._pending_nodes.append(("parent", node))
 
@@ -125,9 +122,8 @@ class Tree:
         """
         Queue a child node for registration.
 
-        Args:
-            node (ChildNode):
-                The child node to queue.
+        :param node:
+            The child node to queue.
         """
         Tree._pending_nodes.append(("child", node))
 
@@ -136,9 +132,8 @@ class Tree:
         """
         Queue a tag node for registration.
 
-        Args:
-            node (Tag):
-                The tag to queue.
+        :param node:
+            The tag to queue.
         """
         Tree._pending_nodes.append(("tag", node))
 
@@ -147,9 +142,8 @@ class Tree:
         """
         Queue a validation node for registration.
 
-        Args:
-            node (ValidationNode):
-                The validation node to queue.
+        :param node:
+            The validation node to queue.
         """
         Tree._pending_nodes.append(("validation", node))
 
@@ -162,9 +156,8 @@ class Tree:
         validation nodes. The registration phase determines which
         behavior to use based on decorator placement.
 
-        Args:
-            node (ChildValidationNode):
-                The child validation node to queue.
+        :param node:
+            The child validation node to queue.
         """
         Tree._pending_nodes.append(("child_validation", node))
 
@@ -179,19 +172,16 @@ class Tree:
         self.is_validated: bool = False
 
     @staticmethod
-    def initialize_context(
-        context: click.Context, root_node: "RootNode"
-    ) -> None:
+    def initialize_context(context: click.Context, root_node: "RootNode") -> None:
         """
-        Initialize Click context with `click-extended` metadata.
-        This is a part of `phase 2` and must be called before any
+        Initialize Click context with ``click-extended`` metadata.
+        This is a part of ``phase 2`` and must be called before any
         validation or processing occurs.
 
-        Args:
-            context (click.Context):
-                The Click context to initialize.
-            root_node (RootNode):
-                The root node of the tree.
+        :param context:
+            The Click context to initialize.
+        :param root_node:
+            The root node of the tree.
         """
         parents_dict: dict[str, "ParentNode"] = {}
         if (root := root_node.tree.root) is not None:
@@ -225,9 +215,7 @@ class Tree:
             parent_meta = context.parent.meta.get("click_extended", {})
             parent_data = parent_meta.get("data")
 
-        data: dict[str, Any] = (
-            parent_data if isinstance(parent_data, dict) else {}
-        )
+        data: dict[str, Any] = parent_data if isinstance(parent_data, dict) else {}
 
         context.meta["click_extended"] = {
             "current_scope": "root",
@@ -250,18 +238,18 @@ class Tree:
     ) -> None:
         """
         Update the current scope in the context.
-        This is a part of `phase 4` and is called as the tree is traversed
+        This is a part of ``phase 4`` and is called as the tree is traversed
         during parameter processing.
 
-        Args:
-            context (click.Context):
-                The Click context to update.
-            scope (str):
-                The new scope level, must either be `root`, `parent` or `child`.
-            parent_node (ParentNode | None, optional):
-                The current parent node (if in parent/child scope).
-            child_node (ChildNode | None, optional):
-                The current child node (if in child scope).
+        :param context:
+            The Click context to update.
+        :param scope:
+            The new scope level, must either be ``root``, ``parent`` or
+            ``child``.
+        :param parent_node:
+            The current parent node (if in parent/child scope).
+        :param child_node:
+            The current child node (if in child scope).
         """
         if "click_extended" not in context.meta:
             return
@@ -273,9 +261,9 @@ class Tree:
     def validate_and_build(self, context: click.Context) -> None:
         """
         Build and validate the tree structure. This method is a part of
-        `phase 3` and is where all structural validation occurs which is
+        ``phase 3`` and is where all structural validation occurs which is
         after the Click context has been initialized. All errors raised
-        here are `ContextAwareError` subclasses.
+        here are ``ContextAwareError`` subclasses.
 
         This method:
 
@@ -285,23 +273,21 @@ class Tree:
         4. Validates types (child/parent compatibility)
         5. Sets up tags and globals
 
-        Args:
-            context (click.Context):
-                The Click context (must be initialized).
+        :param context:
+            The Click context (must be initialized).
 
-        Raises:
-            RootExistsError:
-                If root already exists.
-            NoRootError:
-                If no root is defined.
-            ParentExistsError:
-                If duplicate parent names.
-            NoParentError:
-                If child has no parent.
-            NameExistsError:
-                If name collisions detected.
-            TypeMismatchError:
-                If child/parent types incompatible.
+        :raises RootExistsError:
+            If root already exists.
+        :raises NoRootError:
+            If no root is defined.
+        :raises ParentExistsError:
+            If duplicate parent names.
+        :raises NoParentError:
+            If child has no parent.
+        :raises NameExistsError:
+            If name collisions detected.
+        :raises TypeMismatchError:
+            If child/parent types incompatible.
         """
         if self.is_validated:
             return
@@ -317,9 +303,7 @@ class Tree:
                 elif node_type == "tag":
                     self._register_tag_node(cast("Tag", node_inst))
                 elif node_type == "validation":
-                    self._register_validation_node(
-                        cast("ValidationNode", node_inst)
-                    )
+                    self._register_validation_node(cast("ValidationNode", node_inst))
                 elif node_type == "child_validation":
                     self._register_child_validation_node(
                         cast("ChildValidationNode", node_inst)
@@ -377,21 +361,17 @@ class Tree:
         """Register a validation node during validation phase."""
         self.validations.append(node)
 
-    def _register_child_validation_node(
-        self, node: "ChildValidationNode"
-    ) -> None:
+    def _register_child_validation_node(self, node: "ChildValidationNode") -> None:
         """
         Register a child validation node during validation phase.
 
-        Args:
-            node (ChildValidationNode):
-                The child validation node to register.
+        :param node:
+            The child validation node to register.
 
-        Raises:
-            NoParentError:
-                If registering as child but no parent exists.
-                Provides enhanced message about child validation node
-                behavior.
+        :raises NoParentError:
+            If registering as child but no parent exists.
+            Provides enhanced message about child validation node
+            behavior.
         """
         if self.recent is not None or self.recent_tag is not None:
             try:
@@ -467,15 +447,13 @@ class Tree:
 
     def register_root(self, node: "RootNode") -> None:
         """
-        Register the root node. This is called in `phase 1`.
+        Register the root node. This is called in ``phase 1``.
 
-        Args:
-            node (RootNode):
-                The root node to register.
+        :param node:
+            The root node to register.
 
-        Raises:
-            RootExistsError:
-                If root already exists.
+        :raises RootExistsError:
+            If root already exists.
         """
         if self.root is not None:
             raise RootExistsError()

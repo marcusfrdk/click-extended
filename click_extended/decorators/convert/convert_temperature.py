@@ -50,9 +50,7 @@ class ConvertTemperature(ChildNode):
         celsius = self._to_celsius(value, kwargs["from_unit"])
 
         if celsius < Decimal("-273.15"):
-            raise ValueError(
-                "Temperature cannot be below absolute zero (-273.15°C)."
-            )
+            raise ValueError("Temperature cannot be below absolute zero (-273.15°C).")
 
         return float(self._from_celsius(celsius, kwargs["to_unit"]))
 
@@ -76,14 +74,9 @@ def convert_temperature(
         - **Re**: Reaumur
         - **De**: Delisle
 
-    Args:
-        from_unit (str):
-            The unit to convert from.
-        to_unit (str):
-            The unit to convert to.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param from_unit: The unit to convert from.
+    :param to_unit: The unit to convert to.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return ConvertTemperature.as_decorator(from_unit=from_unit, to_unit=to_unit)

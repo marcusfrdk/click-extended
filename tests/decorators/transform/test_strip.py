@@ -155,9 +155,7 @@ class TestStripCustomChars:
         assert result.exit_code == 0
         assert "'hello'" in result.output
 
-    def test_strip_preserves_internal_chars(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_strip_preserves_internal_chars(self, cli_runner: CliRunner) -> None:
         """Test that strip only removes from ends, not internal."""
 
         @command()
@@ -381,9 +379,7 @@ class TestStripChaining:
         assert result.exit_code == 0
         assert "'hello'" in result.output
 
-    def test_strip_different_chars_each_side(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_strip_different_chars_each_side(self, cli_runner: CliRunner) -> None:
         """Test stripping different characters from each side."""
 
         @command()

@@ -47,23 +47,18 @@ class Contains(ChildNode):
 
 
 def contains(*text: str, all: bool = False) -> Decorator:
-    """
+    r"""
     Check if the string contains the specified text.
 
     Type: `ChildNode`
 
     Supports: `str`
 
-    Args:
-        *text (str):
-            The substrings to check for.
-        all (bool):
-            If `True`, all substrings must be present.
-            If `False`, at least one substring must be present.
-            Defaults to `False`.
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param \*text: The substrings to check for.
+    :param all: If ``True``, all substrings must be present.
+        If ``False``, at least one substring must be present.
+        Defaults to ``False``.
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Contains.as_decorator(*text, all=all)

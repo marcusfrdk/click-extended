@@ -31,16 +31,10 @@ def replace(old: str, new: str, count: int = -1) -> Decorator:
 
     Supports: `str`
 
-    Args:
-        old (str):
-            The substring to replace.
-        new (str):
-            The replacement substring.
-        count (int):
-            Maximum number of occurrences to replace. Defaults to `-1` (all).
-
-    Returns:
-        Decorator:
-            The decorated function.
+    :param old: The substring to replace.
+    :param new: The replacement substring.
+    :param count: Maximum number of occurrences to replace. Defaults to ``-1`` (all).
+    :returns: The decorated function.
+    :rtype: Decorator
     """
     return Replace.as_decorator(old=old, new=new, count=count)
