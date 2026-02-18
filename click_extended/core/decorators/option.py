@@ -227,7 +227,7 @@ def option(
     *flags: str,
     param: str | None = None,
     is_flag: bool = False,
-    type: Type[str | int | float | bool] | None = None,
+    type: Type[Any] | Any = None,
     nargs: int = 1,
     multiple: bool = False,
     help: str | None = None,

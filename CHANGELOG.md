@@ -2,12 +2,24 @@
 
 # Changelog
 
+## v1.2.1
+
+### Fixed
+
+- **Type-hinting**: Fixed type-hints for `type` parameter for `@option` and `@argument` decorators.
+
 ## v1.2.0
 
-- **Default values**: Default values for `@option` and `@argument` can now be of any type.
+### Added
+
 - **`@to_directory`**: Decorator to convert a string to a `pathlib.Path` that points to a directory.
 - **`@to_file`**: Decorator to convert a string to a `pathlib.Path` that points to a file.
 - **`@to_symlink`**: Decorator to convert a string to a `pathlib.Path` that points to a symbolic link.
+
+### Updated
+
+- **Default values**: Default values for `@option` and `@argument` can now be of any type.
+- **Docstrings**: Updated docstrings from Google-style to reST-style.
 
 ## v1.1.12
 

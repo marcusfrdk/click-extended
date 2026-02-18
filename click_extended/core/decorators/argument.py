@@ -151,7 +151,7 @@ def argument(
     name: str,
     param: str | None = None,
     nargs: int = 1,
-    type: Type[str | int | float | bool] | None = None,
+    type: Type[Any] | Any = None,
     help: str | None = None,
     required: bool = True,
     default: Any = _MISSING,
