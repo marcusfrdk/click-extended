@@ -11,6 +11,7 @@ from click_extended.core.nodes.argument_node import ArgumentNode
 from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 from click_extended.utils.casing import Casing
+from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import validate_name
 
 _MISSING = object()
@@ -90,7 +91,13 @@ class Argument(ArgumentNode):
             else:
                 type = str
         elif type not in SUPPORTED_TYPES:
-            type = str
+            types = humanize_type(type.__name__ if hasattr(type, "__name__") else type)
+            raise ValueError(
+                f"Argument '{name}' has unsupported type '{types}'. "
+                "Only basic primitives are supported: str, int, float, bool. "
+                "For complex types, use child decorators (e.g., @to_path, "
+                "@to_datetime, ..)."
+            )
 
         super().__init__(
             name=name,
@@ -144,7 +151,7 @@ def argument(
     name: str,
     param: str | None = None,
     nargs: int = 1,
-    type: Type[Any] | Any = None,
+    type: Type[str | int | float | bool] | None = None,
     help: str | None = None,
     required: bool = True,
     default: Any = _MISSING,

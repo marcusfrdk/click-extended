@@ -14,6 +14,7 @@ from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
 
 from click_extended.core.nodes.option_node import OptionNode
 from click_extended.core.other.context import Context
+from click_extended.utils.humanize import humanize_type
 from click_extended.utils.naming import is_long_flag, is_short_flag, validate_name
 
 P = ParamSpec("P")
@@ -153,7 +154,13 @@ class Option(OptionNode):
             else:
                 type = str
         elif type not in SUPPORTED_TYPES:
-            type = str
+            types = humanize_type(type.__name__ if hasattr(type, "__name__") else type)
+            raise ValueError(
+                f"Option '{derived_name}' has unsupported type '{types}'. "
+                "Only basic primitives are supported: str, int, float, bool. "
+                "For complex types, use child decorators (e.g., @to_path, "
+                "@to_datetime, ...)."
+            )
 
         if multiple and default is None:
             default = ()
@@ -219,7 +226,7 @@ def option(
     *flags: str,
     param: str | None = None,
     is_flag: bool = False,
-    type: Type[Any] | Any = None,
+    type: Type[str | int | float | bool] | None = None,
     nargs: int = 1,
     multiple: bool = False,
     help: str | None = None,

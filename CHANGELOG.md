@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.2.3
+
+### Fixed
+
+- **`type` parameter**: Reverted back to only allowing primitives as types.
+
 ## v1.2.2
 
 ### Fixed
