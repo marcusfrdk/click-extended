@@ -249,7 +249,17 @@ class HookRegistry:
         :returns Any: The coroutine result.
         """
         loop = self._get_async_loop()
-        return loop.run_until_complete(coro)
+        task = loop.create_task(coro)
+        try:
+            return loop.run_until_complete(task)
+        except BaseException:
+            if not task.done():
+                task.cancel()
+                try:
+                    loop.run_until_complete(task)
+                except BaseException:
+                    pass
+            raise
 
     def _get_async_loop(self) -> asyncio.AbstractEventLoop:
         try:
@@ -275,10 +285,27 @@ class HookRegistry:
         if self._async_loop is None:
             return
 
-        if not self._async_loop.is_closed():
-            self._async_loop.close()
-
+        loop = self._async_loop
         self._async_loop = None
+
+        if loop.is_closed():
+            return
+
+        # Cancel every task that is still pending (e.g. background asyncio
+        # Tasks created inside an async command) and drain the loop so their
+        # cleanup code (finally blocks, __aexit__ handlers, etc.) has a chance
+        # to run before the loop is closed.  This mirrors what asyncio.run()
+        # does on shutdown.
+        try:
+            pending = asyncio.all_tasks(loop)
+            if pending:
+                for t in pending:
+                    t.cancel()
+                loop.run_until_complete(
+                    asyncio.gather(*pending, return_exceptions=True)
+                )
+        finally:
+            loop.close()
 
 
 _REGISTRY = HookRegistry()

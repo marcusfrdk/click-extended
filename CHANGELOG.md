@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.2.4
+
+### Fixed
+
+- **Async command cleanup**: Fixed a bug where interrupting an async command with `Ctrl+C` (or any `BaseException`) caused `RuntimeError: Event loop is closed` inside `finally` blocks, and produced `Task was destroyed but it is pending!` warnings for background tasks. `run_coroutine()` now wraps the coroutine in a `Task`, and on any interrupting exception cancels that task and drains the loop before re-raising, ensuring `finally` blocks can `await` as expected. `_close_async_loop()` now cancels all remaining pending tasks and awaits their completion via `asyncio.gather` before closing the loop, mirroring the shutdown behaviour of `asyncio.run()`.
+
 ## v1.2.3
 
 ### Fixed
