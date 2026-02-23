@@ -257,9 +257,30 @@ class HookRegistry:
                 task.cancel()
                 try:
                     loop.run_until_complete(task)
-                except BaseException:
+                except asyncio.CancelledError:
                     pass
+                except BaseException:
+                    self._consume_task_exception(task)
+                    raise
+
+            self._consume_task_exception(task)
             raise
+
+    @staticmethod
+    def _consume_task_exception(task: "asyncio.Task[Any]") -> None:
+        """
+        Retrieve and discard a finished task's stored exception.
+
+        Prevents the asyncio "Task exception was never retrieved" warning
+        that would otherwise fire when the task is garbage-collected.
+
+        :param task: The completed asyncio Task whose exception to consume.
+        """
+        if task.done() and not task.cancelled():
+            try:
+                task.exception()
+            except BaseException:
+                pass
 
     def _get_async_loop(self) -> asyncio.AbstractEventLoop:
         try:
@@ -291,11 +312,7 @@ class HookRegistry:
         if loop.is_closed():
             return
 
-        # Cancel every task that is still pending (e.g. background asyncio
-        # Tasks created inside an async command) and drain the loop so their
-        # cleanup code (finally blocks, __aexit__ handlers, etc.) has a chance
-        # to run before the loop is closed.  This mirrors what asyncio.run()
-        # does on shutdown.
+        # Cancel tasks
         try:
             pending = asyncio.all_tasks(loop)
             if pending:

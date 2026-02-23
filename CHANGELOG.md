@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.2.5
+
+### Fixed
+
+- **sys.exit**: Async cleanup now also handles `sys.exit` calls.
+
 ## v1.2.4
 
 ### Fixed
