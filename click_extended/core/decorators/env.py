@@ -14,7 +14,7 @@ from click_extended.core.nodes.parent_node import ParentNode
 from click_extended.core.other.context import Context
 from click_extended.utils.casing import Casing
 
-_dotenv_loaded: bool = False
+_DOTENV_LOADED: bool = False
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -43,10 +43,10 @@ class Env(ParentNode):
         :raises ValueError:
             If the environment variable is required but not set.
         """
-        global _dotenv_loaded
-        if not _dotenv_loaded:
+        global _DOTENV_LOADED
+        if not _DOTENV_LOADED:
             load_dotenv()
-            _dotenv_loaded = True
+            _DOTENV_LOADED = True
 
         env_name = kwargs.get("env_name")
         if env_name is None:
