@@ -1,5 +1,6 @@
 """`ParentNode` that loads a value from an environment variable."""
 
+# pylint: disable=global-statement
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
@@ -13,7 +14,7 @@ from click_extended.core.nodes.parent_node import ParentNode
 from click_extended.core.other.context import Context
 from click_extended.utils.casing import Casing
 
-load_dotenv()
+_dotenv_loaded: bool = False
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -42,6 +43,11 @@ class Env(ParentNode):
         :raises ValueError:
             If the environment variable is required but not set.
         """
+        global _dotenv_loaded
+        if not _dotenv_loaded:
+            load_dotenv()
+            _dotenv_loaded = True
+
         env_name = kwargs.get("env_name")
         if env_name is None:
             raise ValueError("env_name must be provided")

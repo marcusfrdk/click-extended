@@ -2,7 +2,15 @@
 
 # Changelog
 
+## v1.2.7
+
+### Fixed
+
+- **`@env`**: Fixed unconditional call to `load_env` regardless of the decorator was used or not.
+
 ## v1.2.6
+
+### Added
 
 - **`@to_decimal`**: New decorator for converting integers or floating point numbers to `decimal.Decimal` objects.
 
