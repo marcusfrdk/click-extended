@@ -29,6 +29,7 @@ from click_extended.decorators.transform.to_case import (
 )
 from click_extended.decorators.transform.to_date import to_date
 from click_extended.decorators.transform.to_datetime import to_datetime
+from click_extended.decorators.transform.to_decimal import to_decimal
 from click_extended.decorators.transform.to_directory import to_directory
 from click_extended.decorators.transform.to_file import to_file
 from click_extended.decorators.transform.to_path import to_path
@@ -67,6 +68,7 @@ __all__ = [
     "to_upper_case",
     "to_date",
     "to_datetime",
+    "to_decimal",
     "to_directory",
     "to_file",
     "to_path",

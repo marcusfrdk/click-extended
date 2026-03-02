@@ -2,6 +2,10 @@
 
 # Changelog
 
+## v1.2.6
+
+- **`@to_decimal`**: New decorator for converting integers or floating point numbers to `decimal.Decimal` objects.
+
 ## v1.2.5
 
 ### Fixed
