@@ -2,6 +2,11 @@
 
 # Changelog
 
+## v1.2.8
+
+- **Aborted!**: Removed default click _Aborted!_ message when program is exited.
+- **Help message truncation**: Removed truncation for help messages.
+
 ## v1.2.7
 
 ### Fixed

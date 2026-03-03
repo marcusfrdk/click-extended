@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import sys
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable
 
 import click
@@ -64,6 +66,27 @@ class ClickGroup(click.Group):
         super().format_help(ctx, formatter)
         self.name = original_name
 
+    def main(
+        self,
+        args: Sequence[str] | None = None,
+        prog_name: str | None = None,
+        complete_var: str | None = None,
+        standalone_mode: bool = True,
+        **extra: Any,
+    ) -> Any:
+        """Invoke the group, suppressing the ``Aborted!`` message on abort."""
+        try:
+            return super().main(
+                args, prog_name, complete_var, standalone_mode=False, **extra
+            )
+        except click.exceptions.Abort:
+            sys.exit(1)
+        except click.exceptions.Exit as exc:
+            sys.exit(getattr(exc, "code", 1))
+        except click.exceptions.ClickException as exc:
+            exc.show()
+            sys.exit(exc.exit_code)
+
     def add_command(self, cmd: click.Command, name: str | None = None) -> None:
         """
         Add a command to the group, including its aliases.
@@ -108,7 +131,7 @@ class ClickGroup(click.Group):
                 commands[display_name] = cmd
 
         rows: list[tuple[str, str]] = [
-            (name, cmd.get_short_help_str()) for name, cmd in commands.items()
+            (name, cmd.help or "") for name, cmd in commands.items()
         ]
 
         if rows:

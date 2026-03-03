@@ -1,5 +1,7 @@
 """Click Command class for integration with RootNode."""
 
+import sys
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 import click
@@ -54,3 +56,24 @@ class ClickCommand(click.Command):
 
         super().format_help(ctx, formatter)
         self.name = original_name
+
+    def main(
+        self,
+        args: Sequence[str] | None = None,
+        prog_name: str | None = None,
+        complete_var: str | None = None,
+        standalone_mode: bool = True,
+        **extra: Any,
+    ) -> Any:
+        """Invoke the command, suppressing the ``Aborted!`` message on abort."""
+        try:
+            return super().main(
+                args, prog_name, complete_var, standalone_mode=False, **extra
+            )
+        except click.exceptions.Abort:
+            sys.exit(1)
+        except click.exceptions.Exit as exc:
+            sys.exit(getattr(exc, "code", 1))
+        except click.exceptions.ClickException as exc:
+            exc.show()
+            sys.exit(exc.exit_code)
