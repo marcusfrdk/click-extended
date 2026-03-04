@@ -2,6 +2,13 @@
 
 # Changelog
 
+## v1.2.10
+
+### Added
+
+- **`@is_numeric`**: A child node that checks if a string is numeric.
+- **`@to_string`**: A child node that transforms a value to a string.
+
 ## v1.2.9
 
 ### Fixed

@@ -33,6 +33,7 @@ from click_extended.decorators.transform.to_decimal import to_decimal
 from click_extended.decorators.transform.to_directory import to_directory
 from click_extended.decorators.transform.to_file import to_file
 from click_extended.decorators.transform.to_path import to_path
+from click_extended.decorators.transform.to_string import to_string
 from click_extended.decorators.transform.to_symlink import to_symlink
 from click_extended.decorators.transform.to_time import to_time
 from click_extended.decorators.transform.to_timestamp import to_timestamp
@@ -72,6 +73,7 @@ __all__ = [
     "to_directory",
     "to_file",
     "to_path",
+    "to_string",
     "to_symlink",
     "to_time",
     "to_timestamp",

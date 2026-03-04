@@ -16,6 +16,7 @@ from click_extended.decorators.check.is_json import is_json
 from click_extended.decorators.check.is_mac_address import is_mac_address
 from click_extended.decorators.check.is_negative import is_negative
 from click_extended.decorators.check.is_non_zero import is_non_zero
+from click_extended.decorators.check.is_numeric import is_numeric
 from click_extended.decorators.check.is_port import is_port
 from click_extended.decorators.check.is_positive import is_positive
 from click_extended.decorators.check.is_url import is_url
@@ -42,6 +43,7 @@ __all__ = [
     "is_ipv6",
     "is_json",
     "is_mac_address",
+    "is_numeric",
     "is_negative",
     "is_non_zero",
     "is_port",
