@@ -10,6 +10,9 @@ from click_extended.types import Decorator
 class ToString(ChildNode):
     """Child decorator to convert a value to a string."""
 
+    def handle_none(self, context: Context, *args: Any, **kwargs: Any) -> Any:
+        raise NotImplementedError
+
     def handle_all(
         self, value: Any, context: Context, *args: Any, **kwargs: Any
     ) -> Any:
