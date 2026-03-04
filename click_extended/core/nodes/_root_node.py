@@ -168,9 +168,11 @@ class RootNode(Node):
             option_kwargs: dict[str, Any] = {
                 "type": parent_node.type,
                 "required": parent_node.required,
-                "is_flag": parent_node.is_flag,
                 "help": parent_node.help,
             }
+
+            if parent_node.is_flag:
+                option_kwargs["is_flag"] = True
 
             extra_kwargs = getattr(parent_node, "extra_kwargs", {})
             if extra_kwargs:

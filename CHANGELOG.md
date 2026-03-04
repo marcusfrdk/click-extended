@@ -2,7 +2,15 @@
 
 # Changelog
 
+## v1.2.9
+
+### Fixed
+
+- **is_flag**: Fixed issue where is_flag is always explicitly passed
+
 ## v1.2.8
+
+### Fixed
 
 - **Aborted!**: Removed default click _Aborted!_ message when program is exited.
 - **Help message truncation**: Removed truncation for help messages.
