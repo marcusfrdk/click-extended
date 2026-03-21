@@ -2,7 +2,7 @@
 
 # Splitting Files
 
-Command line interfaces quickly grow very large in size of both the functions and the directory structure. This is a guide how you can apply different patterns to build your command line interface. These patterns are not exclusive and are recommended to use together.
+Command line interfaces quickly grow very large in size of both the functions and the directory structure. This is a guide on how you can apply different patterns to build your command line interface. These patterns are not exclusive and are recommended to use together.
 
 ## Single File
 

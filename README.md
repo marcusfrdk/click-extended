@@ -43,208 +43,331 @@ pip install click-extended
 
 ### Basic Command
 
-```python
-from click_extended import command, argument, option
-
-@command(aliases="ping")
-@argument("value")
-@option("--count", "-c", default=1)
-def my_function(value: str, count: int):
-    """This is the help message for my_function."""
-    if _ in range(count):
-        print(value)
-
-if __name__ == "__main__":
-    my_function()
-```
-
-```bash
-$ python cli.py "Hello world"
-Hello world
-```
-
-```bash
-$ python cli.py "Hello world" --count 3
-Hello world
-Hello world
-Hello world
-```
-
-### Basic Command Line Interface
-
-```python
-from click_extended import group, argument, option
-
-@group()
-def my_group():
-    """This is the help message for my_group."""
-    print("Running initialization code...")
-
-@my_group.command(aliases=["ping", "repeat"])
-@argument("value")
-@option("--count", "-c", default=1)
-def my_function(value: str, count: int):
-    """This is the help message for my_function."""
-    if _ in range(count):
-        print(value)
-
-if __name__ == "__main__":
-    my_group()
-```
-
-```bash
-$ python cli.py my_function "Hello world"
-Running initialization code...
-Hello world
-```
-
-```bash
-$ python cli.py my_function "Hello world" --count 3
-Running initialization code...
-Hello world
-Hello world
-Hello world
-```
-
-### Using Environment Variables
-
-```python
-from click_extended import group, command, env
-
-@group()
-def my_group():
-    """This is the help message for my_group."""
-
-@my_group.command()
-@env("API_KEY")
-def my_function_1(api_key: str | None):
-    """This is the help message for my_function."""
-    print(f"The API key is: {api_key}")
-
-@my_group.command()
-@env("API_KEY", required=True)
-def my_function_2(api_key: str):
-    """This is the help message for my_function."""
-    print(f"The API key is: {api_key}")
-
-if __name__ == "__main__":
-    my_group()
-```
-
-```bash
-$ python cli.py my_function_1
-The API key is: None
-```
-
-```bash
-$ API_KEY=api-key python cli.py my_function_1
-The API key is: api-key
-```
-
-```bash
-$ python cli.py my_function_2
-ProcessError (my_function_2): Required environment variable 'API_KEY' is not set.
-```
-
-```bash
-$ API_KEY=api-key python cli.py my_function_2
-The API key is: api-key
-```
-
-### Load CSV Data
-
-```python
-import pandas as pd
-from click_extended import command, argument
-from click_extended.decorators import to_path, load_csv
-
-@command()
-@argument("file", param="data")
-@to_path(extensions=["csv"], exists=True)
-@load_csv()
-def my_command(data: dict[str, Any], *args: Any, **kwargs: Any) -> None:
-    df = pd.DataFrame(data)
-    print(df.head())
-```
-
-_Note: `pandas` is not installed in this library and must be installed manually due to size._
-
-### Pre-Built Children
-
-This library includes a vast number of pre-built children, everything from checking values to transforming values.
+A simple command with a positional argument and an option. The command is also accessible via the alias `greet`.
 
 ```python
 from click_extended import command, argument, option
-from click_extended.decorators import to_snake_case, strip, is_email, minimum, dependencies
+
+@command(aliases="greet")
+@argument("name")
+@option("count", "-n", type=int, default=1, help="Number of times to greet.")
+def hello(name: str, count: int) -> None:
+    """Greet someone by name."""
+    for _ in range(count):
+        print(f"Hello, {name}!")
+
+if __name__ == "__main__":
+    hello()
+```
+
+```bash
+$ python cli.py "Alice"
+Hello, Alice!
+```
+
+```bash
+$ python cli.py "Alice" -n 3
+Hello, Alice!
+Hello, Alice!
+Hello, Alice!
+```
+
+### Command Group
+
+A group that organises multiple subcommands. Commands can have aliases to reduce boilerplate.
+
+```python
+from click_extended import group, command, argument, option
+
+@group()
+def cli() -> None:
+    """A simple task manager."""
+
+@cli.command(aliases=["ls"])
+@option("status", default="all", help="Filter by status: all, open, done.")
+def list_tasks(status: str) -> None:
+    """List all tasks."""
+    print(f"Listing tasks with status: {status}")
+
+@cli.command(aliases=["add"])
+@argument("title")
+@option("priority", "-p", default="medium", help="Task priority: low, medium, high.")
+def create_task(title: str, priority: str) -> None:
+    """Create a new task."""
+    print(f"Created task '{title}' with priority '{priority}'.")
+
+if __name__ == "__main__":
+    cli()
+```
+
+```bash
+$ python cli.py list-tasks --status open
+Listing tasks with status: open
+```
+
+```bash
+$ python cli.py add "Buy groceries" -p high
+Created task 'Buy groceries' with priority 'high'.
+```
+
+### Multi-File CLI
+
+For anything beyond a few commands, splitting each command into its own file keeps the project manageable. Use `group.add()` to wire everything together at the entrypoint.
+
+**`cli/entrypoint.py`**
+
+```python
+from click_extended import group
+
+from .commands.users import users
+from .commands.deploy import deploy
+
+@group()
+def cli() -> None:
+    """Production deployment tool."""
+
+cli.add(users)
+cli.add(deploy)
+
+if __name__ == "__main__":
+    cli()
+```
+
+**`cli/commands/users.py`**
+
+```python
+from click_extended import group, command, argument, option
+from click_extended.decorators import is_email, length, not_empty, strip
+
+@group(aliases=["u"])
+def users() -> None:
+    """Manage users."""
+
+@users.command(aliases=["add"])
+@argument("email")
+@is_email()
+@option("role", "-r", default="viewer", help="Role: viewer, editor, admin.")
+def create_user(email: str, role: str) -> None:
+    """Create a new user."""
+    print(f"Created user '{email}' with role '{role}'.")
+
+@users.command(aliases=["rm"])
+@argument("email")
+@is_email()
+def remove_user(email: str) -> None:
+    """Remove a user."""
+    print(f"Removed user '{email}'.")
+```
+
+**`cli/commands/deploy.py`**
+
+```python
+from typing import Any
+from click_extended import command, option
+from click_extended.decorators import to_path, load_json, choice
+
+@command(aliases=["d"])
+@option("config", "-c", required=True, help="Path to deployment config.")
+@to_path(exists=True, extensions=["json"])
+@load_json()
+@option("env", "-e", default="staging", help="Target environment.")
+@choice("staging", "production")
+def deploy(config: dict[str, Any], env: str) -> None:
+    """Deploy the application."""
+    host = config.get("host", "localhost")
+    print(f"Deploying to {host} ({env}).")
+```
+
+```bash
+$ python -m cli.entrypoint users add "alice@example.com" -r admin
+Created user 'alice@example.com' with role 'admin'.
+```
+
+```bash
+$ python -m cli.entrypoint deploy -c ./config.json -e production
+Deploying to api.example.com (production).
+```
+
+See the [Splitting Files guide](./docs/guides/SPLITTING_FILES.md) for more patterns.
+
+### Input Validation
+
+Chain built-in decorators to validate and transform values before they reach the function.
+
+```python
+from click_extended import command, option
+from click_extended.decorators import (
+    strip,
+    not_empty,
+    is_email,
+    length,
+    dependencies,
+)
 
 @command()
 @dependencies("username", "email", "password")
-@argument("username")
-@to_snake_case()
+@option("username", "-u", required=True)
 @strip()
-@option("email")
+@not_empty()
+@option("email", "-e", required=True)
 @is_email()
-@option("password")
-@minimum(8)
-def create_account(username: str, email: str, password: str) -> None:
-    print("Username:", username)
-    print("Email:", email)
-    print("Password:", password)
+@option("password", "-p", required=True)
+@length(min=8, max=64)
+def register(username: str, email: str, password: str) -> None:
+    """Register a new user account."""
+    print(f"Registered '{username}' with email '{email}'.")
 ```
 
-### Custom Nodes
+```bash
+$ python cli.py -u "  alice  " -e "alice@example.com" -p "hunter42"
+Registered 'alice' with email 'alice@example.com'.
+```
 
-If the library does not include a decorator you need, you can easily create your own. Read more about creating your own [children](./docs/core/CHILD_NODE.md), [validators](./docs/core/VALIDATION_NODE.md), [child validators](./docs/core/CHILD_VALIDATION_NODE.md) or [parents](./docs/core/PARENT_NODE.md).
+```bash
+$ python cli.py -u "alice" -e "not-an-email" -p "hunter42"
+ValueError (register): 'not-an-email' is not a valid email address.
+```
+
+```bash
+$ python cli.py -u "alice" -e "alice@example.com" -p "short"
+ValueError (register): Value must be at least 8 characters long.
+```
+
+### Environment Variables
+
+Load credentials or configuration from environment variables rather than command-line flags.
+
+```python
+from click_extended import command, env
+from click_extended.decorators import not_empty
+
+@command()
+@env("DATABASE_URL", required=True)
+@not_empty()
+@env("LOG_LEVEL", default="info")
+def serve(database_url: str, log_level: str) -> None:
+    """Start the application server."""
+    print(f"Connecting to {database_url} (log level: {log_level})")
+```
+
+```bash
+$ python cli.py
+ValueError (serve): Required environment variable 'DATABASE_URL' is not set.
+```
+
+```bash
+$ DATABASE_URL="postgresql://localhost/mydb" python cli.py
+Connecting to postgresql://localhost/mydb (log level: info)
+```
+
+### Loading a JSON Config File
+
+Use `@to_path` to validate the path and `@load_json` to parse the file contents.
+
+```python
+from typing import Any
+from click_extended import command, option
+from click_extended.decorators import to_path, load_json
+
+@command()
+@option("config", "-c", required=True, help="Path to a JSON config file.")
+@to_path(exists=True, extensions=["json"])
+@load_json()
+def deploy(config: dict[str, Any]) -> None:
+    """Deploy using a JSON config file."""
+    host = config.get("host", "localhost")
+    port = config.get("port", 8080)
+    print(f"Deploying to {host}:{port}")
+```
+
+```bash
+$ python cli.py -c ./config.json
+Deploying to api.example.com:443
+```
+
+### Cross-Parameter Constraints
+
+Use `@requires`, `@conflicts`, and `@exclusive` to express relationships between parameters.
+
+```python
+from click_extended import command, option
+from click_extended.decorators import requires, conflicts, exclusive
+
+@command()
+@exclusive("token", "username")
+@option("token", "-t", help="API token for authentication.")
+@conflicts("username")
+@option("username", "-u", help="Username for basic authentication.")
+@requires("password")
+@option("password", "-p", help="Password for basic authentication.")
+def login(token: str | None, username: str | None, password: str | None) -> None:
+    """Authenticate with either a token or username and password."""
+    if token:
+        print(f"Logged in with token.")
+    else:
+        print(f"Logged in as '{username}'.")
+```
+
+```bash
+$ python cli.py -t "mytoken"
+Logged in with token.
+```
+
+```bash
+$ python cli.py -t "mytoken" -u "alice"
+ValueError (login): '--token' and '--username' are mutually exclusive.
+```
+
+```bash
+$ python cli.py -u "alice"
+ValueError (login): '--username' requires '--password' to be provided.
+```
+
+### Custom Child Node
+
+If the built-in decorators do not cover your use case, you can implement your own child node.
 
 ```python
 from typing import Any
 
-from click_extended import group, argument, option
+from click_extended import command, option
 from click_extended.classes import ChildNode
 from click_extended.types import Context, Decorator
 
-class MyCustomChild(ChildNode):
-    def handle_string(
+
+class Slugify(ChildNode):
+    def handle_str(
         self,
         value: str,
         context: Context,
         *args: Any,
         **kwargs: Any,
     ) -> str:
-        if value == "invalid":
-            raise ValueError("The value 'invalid' is not valid")
-
-        return value.upper()
-
-def my_custom_child() -> Decorator:
-    """Checks if the value is invalid and converts it to uppercase."""
-    return MyCustomChild.as_decorator()
+        separator: str = kwargs.get("separator", "-")
+        return separator.join(value.lower().split())
 
 
-@group()
-def my_group():
-    """This is the help message for my_group."""
-    print("Running initialization code...")
+def slugify(separator: str = "-") -> Decorator:
+    """Convert a string to a URL-friendly slug."""
+    return Slugify.as_decorator(separator=separator)
 
-@my_group.command(aliases=["ping", "repeat"])
-@argument("value")
-@my_custom_child()
-def my_function(value: str):
-    """This is the help message for my_function."""
-    print(f"The value '{value}' should be uppercase.")
 
-if __name__ == "__main__":
-    my_group()
+@command()
+@option("title", required=True, help="Blog post title.")
+@slugify()
+def publish(title: str) -> None:
+    """Publish a blog post."""
+    print(f"Published at /posts/{title}")
 ```
 
 ```bash
-$ python cli.py my_function valid
-The value 'VALID' should be uppercase.
+$ python cli.py --title "Hello World"
+Published at /posts/hello-world
 ```
 
 ```bash
-$ python cli.py my_function invalid
-ValueError (my_function): "The value 'invalid' is not valid"
+$ python cli.py --title "My New Post"
+Published at /posts/my-new-post
 ```
 
 ## Documentation

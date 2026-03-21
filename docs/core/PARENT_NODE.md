@@ -2,7 +2,7 @@
 
 # Parent Node
 
-The `ParentNode` is the abstract base class for all parameter nodes in click-extended. It defines the common interface and behavior for nodes that inject values into command functions. Concrete parameter implementations like [argument](../nodes/ARGUMENT.md), [option](../nodes/OPTION.md), and [environment variables](../nodes/ENV.md) extend from `ParentNode`.
+The `ParentNode` is the abstract base class for all parameter nodes in click-extended. It defines the common interface and behavior for nodes that inject values into command functions. Concrete parameter implementations like [argument](./ARGUMENT_NODE.md), [option](./OPTION_NODE.md), and environment variables extend from `ParentNode`.
 
 ## Table of Contents
 

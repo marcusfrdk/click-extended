@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.3.0
+
+### Updated
+
+- **Documentation**: Updated most documentation, including decorator-specific documentation and usage examples.
+
 ## v1.2.10
 
 ### Added

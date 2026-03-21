@@ -15,7 +15,7 @@ Tags are applied using the `@tag` decorator. Any parent node (Argument, Option, 
 
 ```python
 from click_extended import command, option, tag
-from click_extended.decorators import to_upper_case
+from click_extended.decorators import requires, to_upper_case
 
 @command()
 @option("username", tags="login")

@@ -13,7 +13,7 @@ All methods can be used either as global or local. Global means they always will
 | `on_boot`  | Before context creation. |                                                                    |
 | `on_init`  | After context creation.  |                                                                    |
 | `on_error` | On an interrupt.         | Can catch all exceptions or select specific to include or exclude. |
-| `on_exit`  | When the program exits.  | For example, when `sys.exit()` is called.                          |
+| `on_exit`  | When the program exits.  | Runs on any program exit, including `sys.exit()` calls.            |
 
 ## Examples
 

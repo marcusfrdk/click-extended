@@ -48,7 +48,7 @@ from click_extended.decorators import to_lower_case
 @to_lower_case()
 def my_function(value: str):
     """This function converts the value to lower case."""
-    print(f"The value '{value}' should is lowercase.")
+    print(f"The value '{value}' should be lowercase.")
 
 # $ python cli.py "Hello World"
 # The value 'hello world' should be lowercase.
@@ -78,7 +78,7 @@ def my_function(password: str):
 
 ## Extending
 
-Creating your own child nodes is one of the most powerful features of this library, even though this library includes a lot of [pre-built decorators](../nodes/DECORATORS.md). Here is a guide in how to create your own children.
+Creating your own child nodes is one of the most powerful features of this library, even though this library includes a lot of [pre-built decorators](../decorators/README.md). Here is a guide on how to create your own children.
 
 ### Handlers
 
@@ -151,7 +151,7 @@ Inside the handler, you have full freedom or validating it the way you want, in 
 
 #### Decorator
 
-There are two ways of using your new shiny child node, either by directly- or indirectly (recommended) using it.
+There are two ways of using your new shiny child node, either directly or indirectly (recommended).
 
 ##### Indirectly (Recommended)
 

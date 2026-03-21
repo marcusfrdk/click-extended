@@ -19,3 +19,16 @@
 
 - [Migrating From Click](./guides/MIGRATING_FROM_CLICK.md): A guide on how to migrate your codebase from `click` to `click-extended`.
 - [Splitting Files](./guides/SPLITTING_FILES.md): A guide how to organize your files and how to build a single file and multi file command line interface.
+
+## Decorators
+
+Pre-built decorators available from `click_extended.decorators`:
+
+- [Check](./decorators/CHECK.md): Validate string formats, numeric properties, and inter-parameter constraints.
+- [Compare](./decorators/COMPARE.md): Compare numeric, date, and time values against thresholds or ranges.
+- [Convert](./decorators/CONVERT.md): Convert numeric values between units (temperature, distance, weight, and more).
+- [Load](./decorators/LOAD.md): Load file contents (CSV, JSON, TOML, YAML) from a `Path` value.
+- [Math](./decorators/MATH.md): Apply mathematical operations and transformations to numeric values.
+- [Misc](./decorators/MISC.md): Miscellaneous utilities for defaults, observation, confirmation, and error handling.
+- [Random](./decorators/RANDOM.md): Generate random values as parameter sources (integers, floats, strings, UUIDs, and more).
+- [Transform](./decorators/TRANSFORM.md): Transform string values: case conversion, path handling, type conversion, and more.
