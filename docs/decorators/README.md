@@ -112,16 +112,15 @@ All decorators are [ChildNodes](../core/CHILD_NODE.md) unless otherwise noted. C
 
 ### Misc
 
-| Decorator                                   | Supports              | Description                                          |
-| ------------------------------------------- | --------------------- | ---------------------------------------------------- |
-| `catch(*exc_types, handler, reraise)`       | `ValidationNode`      | Catch exceptions from the command                    |
-| `choice(*values, case_sensitive)`           | `str`, `int`, `float` | Validate value is one of the allowed choices         |
-| `confirm_if(prompt, fn, truthy)`            | `any`                 | Prompt for confirmation based on a predicate         |
-| `default(from_value, from_env, from_param)` | `any`                 | Set a default when no value was provided             |
-| `deprecated(new, since, removed_in)`        | `any`                 | Print a deprecation warning when parameter is used   |
-| `experimental(message)`                     | `any`                 | Print an experimental warning when parameter is used |
-| `now(name, tz)`                             | `ParentNode`          | Inject the current datetime                          |
-| `observe(handler)`                          | `any`                 | Observe a value without modifying it                 |
+| Decorator                                   | Supports         | Description                                          |
+| ------------------------------------------- | ---------------- | ---------------------------------------------------- |
+| `catch(*exc_types, handler, reraise)`       | `ValidationNode` | Catch exceptions from the command                    |
+| `confirm_if(prompt, fn, truthy)`            | `any`            | Prompt for confirmation based on a predicate         |
+| `default(from_value, from_env, from_param)` | `any`            | Set a default when no value was provided             |
+| `deprecated(new, since, removed_in)`        | `any`            | Print a deprecation warning when parameter is used   |
+| `experimental(message)`                     | `any`            | Print an experimental warning when parameter is used |
+| `now(name, tz)`                             | `ParentNode`     | Inject the current datetime                          |
+| `observe(handler)`                          | `any`            | Observe a value without modifying it                 |
 
 ### Random
 

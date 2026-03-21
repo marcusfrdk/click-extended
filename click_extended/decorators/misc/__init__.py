@@ -3,7 +3,6 @@
 # pylint: disable=wrong-import-position
 
 from click_extended.decorators.misc.catch import catch
-from click_extended.decorators.misc.choice import choice
 from click_extended.decorators.misc.confirm_if import confirm_if
 from click_extended.decorators.misc.default import default
 from click_extended.decorators.misc.deprecated import deprecated
@@ -13,7 +12,6 @@ from click_extended.decorators.misc.observe import observe
 
 __all__ = [
     "catch",
-    "choice",
     "confirm_if",
     "default",
     "deprecated",

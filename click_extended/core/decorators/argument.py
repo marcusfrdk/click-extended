@@ -2,20 +2,46 @@
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=too-many-locals
 # pylint: disable=redefined-builtin
 
 from builtins import type as builtins_type
-from typing import Any, Type, cast
+from typing import Any, Sequence, Type, cast
 
 from click_extended.core.nodes.argument_node import ArgumentNode
 from click_extended.core.other.context import Context
 from click_extended.types import Decorator
 from click_extended.utils.casing import Casing
-from click_extended.utils.humanize import humanize_type
+from click_extended.utils.humanize import humanize_iterable, humanize_type
 from click_extended.utils.naming import validate_name
 
 _MISSING = object()
 SUPPORTED_TYPES = (str, int, float, bool)
+
+
+def _validate_choice(
+    value: str | int | float,
+    choices: tuple[str | int | float, ...],
+    case_sensitive: bool,
+) -> None:
+    """Raise ValueError if value is not in the allowed choices."""
+    if isinstance(value, str) and not case_sensitive:
+        valid = any(
+            (str(v).lower() if isinstance(v, str) else v) == value.lower()
+            for v in choices
+        )
+    else:
+        valid = value in choices
+
+    if not valid:
+        choices_str = humanize_iterable(
+            [str(v) for v in choices],
+            sep="or",
+            wrap="'",
+            prefix_plural="one of",
+            prefix_singular="",
+        )
+        raise ValueError(f"Value must be {choices_str}, got '{value}'.")
 
 
 class Argument(ArgumentNode):
@@ -31,6 +57,8 @@ class Argument(ArgumentNode):
         required: bool = True,
         default: Any = _MISSING,
         tags: str | list[str] | None = None,
+        choices: Sequence[str | int | float] | None = None,
+        case_sensitive: bool = True,
         **kwargs: Any,
     ):
         r"""
@@ -78,6 +106,16 @@ class Argument(ArgumentNode):
         if default is _MISSING:
             default = None
 
+        if choices is not None:
+            if len(choices) == 0:
+                raise ValueError("At least one choice must be provided.")
+            for v in choices:
+                if not isinstance(v, (str, int, float)):
+                    raise TypeError(
+                        f"All choice values must be str, int, or float, "
+                        f"got {builtins_type(v).__name__}."
+                    )
+
         if type is None:
             if default is not None:
                 inferred_type = cast(  # type: ignore
@@ -108,6 +146,8 @@ class Argument(ArgumentNode):
             required=required,
             default=default,
             tags=tags,
+            choices=choices,
+            case_sensitive=case_sensitive,
         )
         self.extra_kwargs = kwargs
 
@@ -144,6 +184,13 @@ class Argument(ArgumentNode):
             The argument value to inject into the function.
         :rtype: Any
         """
+        if self.choices is not None and value is not None:
+            if isinstance(value, tuple):
+                for v in value:
+                    if v is not None:
+                        _validate_choice(v, self.choices, self.case_sensitive)
+            else:
+                _validate_choice(value, self.choices, self.case_sensitive)
         return value
 
 
@@ -156,6 +203,8 @@ def argument(
     required: bool = True,
     default: Any = _MISSING,
     tags: str | list[str] | None = None,
+    choices: Sequence[str | int | float] | None = None,
+    case_sensitive: bool = True,
     **kwargs: Any,
 ) -> Decorator:
     r"""
@@ -226,5 +275,7 @@ def argument(
         required=required,
         default=default,
         tags=tags,
+        choices=choices,
+        case_sensitive=case_sensitive,
         **kwargs,
     )

@@ -7,7 +7,7 @@
 # pylint: disable=line-too-long
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, Sequence, Type, TypeVar
 
 from click_extended.core.nodes.parent_node import ParentNode
 
@@ -37,6 +37,8 @@ class ArgumentNode(ParentNode, ABC):
         required: bool = True,
         default: Any = None,
         tags: str | list[str] | None = None,
+        choices: Sequence[str | int | float] | None = None,
+        case_sensitive: bool = True,
         **kwargs: Any,
     ):
         r"""
@@ -65,6 +67,8 @@ class ArgumentNode(ParentNode, ABC):
         )
         self.nargs = nargs
         self.type = type
+        self.choices = tuple(choices) if choices is not None else None
+        self.case_sensitive = case_sensitive
 
     @abstractmethod
     def load(
@@ -101,6 +105,8 @@ class ArgumentNode(ParentNode, ABC):
         required: bool = True,
         default: Any = None,
         tags: str | list[str] | None = None,
+        choices: Sequence[str | int | float] | None = None,
+        case_sensitive: bool = True,
         **kwargs: Any,
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
         r"""
@@ -130,6 +136,8 @@ class ArgumentNode(ParentNode, ABC):
             required=required,
             default=default,
             tags=tags,
+            choices=choices,
+            case_sensitive=case_sensitive,
             **kwargs,
         )
 

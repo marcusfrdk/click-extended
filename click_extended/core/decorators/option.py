@@ -10,17 +10,42 @@
 import asyncio
 from builtins import type as builtins_type
 from functools import wraps
-from typing import Any, Callable, ParamSpec, Type, TypeVar, cast
+from typing import Any, Callable, ParamSpec, Sequence, Type, TypeVar, cast
 
 from click_extended.core.nodes.option_node import OptionNode
 from click_extended.core.other.context import Context
-from click_extended.utils.humanize import humanize_type
+from click_extended.utils.humanize import humanize_iterable, humanize_type
 from click_extended.utils.naming import is_long_flag, is_short_flag, validate_name
 
 P = ParamSpec("P")
 T = TypeVar("T")
 
 SUPPORTED_TYPES = (str, int, float, bool)
+
+
+def _validate_choice(
+    value: str | int | float,
+    choices: tuple[str | int | float, ...],
+    case_sensitive: bool,
+) -> None:
+    """Raise ValueError if value is not in the allowed choices."""
+    if isinstance(value, str) and not case_sensitive:
+        valid = any(
+            (str(v).lower() if isinstance(v, str) else v) == value.lower()
+            for v in choices
+        )
+    else:
+        valid = value in choices
+
+    if not valid:
+        choices_str = humanize_iterable(
+            [str(v) for v in choices],
+            sep="or",
+            wrap="'",
+            prefix_plural="one of",
+            prefix_singular="",
+        )
+        raise ValueError(f"Value must be {choices_str}, got '{value}'.")
 
 
 class Option(OptionNode):
@@ -39,6 +64,8 @@ class Option(OptionNode):
         required: bool = False,
         default: Any = None,
         tags: str | list[str] | None = None,
+        choices: Sequence[str | int | float] | None = None,
+        case_sensitive: bool = True,
         **kwargs: Any,
     ):
         """
@@ -165,6 +192,16 @@ class Option(OptionNode):
         if multiple and default is None:
             default = ()
 
+        if choices is not None:
+            if len(choices) == 0:
+                raise ValueError("At least one choice must be provided.")
+            for v in choices:
+                if not isinstance(v, (str, int, float)):
+                    raise TypeError(
+                        f"All choice values must be str, int, or float, "
+                        f"got {builtins_type(v).__name__}."
+                    )
+
         super().__init__(
             name=derived_name,
             param=param_name,
@@ -178,6 +215,8 @@ class Option(OptionNode):
             required=required,
             default=default,
             tags=tags,
+            choices=choices,
+            case_sensitive=case_sensitive,
         )
         self.extra_kwargs = kwargs
 
@@ -218,6 +257,13 @@ class Option(OptionNode):
             The option value to inject into the function.
         :rtype: Any
         """
+        if self.choices is not None and value is not None:
+            if isinstance(value, tuple):
+                for v in value:
+                    if v is not None:
+                        _validate_choice(v, self.choices, self.case_sensitive)
+            else:
+                _validate_choice(value, self.choices, self.case_sensitive)
         return value
 
 
@@ -233,6 +279,8 @@ def option(
     required: bool = False,
     default: Any = None,
     tags: str | list[str] | None = None,
+    choices: Sequence[str | int | float] | None = None,
+    case_sensitive: bool = True,
     **kwargs: Any,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
@@ -318,6 +366,8 @@ def option(
             required=required,
             default=default,
             tags=tags,
+            choices=choices,
+            case_sensitive=case_sensitive,
             **kwargs,
         )
         Tree.queue_parent(instance)

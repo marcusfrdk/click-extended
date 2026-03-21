@@ -165,10 +165,16 @@ class RootNode(Node):
             params.extend(parent_node.long_flags)
             params.append(parent_node.name)
 
+            choices = getattr(parent_node, "choices", None)
+            base_help = parent_node.help or ""
+            if choices:
+                choices_display = "|".join(str(v) for v in choices)
+                base_help = f"{base_help} [{choices_display}]".strip()
+
             option_kwargs: dict[str, Any] = {
                 "type": parent_node.type,
                 "required": parent_node.required,
-                "help": parent_node.help,
+                "help": base_help or None,
             }
 
             if parent_node.is_flag:

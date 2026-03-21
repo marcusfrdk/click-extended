@@ -13,20 +13,22 @@ An `OptionNode` is an abstract extension of the [parent node](./PARENT_NODE.md) 
 
 Parameters of the `OptionNode` as set in the `as_decorator()` method where the class is initialized.
 
-| Name       | Type                  | Default                              | Description                                                                                                |
-| ---------- | --------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| name       | str                   |                                      | The name of the option node, used as the parameter name unless `param` is set (converted to `snake_case`). |
-| \*flags    | str                   |                                      | Optional flags for the option (e.g., `-p`, `--port`).                                                      |
-| param      | str                   | The `name` parameter in `snake_case` | The parameter name to inject the value as in the function.                                                 |
-| is_flag    | bool                  | `False`                              | Whether this option is a boolean flag.                                                                     |
-| type       | str, int, float, bool | `str`                                | The type of the option value.                                                                              |
-| nargs      | int                   | `1`                                  | The number of values to accept. When `nargs > 1`, creates a container tuple.                               |
-| multiple   | bool                  | `False`                              | Whether the option can be specified multiple times. When `True`, creates a container tuple.                |
-| help       | str                   |                                      | The help string to display in the help menu.                                                               |
-| required   | bool                  | `False`                              | Whether the option is required.                                                                            |
-| default    | str, int, float, bool |                                      | The default value to use.                                                                                  |
-| tags       | str, list[str]        |                                      | A string or list of strings of tags to tag the option node with.                                           |
-| \*\*kwargs | Any                   |                                      | Optional keyword arguments passed to the `load()` method.                                                  |
+| Name           | Type                   | Default                              | Description                                                                                                |
+| -------------- | ---------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| name           | str                    |                                      | The name of the option node, used as the parameter name unless `param` is set (converted to `snake_case`). |
+| \*flags        | str                    |                                      | Optional flags for the option (e.g., `-p`, `--port`).                                                      |
+| param          | str                    | The `name` parameter in `snake_case` | The parameter name to inject the value as in the function.                                                 |
+| is_flag        | bool                   | `False`                              | Whether this option is a boolean flag.                                                                     |
+| type           | str, int, float, bool  | `str`                                | The type of the option value.                                                                              |
+| nargs          | int                    | `1`                                  | The number of values to accept. When `nargs > 1`, creates a container tuple.                               |
+| multiple       | bool                   | `False`                              | Whether the option can be specified multiple times. When `True`, creates a container tuple.                |
+| help           | str                    |                                      | The help string to display in the help menu.                                                               |
+| required       | bool                   | `False`                              | Whether the option is required.                                                                            |
+| default        | str, int, float, bool  |                                      | The default value to use.                                                                                  |
+| tags           | str, list[str]         |                                      | A string or list of strings of tags to tag the option node with.                                           |
+| choices        | tuple[str\|int\|float] |                                      | Restricts accepted values to this set. Validated at runtime before child nodes run.                        |
+| case_sensitive | bool                   | `True`                               | For string choices, whether the comparison is case-sensitive.                                              |
+| \*\*kwargs     | Any                    |                                      | Optional keyword arguments passed to the `load()` method.                                                  |
 
 ### Container Tuples
 

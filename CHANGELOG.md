@@ -4,9 +4,17 @@
 
 ## v1.3.0
 
+### Added
+
+- **choices**: Added a built-in parameter to select among a list of choices for options and arguments with a `case_sensitive` parameter.
+
 ### Updated
 
 - **Documentation**: Updated most documentation, including decorator-specific documentation and usage examples.
+
+### Removed
+
+- **`@choice`**: Removed the choice decorator in favor of a built-in choices parameter.
 
 ## v1.2.10
 

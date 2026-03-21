@@ -164,14 +164,13 @@ def remove_user(email: str) -> None:
 ```python
 from typing import Any
 from click_extended import command, option
-from click_extended.decorators import to_path, load_json, choice
+from click_extended.decorators import to_path, load_json
 
 @command(aliases=["d"])
 @option("config", "-c", required=True, help="Path to deployment config.")
 @to_path(exists=True, extensions=["json"])
 @load_json()
-@option("env", "-e", default="staging", help="Target environment.")
-@choice("staging", "production")
+@option("env", "-e", default="staging", help="Target environment.", choices=("staging", "production"))
 def deploy(config: dict[str, Any], env: str) -> None:
     """Deploy the application."""
     host = config.get("host", "localhost")

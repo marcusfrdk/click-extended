@@ -2,12 +2,14 @@
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-instance-attributes
 # pylint: disable=redefined-builtin
 # pylint: disable=arguments-differ
 # pylint: disable=line-too-long
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, Sequence, Type, TypeVar
 
 from click_extended.core.nodes.parent_node import ParentNode
 from click_extended.utils.casing import Casing
@@ -42,6 +44,8 @@ class OptionNode(ParentNode, ABC):
         required: bool = False,
         default: Any = None,
         tags: str | list[str] | None = None,
+        choices: Sequence[str | int | float] | None = None,
+        case_sensitive: bool = True,
         **kwargs: Any,
     ):
         r"""
@@ -84,6 +88,8 @@ class OptionNode(ParentNode, ABC):
         self.type = type
         self.nargs = nargs
         self.multiple = multiple
+        self.choices = tuple(choices) if choices is not None else None
+        self.case_sensitive = case_sensitive
 
     @abstractmethod
     def load(
@@ -124,6 +130,8 @@ class OptionNode(ParentNode, ABC):
         required: bool = False,
         default: Any = None,
         tags: str | list[str] | None = None,
+        choices: Sequence[str | int | float] | None = None,
+        case_sensitive: bool = True,
         **kwargs: Any,
     ) -> Callable[[Callable[P, T]], Callable[P, T]]:
         r"""
@@ -162,6 +170,8 @@ class OptionNode(ParentNode, ABC):
             required=required,
             default=default,
             tags=tags,
+            choices=choices,
+            case_sensitive=case_sensitive,
             **kwargs,
         )
 

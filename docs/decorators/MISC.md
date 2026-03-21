@@ -7,7 +7,6 @@ Miscellaneous decorators that don't fit neatly into other categories. They cover
 ## Table of Contents
 
 - [catch](#catch)
-- [choice](#choice)
 - [confirm_if](#confirm_if)
 - [default](#default)
 - [deprecated](#deprecated)
@@ -54,31 +53,6 @@ def cmd() -> None:
 @option("xml", is_flag=True)
 def export(json: bool, xml: bool) -> None:
     pass
-```
-
----
-
-## choice
-
-Type: `ChildNode` | Supports: `str`, `int`, `float`
-
-Validate that the value is one of a fixed set of allowed choices.
-
-```python
-choice(*values: str | int | float, case_sensitive: bool = True) -> Decorator
-```
-
-| Parameter        | Type                  | Default | Description                                                 |
-| ---------------- | --------------------- | ------- | ----------------------------------------------------------- |
-| `*values`        | `str \| int \| float` |         | Allowed values                                              |
-| `case_sensitive` | `bool`                | `True`  | For string comparisons, whether to compare case-sensitively |
-
-```python
-@option("color")
-@choice("red", "green", "blue")
-
-@option("level")
-@choice("debug", "info", "warning", "error", case_sensitive=False)
 ```
 
 ---
