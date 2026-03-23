@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.4.0
+
+### Added
+
+- **Shell Completion**: Added opt-in shell completion via `register_completion`. Supports Bash, Zsh, and Fish.
+
 ## v1.3.0
 
 ### Added

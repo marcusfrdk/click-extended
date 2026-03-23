@@ -1,5 +1,6 @@
 """Initialization file for the 'click_extended' module."""
 
+from click_extended.completion import register_completion
 from click_extended.core.decorators.argument import argument
 from click_extended.core.decorators.command import command
 from click_extended.core.decorators.context import context
@@ -20,6 +21,7 @@ __all__ = [
     "group",
     "option",
     "prompt",
+    "register_completion",
     "selection",
     "tag",
 ]

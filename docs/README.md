@@ -18,6 +18,7 @@
 ## Guides
 
 - [Migrating From Click](./guides/MIGRATING_FROM_CLICK.md): A guide on how to migrate your codebase from `click` to `click-extended`.
+- [Shell Completion](./guides/SHELL_COMPLETION.md): A guide on how to enable shell tab-completion for CLIs built with `click-extended`.
 - [Splitting Files](./guides/SPLITTING_FILES.md): A guide how to organize your files and how to build a single file and multi file command line interface.
 
 ## Decorators

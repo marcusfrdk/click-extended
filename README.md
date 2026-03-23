@@ -28,6 +28,7 @@ An extension of the [Click](https://github.com/pallets/click) library with addit
 - **Short Flag Concatenation**: Automatically support concatenating short hand flags where `-r -f` is the same as `-rf`.
 - **Global state**: Access global state through the context's `data` property.
 - **Hook API**: Hook into various points and run custom functions in the lifecycle.
+- **Shell Completion**: Opt-in tab-completion for Bash, Zsh, and Fish with a single function call.
 
 ## Installation
 
@@ -188,6 +189,36 @@ Deploying to api.example.com (production).
 ```
 
 See the [Splitting Files guide](./docs/guides/SPLITTING_FILES.md) for more patterns.
+
+### Shell Completion
+
+Call `register_completion` on any command or group to add built-in tab-completion support. Supports Bash, Zsh, and Fish, shell is auto-detected.
+
+```python
+from click_extended import group, register_completion
+
+@group()
+def cli() -> None:
+    """My CLI."""
+
+register_completion(cli)
+
+if __name__ == "__main__":
+    cli()
+```
+
+```bash
+$ mycli --install-completion
+Installed Bash completion for 'mycli'.
+```
+
+```bash
+$ source ~/.bashrc
+$ mycli <TAB>
+greet  send
+```
+
+See the [Shell Completion guide](./docs/guides/SHELL_COMPLETION.md) for all available flags and installation details.
 
 ### Input Validation
 
