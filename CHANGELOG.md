@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.4.3
+
+### Fixed
+
+- **Tests**: Added regression tests for class pass-through behavior
+
 ## v1.4.2
 
 ### Fixed

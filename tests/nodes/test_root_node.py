@@ -681,6 +681,79 @@ class TestRootNodeChildrenProcessing:
         assert result.exit_code == 0
         assert "Result: 20" in result.output
 
+    def test_handler_returning_class_is_not_instantiated(self, cli_runner: Any) -> None:
+        """Test that a handler returning a class passes the class through unchanged.
+
+        Regression test: handlers that return a class object (not an instance)
+        must not have that class instantiated by the dispatch machinery.
+        The decorated function should receive the class itself so the caller
+        can instantiate it with its own arguments.
+        """
+
+        class Payload:
+            def __init__(self, required_arg: str) -> None:
+                self.required_arg = required_arg
+
+        class ReturnPayloadClass(ChildNode):
+            def handle_str(
+                self, value: str, context: Context, *args: Any, **kwargs: Any
+            ) -> Any:
+                return Payload
+
+        received: list[Any] = []
+
+        @command()
+        @argument("name")
+        @ReturnPayloadClass.as_decorator()
+        def cmd(name: Any) -> None:
+            received.append(name)
+
+        result = cli_runner.invoke(cmd, ["any-input"])
+        assert result.exit_code == 0
+        assert len(received) == 1
+        assert received[0] is Payload, (
+            f"Expected the Payload class object, got {received[0]!r} "
+            f"(type: {type(received[0]).__name__}). "
+            "The class was instantiated instead of passed through."
+        )
+        assert isinstance(received[0], type), "Value should be a class, not an instance"
+
+    def test_handler_returning_class_with_chained_handle_all(
+        self, cli_runner: Any
+    ) -> None:
+        """Test that a class return value passes correctly through a chained child."""
+
+        class Payload:
+            def __init__(self, required_arg: str) -> None:
+                self.required_arg = required_arg
+
+        class ReturnPayloadClass(ChildNode):
+            def handle_str(
+                self, value: str, context: Context, *args: Any, **kwargs: Any
+            ) -> Any:
+                return Payload
+
+        class PassThrough(ChildNode):
+            def handle_all(
+                self, value: Any, context: Context, *args: Any, **kwargs: Any
+            ) -> Any:
+                return value
+
+        received: list[Any] = []
+
+        @command()
+        @argument("name")
+        @ReturnPayloadClass.as_decorator()
+        @PassThrough.as_decorator()
+        def cmd(name: Any) -> None:
+            received.append(name)
+
+        result = cli_runner.invoke(cmd, ["any-input"])
+        assert result.exit_code == 0
+        assert (
+            received[0] is Payload
+        ), "Class was instantiated while passing through a second child node."
+
 
 class TestRootNodeAsync:
     """Test RootNode async handler support."""

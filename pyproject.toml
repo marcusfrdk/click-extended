@@ -1,6 +1,6 @@
 [project]
 name = "click_extended"
-version = "1.4.2"
+version = "1.4.3"
 description = "An extension to Click with additional features like automatic async support, aliasing and a modular decorator system."
 authors = [
     { name = "Marcus Fredriksson", email = "marcus@marcusfredriksson.com" },
@@ -33,7 +33,9 @@ keywords = [
     "group",
     "decorator",
     "terminal",
-    "console"
+    "console",
+    "async",
+    "asyncio",
 ]
 dependencies = [
     "click>=8.3.0",

@@ -559,6 +559,33 @@ class TestDispatchToChild:
         result = dispatch_to_child(child, "test", context)
         assert result == "test"
 
+    def test_dispatch_handler_returning_class_is_not_instantiated(self) -> None:
+        """Test that a handler returning a class passes it through unchanged.
+
+        Regression: dispatch must not instantiate a class returned by a handler.
+        The caller may need the class itself (e.g. to instantiate with its own args).
+        """
+
+        class Payload:
+            def __init__(self, required_arg: str) -> None:
+                self.required_arg = required_arg
+
+        class ReturnClassChild(MockChildNode):
+            def handle_str(self, value: str, context: Any) -> Any:
+                return Payload
+
+        child = ReturnClassChild()
+        context = Mock()
+        context.is_tag.return_value = False
+        context.click_context = Mock()
+        context.click_context.meta = {"click_extended": {}}
+
+        result = dispatch_to_child(child, "some-input", context)
+        assert (
+            result is Payload
+        ), f"Expected Payload class, got {result!r} (type: {type(result).__name__})"
+        assert isinstance(result, type), "Result should be a class, not an instance"
+
     def test_dispatch_handle_none_returns_none_preserves_none(self) -> None:
         """Test handle_none returning None preserves None value."""
 
@@ -703,6 +730,32 @@ class TestDispatchToChildAsync:
 
         result = await dispatch_to_child_async(child, "test", context)
         assert result == "test"
+
+    @pytest.mark.asyncio
+    async def test_async_dispatch_handler_returning_class_is_not_instantiated(
+        self,
+    ) -> None:
+        """Test async dispatch does not instantiate a class returned by a handler."""
+
+        class Payload:
+            def __init__(self, required_arg: str) -> None:
+                self.required_arg = required_arg
+
+        class ReturnClassChild(MockChildNode):
+            def handle_str(self, value: str, context: Any) -> Any:
+                return Payload
+
+        child = ReturnClassChild()
+        context = Mock()
+        context.is_tag.return_value = False
+        context.click_context = Mock()
+        context.click_context.meta = {"click_extended": {}}
+
+        result = await dispatch_to_child_async(child, "some-input", context)
+        assert (
+            result is Payload
+        ), f"Expected Payload class, got {result!r} (type: {type(result).__name__})"
+        assert isinstance(result, type), "Result should be a class, not an instance"
 
     @pytest.mark.asyncio
     async def test_async_dispatch_raises_unhandled_type_error(self) -> None:
