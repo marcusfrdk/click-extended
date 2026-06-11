@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.4.2
+
+### Fixed
+
+- **Class invocation**: Fixed accidental invocation of class-valued arguments
+
 ## v1.4.1
 
 ### Fixed

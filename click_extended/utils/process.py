@@ -135,7 +135,7 @@ def process_children(
             debug=meta.get("debug", False),
         )
 
-        if isinstance(child, type(ContextAwareError)):
+        if isinstance(child, ContextAwareError):
             raise child
 
         value = dispatch_to_child(child, value, context)
@@ -253,7 +253,7 @@ async def process_children_async(
             debug=meta.get("debug", False),
         )
 
-        if isinstance(child, type(ContextAwareError)):
+        if isinstance(child, ContextAwareError):
             raise child
 
         value = await dispatch_to_child_async(child, value, context)
