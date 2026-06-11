@@ -2083,8 +2083,8 @@ class TestInvokeOnSubcommand:
             """User management."""
             execution_order.append("users")
 
-        @users.command()
-        def list() -> None:  # type: ignore  # noqa: A001
+        @users.command("list")
+        def list_users() -> None:
             """List users."""
             execution_order.append("list")
 

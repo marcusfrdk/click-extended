@@ -236,7 +236,7 @@ class Option(OptionNode):
 
     def load(
         self,
-        value: str | int | float | bool | None,
+        value: str | int | float | bool | tuple[str | int | float | None, ...] | None,
         context: Context,
         *args: Any,
         **kwargs: Any,

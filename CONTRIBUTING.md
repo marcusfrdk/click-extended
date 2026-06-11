@@ -107,7 +107,7 @@ This will automatically run the following checks before each commit:
 
 - Code formatting (black, isort)
 - Linting (pylint)
-- Type checking (mypy)
+- Type checking (basedpyright)
 - Tests (pytest with coverage)
 - File checks (trailing whitespace, YAML/TOML validation, etc.)
 
@@ -379,7 +379,7 @@ pre-commit run --all-files
 # Run specific hook
 pre-commit run black --all-files
 pre-commit run pylint --all-files
-pre-commit run mypy --all-files
+pre-commit run basedpyright --all-files
 pre-commit run pytest --all-files
 
 # Update hooks to latest versions
@@ -390,7 +390,7 @@ The pre-commit configuration (`.pre-commit-config.yaml`) includes:
 
 - **Formatting**: black, isort
 - **Linting**: pylint (score must be >= 10.0)
-- **Type Checking**: mypy (strict mode)
+- **Type Checking**: basedpyright (strict mode)
 - **Tests**: pytest (coverage must be >= 80%)
 - **File Checks**: trailing whitespace, YAML/TOML validation, merge conflicts, etc.
 
@@ -401,12 +401,12 @@ The pre-commit configuration (`.pre-commit-config.yaml`) includes:
 make lint
 ```
 
-Fix any issues reported. The project uses pylint with a max line length of 80 characters. Note that `make lint` only checks the `click_extended` source code directory, not the tests.
+Fix any issues reported. The project uses pylint with a max line length of 88 characters. Note that `make lint` only checks the `click_extended` source code directory, not the tests.
 
 ### Type Checking
 
 ```bash
-# Run mypy type checker
+# Run basedpyright type checker
 make type
 ```
 
@@ -531,7 +531,7 @@ make lint-all       # Run pylint on all Python versions
 make format         # Format code with black and isort
 make format-all     # Format code on all Python versions
 make format-check   # Check formatting without changes
-make type           # Run type checking with mypy
+make type           # Run type checking with basedpyright
 make type-all       # Run type checking on all Python versions
 make build          # Build distribution packages
 make publish-test   # Publish to Test PyPI
@@ -559,7 +559,7 @@ Hooks automatically run on commit and check:
 
 - Code formatting and import sorting
 - Linting (pylint score >= 10.0)
-- Type checking (mypy strict mode)
+- Type checking (basedpyright strict mode)
 - Tests (pytest with >= 80% coverage)
 - File issues (whitespace, YAML/TOML syntax, merge conflicts, etc.)
 

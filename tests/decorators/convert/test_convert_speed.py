@@ -1,3 +1,5 @@
+# pyright: reportUnknownMemberType=false
+
 import click
 import pytest
 from click.testing import CliRunner

@@ -50,7 +50,7 @@ dev = [
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
     "pytest-asyncio>=1.2.0",
-    "mypy>=1.18.2",
+    "basedpyright>=1.39.7",
     "pylint>=3.0.0",
     "isort>=5.12.0",
     "black>=25.9.0",
@@ -70,8 +70,13 @@ include = ["click_extended*"]
 [tool.setuptools.package-data]
 click_extended = ["py.typed"]
 
-[tool.pyright]
+[tool.basedpyright]
+allowedUntypedLibraries = ["pytest"]
+pythonVersion = "3.10"
+reportPrivateUsage = "none"
 reportUnnecessaryIsInstance = "none"
+reportUnusedFunction = "none"
+reportUnusedImport = "none"
 typeCheckingMode = "strict"
 
 [tool.pylint.master]
@@ -85,7 +90,6 @@ ignore = [
     "build",
     "dist",
     ".pytest_cache",
-    ".mypy_cache",
     "*.egg-info",
 ]
 ignore-paths = [
@@ -145,21 +149,6 @@ target-version = ["py310", "py311", "py312", "py313"]
 [tool.isort]
 profile = "black"
 line_length = 88
-
-[tool.mypy]
-python_version = "3.10"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_any_unimported = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = false
-warn_no_return = true
-check_untyped_defs = true
-strict_equality = true
-disable_error_code = ["override", "unused-ignore"]
 
 [project.urls]
 Homepage = "https://github.com/marcusfrdk/click-extended"

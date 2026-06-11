@@ -336,11 +336,14 @@ class TestCatchValidationErrors:
 
         caught_errors: list[str] = []
 
+        def handle_error(error: ValueError) -> None:
+            caught_errors.append(str(error))
+
         @command()
         @argument("query", required=False)
         @option("--stock")
         @exclusive("query", "stock")
-        @catch(ValueError, handler=lambda e: caught_errors.append(str(e)))
+        @catch(ValueError, handler=handle_error)
         def search(query: str | None, stock: str | None) -> None:
             click.echo(f"query={query}, stock={stock}")
 

@@ -43,7 +43,7 @@ reset:
     rm -rf *.egg-info
     rm -rf dist build
     rm -rf htmlcov .coverage
-    rm -rf .pytest_cache .mypy_cache
+    rm -rf .pytest_cache
     find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
     find . -type f -name "*.pyc" -delete
     @if [ -z "$VIRTUAL_ENV" ]; then \
@@ -54,7 +54,7 @@ reset:
 clean:
     find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
     find . -type f -name "*.pyc" -delete
-    rm -r .pytest_cache .mypy_cache
+    rm -r .pytest_cache
 
 # Create virtual environment with the current Python and install dependencies
 install:
@@ -75,6 +75,18 @@ install:
 # Install latest pyenv patch versions and create per-version virtual environments
 install-all:
     @command -v pyenv >/dev/null 2>&1 || (echo "Error: pyenv is required for install-all" && exit 1); \
+    if [ -d "{{ venv_dir }}" ]; then \
+        echo "Virtual environment already exists at {{ venv_dir }}"; \
+    else \
+        echo "Checking Python version..."; \
+        {{ python }} --version | grep -qE "Python 3\.(1[0-9]|[2-9][0-9])" || \
+            (echo "Error: Python 3.10 or higher is required" && exit 1); \
+        echo "Creating virtual environment with current Python at {{ venv_dir }}..."; \
+        {{ python }} -m venv "{{ venv_dir }}"; \
+    fi; \
+    echo "Installing dependencies into {{ venv_dir }}..."; \
+    "{{ venv_dir }}/bin/python" -m pip install --upgrade pip; \
+    "{{ venv_dir }}/bin/python" -m pip install -e ".[dev,build]"; \
     for version in {{ python_versions }}; do \
         major=$(printf '%s' "$version" | cut -c1); \
         minor=$(printf '%s' "$version" | cut -c2-); \
@@ -182,6 +194,11 @@ format:
     @"{{ venv_dir }}/bin/isort" {{ src_dir }}
     @"{{ venv_dir }}/bin/black" {{ src_dir }}
 
+# Check formatting without changing files
+format-check:
+    @"{{ venv_dir }}/bin/isort" --check-only {{ src_dir }}
+    @"{{ venv_dir }}/bin/black" --check {{ src_dir }}
+
 # Format code on all Python versions
 format-all:
     @failed=""; \
@@ -207,9 +224,9 @@ format-all:
         echo "All formatting complete"; \
     fi
 
-# Run type checking with mypy
+# Run type checking with basedpyright
 type:
-    @"{{ venv_dir }}/bin/mypy" {{ src_dir }} {{ tests_dir }}
+    @"{{ venv_dir }}/bin/basedpyright" --pythonpath "{{ venv_dir }}/bin/python" {{ src_dir }} {{ tests_dir }}
 
 # Run type checking on all Python versions
 type-all:
@@ -218,7 +235,7 @@ type-all:
         if [ -d ".${version}" ]; then \
             ver_display=$(printf '%s' "$version" | sed 's/^\(.\)\(.*\)$/\1.\2/'); \
             echo "[Python $ver_display] Type checking..."; \
-            if ! ".${version}/bin/mypy" {{ src_dir }} {{ tests_dir }} --no-error-summary; then \
+            if ! ".${version}/bin/basedpyright" --pythonpath ".${version}/bin/python" {{ src_dir }} {{ tests_dir }}; then \
                 failed="$failed $ver_display"; \
             fi; \
         else \
