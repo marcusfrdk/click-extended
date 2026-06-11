@@ -1,9 +1,0 @@
-{
-  "[python]": {
-    "editor.rulers": [88]
-  },
-  "markdownlint.config": {
-    "MD024": false, // No duplicate heading
-    "MD041": false // First line heading
-  }
-}

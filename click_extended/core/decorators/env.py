@@ -4,6 +4,7 @@
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
+# pylint: disable=invalid-name
 
 import os
 from typing import Any, Callable, ParamSpec, TypeVar, cast

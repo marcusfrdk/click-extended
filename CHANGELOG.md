@@ -4,9 +4,10 @@
 
 ## v1.4.1
 
-### Added
+### Updated
 
 - **justfile**: Replaced `Makefile` with a `justfile`.
+- **basedpyright**: Replaced `mypy` with `basedpyright`.
 
 ## v1.4.0
 
