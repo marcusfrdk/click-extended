@@ -543,6 +543,22 @@ class TestDispatchToChild:
         result = dispatch_to_child(child, 42, context)
         assert result == 42
 
+    def test_dispatch_handler_super_call_preserves_value(self) -> None:
+        """Test handler pass-through when it delegates to the base handler."""
+
+        class CustomChild(MockChildNode):
+            def handle_str(self, value: str, context: Any) -> Any:
+                return super().handle_str(value, context)
+
+        child = CustomChild()
+        context = Mock()
+        context.is_tag.return_value = False
+        context.click_context = Mock()
+        context.click_context.meta = {"click_extended": {}}
+
+        result = dispatch_to_child(child, "test", context)
+        assert result == "test"
+
     def test_dispatch_handle_none_returns_none_preserves_none(self) -> None:
         """Test handle_none returning None preserves None value."""
 
@@ -670,6 +686,23 @@ class TestDispatchToChildAsync:
 
         result = await dispatch_to_child_async(child, 21, context)
         assert result == 42
+
+    @pytest.mark.asyncio
+    async def test_async_dispatch_handler_super_call_preserves_value(self) -> None:
+        """Test async dispatch pass-through when handler delegates to base."""
+
+        class CustomChild(MockChildNode):
+            def handle_str(self, value: str, context: Any) -> Any:
+                return super().handle_str(value, context)
+
+        child = CustomChild()
+        context = Mock()
+        context.is_tag.return_value = False
+        context.click_context = Mock()
+        context.click_context.meta = {"click_extended": {}}
+
+        result = await dispatch_to_child_async(child, "test", context)
+        assert result == "test"
 
     @pytest.mark.asyncio
     async def test_async_dispatch_raises_unhandled_type_error(self) -> None:

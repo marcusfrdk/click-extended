@@ -71,7 +71,7 @@ class ChildNode(Node, ABC):
 
         :returns: The processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_all(
         self, value: Any, context: "Context", *args: Any, **kwargs: Any
@@ -89,7 +89,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or None to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_str(
         self, value: str, context: "Context", *args: Any, **kwargs: Any
@@ -104,7 +104,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_int(
         self, value: int, context: "Context", *args: Any, **kwargs: Any
@@ -119,7 +119,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_float(
         self, value: float, context: "Context", *args: Any, **kwargs: Any
@@ -134,7 +134,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_bool(
         self, value: bool, context: "Context", *args: Any, **kwargs: Any
@@ -149,7 +149,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_numeric(
         self, value: int | float, context: "Context", *args: Any, **kwargs: Any
@@ -167,7 +167,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_date(
         self, value: date, context: "Context", *args: Any, **kwargs: Any
@@ -182,7 +182,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_time(
         self, value: time, context: "Context", *args: Any, **kwargs: Any
@@ -197,7 +197,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_tuple(
         self,
@@ -231,7 +231,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_list(
         self,
@@ -250,7 +250,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_dict(
         self,
@@ -269,7 +269,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_tag(
         self,
@@ -299,7 +299,7 @@ class ChildNode(Node, ABC):
         :returns: Must return None (validation-only).
         :rtype: None
         """
-        raise NotImplementedError
+        return None
 
     def handle_datetime(
         self,
@@ -318,7 +318,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_uuid(
         self, value: UUID, context: "Context", *args: Any, **kwargs: Any
@@ -333,7 +333,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_path(
         self, value: Path, context: "Context", *args: Any, **kwargs: Any
@@ -348,7 +348,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_bytes(
         self, value: bytes, context: "Context", *args: Any, **kwargs: Any
@@ -363,7 +363,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def handle_decimal(
         self, value: Decimal, context: "Context", *args: Any, **kwargs: Any
@@ -378,7 +378,7 @@ class ChildNode(Node, ABC):
 
         :returns: Processed value, or ``None`` to pass through unchanged.
         """
-        raise NotImplementedError
+        return None
 
     def get(self, _name: str) -> None:
         """

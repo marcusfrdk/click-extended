@@ -4,6 +4,10 @@
 
 ## v1.4.1
 
+### Fixed
+
+- **Dispatch**: Fixed child handler dispatch so overridden handlers that call `super().handle_*()` correctly pass values through instead of raising an unhandled type error.
+
 ### Updated
 
 - **justfile**: Replaced `Makefile` with a `justfile`.

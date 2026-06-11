@@ -361,7 +361,9 @@ def dispatch_to_child(
             pass
 
     try:
-        if _should_call_handler(child, "handle_all", value):
+        if _is_handler_implemented(child, "handle_all") and _should_call_handler(
+            child, "handle_all", value
+        ):
             if "click_extended" in context.click_context.meta:
                 context.click_context.meta["click_extended"][
                     "handler_method"
@@ -901,7 +903,9 @@ async def dispatch_to_child_async(
             pass
 
     try:
-        if _should_call_handler(child, "handle_all", value):
+        if _is_handler_implemented(child, "handle_all") and _should_call_handler(
+            child, "handle_all", value
+        ):
             if "click_extended" in context.click_context.meta:
                 context.click_context.meta["click_extended"][
                     "handler_method"
