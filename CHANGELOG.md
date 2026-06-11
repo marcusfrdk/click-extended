@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.4.1
+
+### Added
+
+- **justfile**: Replaced `Makefile` with a `justfile`.
+
 ## v1.4.0
 
 ### Added
